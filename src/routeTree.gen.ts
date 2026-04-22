@@ -19,9 +19,11 @@ import { Route as JogadasRouteImport } from './routes/jogadas'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as BuildsRouteImport } from './routes/builds'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JogadoresMemberIdRouteImport } from './routes/jogadores.$memberId'
 
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
@@ -73,6 +75,11 @@ const BuildsRoute = BuildsRouteImport.update({
   path: '/builds',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AmistososRoute = AmistososRouteImport.update({
   id: '/amistosos',
   path: '/amistosos',
@@ -88,11 +95,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JogadoresMemberIdRoute = JogadoresMemberIdRouteImport.update({
+  id: '/jogadores/$memberId',
+  path: '/jogadores/$memberId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
+  '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
@@ -103,11 +116,13 @@ export interface FileRoutesByFullPath {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/jogadores/$memberId': typeof JogadoresMemberIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
+  '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
@@ -118,12 +133,14 @@ export interface FileRoutesByTo {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/jogadores/$memberId': typeof JogadoresMemberIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
+  '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
@@ -134,6 +151,7 @@ export interface FileRoutesById {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/jogadores/$memberId': typeof JogadoresMemberIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +159,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agenda'
     | '/amistosos'
+    | '/auth'
     | '/builds'
     | '/composicoes'
     | '/draft'
@@ -151,11 +170,13 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/jogadores/$memberId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agenda'
     | '/amistosos'
+    | '/auth'
     | '/builds'
     | '/composicoes'
     | '/draft'
@@ -166,11 +187,13 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/jogadores/$memberId'
   id:
     | '__root__'
     | '/'
     | '/agenda'
     | '/amistosos'
+    | '/auth'
     | '/builds'
     | '/composicoes'
     | '/draft'
@@ -181,12 +204,14 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/jogadores/$memberId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
+  AuthRoute: typeof AuthRoute
   BuildsRoute: typeof BuildsRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
@@ -197,6 +222,7 @@ export interface RootRouteChildren {
   RosterRoute: typeof RosterRoute
   TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
+  JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -271,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuildsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/amistosos': {
       id: '/amistosos'
       path: '/amistosos'
@@ -292,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jogadores/$memberId': {
+      id: '/jogadores/$memberId'
+      path: '/jogadores/$memberId'
+      fullPath: '/jogadores/$memberId'
+      preLoaderRoute: typeof JogadoresMemberIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -299,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
+  AuthRoute: AuthRoute,
   BuildsRoute: BuildsRoute,
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
@@ -309,7 +350,17 @@ const rootRouteChildren: RootRouteChildren = {
   RosterRoute: RosterRoute,
   TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
+  JogadoresMemberIdRoute: JogadoresMemberIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
