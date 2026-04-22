@@ -223,3 +223,35 @@ function NavGroup({
     </DropdownMenu>
   );
 }
+
+function AuthButton() {
+  const { user, roles, signOut, loading } = useAuth();
+  if (loading) return null;
+  if (!user) {
+    return (
+      <Link
+        to="/auth"
+        className="ml-2 inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground hover:border-primary/40"
+      >
+        <LogIn className="h-3 w-3" /> Entrar
+      </Link>
+    );
+  }
+  const role = roles.includes("coach") ? "coach" : roles.includes("player") ? "player" : "viewer";
+  const roleColor = role === "coach" ? "text-gold" : role === "player" ? "text-primary" : "text-muted-foreground";
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="ml-2 inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 hover:border-primary/40">
+        <UserCircle className="h-4 w-4" />
+        <span className={`text-[10px] uppercase tracking-wider ${roleColor}`}>{role}</span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur border-border min-w-[180px]">
+        <DropdownMenuLabel className="text-xs">{user.email}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => signOut()} className="text-xs uppercase tracking-wider cursor-pointer">
+          <LogOut className="h-3.5 w-3.5 mr-2" /> Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
