@@ -191,17 +191,17 @@ function PerfilPage() {
       <Card className="p-6 border-border bg-card">
         <div className="flex items-center gap-4 pb-5 border-b border-border/60">
           <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gradient-primary text-primary-foreground font-display text-3xl shadow-glow">
-            {m.name.charAt(0).toUpperCase()}
+            {(form.name ?? m.name).charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
-            <div className="font-display text-2xl tracking-wider">{m.name}</div>
+            <div className="font-display text-2xl tracking-wider">{form.name ?? m.name}</div>
             <div className="text-xs text-muted-foreground">{user?.email}</div>
             <div className="flex gap-2 mt-2">
               <Badge className={`uppercase tracking-wider text-[10px] ${ROLE_COLORS[m.role]}`} variant="outline">
                 {ROLE_LABEL[m.role]}
               </Badge>
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground self-center">
-                Nome e função são gerenciados pela gestão
+                Função é gerenciada pela gestão
               </span>
             </div>
           </div>
@@ -213,6 +213,17 @@ function PerfilPage() {
         </div>
 
         <div className="grid gap-4 mt-6 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Label>Nome de exibição</Label>
+            <Input
+              value={form.name ?? ""}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Ex: Pikachu"
+            />
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
+              Aparece no Roster e no sistema todo
+            </p>
+          </div>
           <div>
             <Label>IGN (Nick no jogo)</Label>
             <Input
