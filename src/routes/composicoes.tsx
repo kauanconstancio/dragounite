@@ -139,8 +139,14 @@ function CompsPage() {
                     const pkm = c[lane.key] as string | null;
                     return (
                       <div key={lane.key} className="text-center">
-                        <div className="aspect-square rounded-md bg-gradient-primary/30 border border-border flex items-center justify-center p-1 mb-1.5 shadow-card overflow-hidden" title={pkm ?? undefined}>
-                          <PokemonImage name={pkm} />
+                        <div className="aspect-square mb-1.5" title={pkm ?? undefined}>
+                          {pkm ? (
+                            <PokemonImage name={pkm} withRoleBg />
+                          ) : (
+                            <div className="w-full h-full rounded-md bg-muted/30 border border-dashed border-border flex items-center justify-center">
+                              <span className="font-display text-xs text-muted-foreground">—</span>
+                            </div>
+                          )}
                         </div>
                         <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{lane.label}</div>
                         {pkm && <div className="text-[9px] leading-tight mt-0.5 truncate">{pkm}</div>}
