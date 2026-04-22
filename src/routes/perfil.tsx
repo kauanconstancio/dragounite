@@ -13,7 +13,7 @@ import { PokemonPicker } from "@/components/PokemonPicker";
 import { PokemonImage } from "@/components/PokemonImage";
 import { Badge } from "@/components/ui/badge";
 import { LANE_LABEL, ROLE_COLORS, ROLE_LABEL } from "@/lib/pokemon";
-import { UserCircle, Save, BarChart3, Crosshair, Skull, Trophy, Star, TrendingUp } from "lucide-react";
+import { UserCircle, Save, BarChart3, Crosshair, Trophy, Star, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
 
@@ -294,11 +294,10 @@ function PerfilPage() {
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <MiniStat icon={TrendingUp} label="Win rate" value={`${wr.rate}%`} hint={`${wr.wins}V · ${wr.losses}D`} accent="gold" />
-              <MiniStat icon={BarChart3} label="KDA médio" value={agg.kda.toFixed(2)} hint={`${agg.k}/${agg.d}/${agg.a}`} accent="gold" />
+              <MiniStat icon={BarChart3} label="KDA médio" value={agg.kda.toFixed(2)} hint={`${agg.k} K · ${agg.a} A`} accent="gold" />
               <MiniStat icon={Star} label="MVPs" value={agg.mvp} hint={`${agg.games} jogos`} accent="gold" />
               <MiniStat icon={BarChart3} label="Score médio" value={agg.avgScore.toLocaleString()} hint={`Dano ${agg.dmg.toLocaleString()}`} accent="primary" />
-              <MiniStat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="primary" />
-              <MiniStat icon={Skull} label="Deaths/jogo" value={agg.d} accent="primary" />
+              <MiniStat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="gold" />
               <MiniStat icon={Trophy} label="Assists/jogo" value={agg.a} accent="primary" />
               <MiniStat icon={BarChart3} label="Jogos" value={agg.games} accent="primary" />
             </div>

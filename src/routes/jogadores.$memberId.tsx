@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trophy, Skull, Crosshair, Star, BarChart3 } from "lucide-react";
+import { ArrowLeft, Trophy, Crosshair, Star, BarChart3 } from "lucide-react";
 import { PokemonImage } from "@/components/PokemonImage";
 import { LANE_LABEL } from "@/lib/pokemon";
 import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
@@ -88,8 +88,7 @@ function PlayerPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat icon={BarChart3} label="KDA médio" value={agg.kda.toFixed(2)} accent="gold" />
-        <Stat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="primary" />
-        <Stat icon={Skull} label="Deaths/jogo" value={agg.d} accent="primary" />
+        <Stat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="gold" />
         <Stat icon={Trophy} label="Assists/jogo" value={agg.a} accent="gold" />
         <Stat icon={Star} label="MVPs" value={agg.mvp} accent="gold" />
         <Stat icon={BarChart3} label="Score médio" value={agg.avgScore.toLocaleString()} accent="primary" />

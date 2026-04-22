@@ -147,7 +147,7 @@ export function PerformanceDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl tracking-wider">Performances · KDA por jogo</DialogTitle>
-          <DialogDescription>Registre kills, deaths, assists, score e MVP de cada jogador por jogo do BO.</DialogDescription>
+          <DialogDescription>Registre kills, assists, score e MVP de cada jogador por jogo do BO.</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -190,9 +190,8 @@ export function PerformanceDialog({
                   <PokemonPicker value={row.pokemon || null} onChange={(name) => update(i, { pokemon: name ?? "" })} />
                 </div>
                 <NumField label="K" value={row.kills} onChange={(n) => update(i, { kills: n })} />
-                <NumField label="D" value={row.deaths} onChange={(n) => update(i, { deaths: n })} />
                 <NumField label="A" value={row.assists} onChange={(n) => update(i, { assists: n })} />
-                <NumField label="Score" value={row.score} onChange={(n) => update(i, { score: n })} />
+                <NumField label="Score" value={row.score} onChange={(n) => update(i, { score: n })} colSpan={2} />
                 <div className="col-span-1 flex flex-col items-center gap-1">
                   <Label className="text-[10px] uppercase tracking-widest">MVP</Label>
                   <Checkbox checked={row.is_mvp} onCheckedChange={(v) => update(i, { is_mvp: !!v })} />
