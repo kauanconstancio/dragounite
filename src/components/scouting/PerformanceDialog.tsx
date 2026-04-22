@@ -53,11 +53,15 @@ export function PerformanceDialog({
   open,
   onOpenChange,
   bestOf,
+  opponentId = null,
+  opponentName = "",
 }: {
   scrimId: string;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   bestOf: number;
+  opponentId?: string | null;
+  opponentName?: string;
 }) {
   const qc = useQueryClient();
   const [rows, setRows] = useState<Form[]>([]);
