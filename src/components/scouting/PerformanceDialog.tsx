@@ -12,6 +12,7 @@ import { Plus, Save, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { type PerfRow } from "@/lib/player-stats";
 import { PokemonPicker } from "@/components/PokemonPicker";
+import { MatchResultsView } from "@/components/scouting/MatchResultsView";
 import { cn } from "@/lib/utils";
 
 type Member = { id: string; name: string; ign: string | null; role: string; lane: string | null; main_pokemon: string | null };
@@ -88,6 +89,7 @@ export function PerformanceDialog({
   bestOf,
   opponentId = null,
   opponentName = "",
+  status = "scheduled",
 }: {
   scrimId: string;
   open: boolean;
@@ -95,6 +97,7 @@ export function PerformanceDialog({
   bestOf: number;
   opponentId?: string | null;
   opponentName?: string;
+  status?: "scheduled" | "completed" | "cancelled";
 }) {
   const qc = useQueryClient();
   const [allies, setAllies] = useState<AllyForm[]>([]);
@@ -279,6 +282,24 @@ export function PerformanceDialog({
     await Promise.all([saveAllies.mutateAsync(), saveOpps.mutateAsync()]);
     await recalcScrimScore();
     toast.success(`Jogo ${game} salvo`);
+  }
+
+  if (status === "completed") {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[92vh] overflow-y-auto p-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="font-display text-2xl tracking-wider">Resultado da partida</DialogTitle>
+            <DialogDescription>
+              Amistoso concluído — visualização das estatísticas finais.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="px-6 pb-6 mt-4">
+            <MatchResultsView scrimId={scrimId} bestOf={bestOf} opponentName={opponentName} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
