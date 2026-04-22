@@ -119,3 +119,42 @@
 body.presentation-mode .presentation-hide { display: none !important; }
 body.presentation-mode .presentation-main { max-width: 100% !important; padding: 2rem !important; }
 body.presentation-mode { font-size: 110%; }
+
+/* Custom scrollbar — themed, slim, glowing on hover */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--background) 60%, transparent);
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--primary) 55%, transparent),
+      color-mix(in oklab, var(--primary) 25%, transparent)
+    );
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      var(--primary),
+      color-mix(in oklab, var(--primary) 60%, transparent)
+    );
+    background-clip: padding-box;
+    box-shadow: 0 0 8px color-mix(in oklab, var(--primary) 50%, transparent);
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
