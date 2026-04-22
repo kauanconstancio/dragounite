@@ -248,6 +248,13 @@ function AuthButton() {
       <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur border-border min-w-[180px]">
         <DropdownMenuLabel className="text-xs">{user.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {roles.includes("coach") && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => signOut()} className="text-xs uppercase tracking-wider cursor-pointer">
           <LogOut className="h-3.5 w-3.5 mr-2" /> Sair
         </DropdownMenuItem>
