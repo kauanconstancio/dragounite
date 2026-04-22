@@ -14,7 +14,162 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      compositions: {
+        Row: {
+          bot_pokemon: string | null
+          created_at: string
+          id: string
+          jungle_pokemon: string | null
+          mid_pokemon: string | null
+          name: string
+          notes: string | null
+          strategy: string | null
+          support_pokemon: string | null
+          tier: string | null
+          top_pokemon: string | null
+        }
+        Insert: {
+          bot_pokemon?: string | null
+          created_at?: string
+          id?: string
+          jungle_pokemon?: string | null
+          mid_pokemon?: string | null
+          name: string
+          notes?: string | null
+          strategy?: string | null
+          support_pokemon?: string | null
+          tier?: string | null
+          top_pokemon?: string | null
+        }
+        Update: {
+          bot_pokemon?: string | null
+          created_at?: string
+          id?: string
+          jungle_pokemon?: string | null
+          mid_pokemon?: string | null
+          name?: string
+          notes?: string | null
+          strategy?: string | null
+          support_pokemon?: string | null
+          tier?: string | null
+          top_pokemon?: string | null
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          discord: string | null
+          id: string
+          ign: string | null
+          lane: Database["public"]["Enums"]["lane_role"] | null
+          main_pokemon: string | null
+          name: string
+          notes: string | null
+          role: Database["public"]["Enums"]["member_role"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          discord?: string | null
+          id?: string
+          ign?: string | null
+          lane?: Database["public"]["Enums"]["lane_role"] | null
+          main_pokemon?: string | null
+          name: string
+          notes?: string | null
+          role?: Database["public"]["Enums"]["member_role"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          discord?: string | null
+          id?: string
+          ign?: string | null
+          lane?: Database["public"]["Enums"]["lane_role"] | null
+          main_pokemon?: string | null
+          name?: string
+          notes?: string | null
+          role?: Database["public"]["Enums"]["member_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scrims: {
+        Row: {
+          best_of: number
+          created_at: string
+          id: string
+          notes: string | null
+          opponent: string
+          result: Database["public"]["Enums"]["match_result"]
+          scheduled_at: string
+          score_them: number
+          score_us: number
+          status: Database["public"]["Enums"]["event_status"]
+        }
+        Insert: {
+          best_of?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          opponent: string
+          result?: Database["public"]["Enums"]["match_result"]
+          scheduled_at: string
+          score_them?: number
+          score_us?: number
+          status?: Database["public"]["Enums"]["event_status"]
+        }
+        Update: {
+          best_of?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          opponent?: string
+          result?: Database["public"]["Enums"]["match_result"]
+          scheduled_at?: string
+          score_them?: number
+          score_us?: number
+          status?: Database["public"]["Enums"]["event_status"]
+        }
+        Relationships: []
+      }
+      trainings: {
+        Row: {
+          created_at: string
+          duration_min: number
+          focus: string | null
+          id: string
+          notes: string | null
+          scheduled_at: string
+          status: Database["public"]["Enums"]["event_status"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          duration_min?: number
+          focus?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["event_status"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          duration_min?: number
+          focus?: string | null
+          id?: string
+          notes?: string | null
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +178,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      event_status: "scheduled" | "completed" | "cancelled"
+      lane_role: "top" | "jungle" | "mid" | "bot" | "support" | "flex"
+      match_result: "pending" | "win" | "loss" | "draw"
+      member_role: "player" | "substitute" | "coach" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +308,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_status: ["scheduled", "completed", "cancelled"],
+      lane_role: ["top", "jungle", "mid", "bot", "support", "flex"],
+      match_result: ["pending", "win", "loss", "draw"],
+      member_role: ["player", "substitute", "coach", "manager"],
+    },
   },
 } as const
