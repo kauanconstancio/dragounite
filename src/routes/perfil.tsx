@@ -71,6 +71,35 @@ function PerfilPage() {
     enabled: !!memberId,
   });
 
+  const perfsQ = useQuery({
+    queryKey: ["my-perfs", memberId],
+    queryFn: async () => {
+      if (!memberId) return [] as PerfRow[];
+      const { data, error } = await supabase.from("match_performances").select("*").eq("member_id", memberId);
+      if (error) throw error;
+      return (data ?? []) as PerfRow[];
+    },
+    enabled: !!memberId,
+  });
+
+  const scrimsQ = useQuery({
+    queryKey: ["scrims-for-perfil"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result");
+      if (error) throw error;
+      return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending" }[];
+    },
+    enabled: !!memberId,
+  });
+
+  const dateMap = useMemo(() => new Map((scrimsQ.data ?? []).map((s) => [s.id, s.scheduled_at])), [scrimsQ.data]);
+  const resultMap = useMemo(() => new Map((scrimsQ.data ?? []).map((s) => [s.id, s.result])), [scrimsQ.data]);
+  const perfs = perfsQ.data ?? [];
+  const agg = useMemo(() => aggregatePlayer(perfs), [perfs]);
+  const wr = useMemo(() => playerWinRate(perfs, resultMap), [perfs, resultMap]);
+  const top = useMemo(() => topPokemon(perfs, 3), [perfs]);
+  const timeline = useMemo(() => kdaTimeline(perfs, dateMap), [perfs, dateMap]);
+
   const [form, setForm] = useState<Partial<Member>>({});
 
   useEffect(() => {
