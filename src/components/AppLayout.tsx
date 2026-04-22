@@ -75,27 +75,7 @@ export function AppLayout() {
     }
   }, [loading, user, isAuthRoute, navigate]);
 
-  // Auth screen: render full-bleed without app chrome
-  if (isAuthRoute) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-1 flex items-center justify-center px-6 py-10">
-          <Outlet />
-        </main>
-      </div>
-    );
-  }
-
-  // Block protected content while we resolve session / before redirect kicks in
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-muted-foreground text-xs uppercase tracking-[0.3em]">
-        Carregando...
-      </div>
-    );
-  }
-
-  // Polling for upcoming events
+  // Polling for upcoming events (only when authenticated)
   const { data: upcoming } = useQuery({
     queryKey: ["upcoming-notif"],
     queryFn: async () => {
@@ -108,6 +88,7 @@ export function AppLayout() {
       return { trainings: t.data ?? [], scrims: s.data ?? [] };
     },
     refetchInterval: 5 * 60 * 1000,
+    enabled: !!user && !isAuthRoute,
   });
 
   useEffect(() => {
@@ -132,6 +113,26 @@ export function AppLayout() {
     });
     sessionStorage.setItem("notif-fired", JSON.stringify([...fired]));
   }, [notifEnabled, upcoming]);
+
+  // Auth screen: render full-bleed without app chrome
+  if (isAuthRoute) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 flex items-center justify-center px-6 py-10">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+  // Block protected content while we resolve session / before redirect kicks in
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground text-xs uppercase tracking-[0.3em]">
+        Carregando...
+      </div>
+    );
+  }
 
   async function toggleNotif() {
     if (typeof Notification === "undefined") return;
