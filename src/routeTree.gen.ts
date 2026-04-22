@@ -10,16 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
+import { Route as TierListRouteImport } from './routes/tier-list'
 import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as OponentesRouteImport } from './routes/oponentes'
+import { Route as MuralRouteImport } from './routes/mural'
+import { Route as JogadasRouteImport } from './routes/jogadas'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
+import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as IndexRouteImport } from './routes/index'
 
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
   path: '/treinos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TierListRoute = TierListRouteImport.update({
+  id: '/tier-list',
+  path: '/tier-list',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RosterRoute = RosterRouteImport.update({
@@ -32,6 +43,21 @@ const PlannerRoute = PlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OponentesRoute = OponentesRouteImport.update({
+  id: '/oponentes',
+  path: '/oponentes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MuralRoute = MuralRouteImport.update({
+  id: '/mural',
+  path: '/mural',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JogadasRoute = JogadasRouteImport.update({
+  id: '/jogadas',
+  path: '/jogadas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DraftRoute = DraftRouteImport.update({
   id: '/draft',
   path: '/draft',
@@ -40,6 +66,11 @@ const DraftRoute = DraftRouteImport.update({
 const ComposicoesRoute = ComposicoesRouteImport.update({
   id: '/composicoes',
   path: '/composicoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuildsRoute = BuildsRouteImport.update({
+  id: '/builds',
+  path: '/builds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AmistososRoute = AmistososRouteImport.update({
@@ -52,72 +83,119 @@ const AgendaRoute = AgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
+  '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/jogadas': typeof JogadasRoute
+  '/mural': typeof MuralRoute
+  '/oponentes': typeof OponentesRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
+  '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/jogadas': typeof JogadasRoute
+  '/mural': typeof MuralRoute
+  '/oponentes': typeof OponentesRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
+  '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/jogadas': typeof JogadasRoute
+  '/mural': typeof MuralRoute
+  '/oponentes': typeof OponentesRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/agenda'
     | '/amistosos'
+    | '/builds'
     | '/composicoes'
     | '/draft'
+    | '/jogadas'
+    | '/mural'
+    | '/oponentes'
     | '/planner'
     | '/roster'
+    | '/tier-list'
     | '/treinos'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/agenda'
     | '/amistosos'
+    | '/builds'
     | '/composicoes'
     | '/draft'
+    | '/jogadas'
+    | '/mural'
+    | '/oponentes'
     | '/planner'
     | '/roster'
+    | '/tier-list'
     | '/treinos'
   id:
     | '__root__'
+    | '/'
     | '/agenda'
     | '/amistosos'
+    | '/builds'
     | '/composicoes'
     | '/draft'
+    | '/jogadas'
+    | '/mural'
+    | '/oponentes'
     | '/planner'
     | '/roster'
+    | '/tier-list'
     | '/treinos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
+  BuildsRoute: typeof BuildsRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
+  JogadasRoute: typeof JogadasRoute
+  MuralRoute: typeof MuralRoute
+  OponentesRoute: typeof OponentesRoute
   PlannerRoute: typeof PlannerRoute
   RosterRoute: typeof RosterRoute
+  TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
 }
 
@@ -128,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/treinos'
       fullPath: '/treinos'
       preLoaderRoute: typeof TreinosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tier-list': {
+      id: '/tier-list'
+      path: '/tier-list'
+      fullPath: '/tier-list'
+      preLoaderRoute: typeof TierListRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roster': {
@@ -144,6 +229,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oponentes': {
+      id: '/oponentes'
+      path: '/oponentes'
+      fullPath: '/oponentes'
+      preLoaderRoute: typeof OponentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mural': {
+      id: '/mural'
+      path: '/mural'
+      fullPath: '/mural'
+      preLoaderRoute: typeof MuralRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jogadas': {
+      id: '/jogadas'
+      path: '/jogadas'
+      fullPath: '/jogadas'
+      preLoaderRoute: typeof JogadasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/draft': {
       id: '/draft'
       path: '/draft'
@@ -156,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/composicoes'
       fullPath: '/composicoes'
       preLoaderRoute: typeof ComposicoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/builds': {
+      id: '/builds'
+      path: '/builds'
+      fullPath: '/builds'
+      preLoaderRoute: typeof BuildsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/amistosos': {
@@ -172,16 +285,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
+  BuildsRoute: BuildsRoute,
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
+  JogadasRoute: JogadasRoute,
+  MuralRoute: MuralRoute,
+  OponentesRoute: OponentesRoute,
   PlannerRoute: PlannerRoute,
   RosterRoute: RosterRoute,
+  TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
 }
 export const routeTree = rootRouteImport
