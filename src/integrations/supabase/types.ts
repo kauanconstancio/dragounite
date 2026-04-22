@@ -179,6 +179,75 @@ export type Database = {
           },
         ]
       }
+      match_performances: {
+        Row: {
+          assists: number
+          created_at: string
+          damage_dealt: number
+          damage_taken: number
+          deaths: number
+          game_number: number
+          healing: number
+          id: string
+          is_mvp: boolean
+          kills: number
+          member_id: string
+          notes: string | null
+          pokemon: string | null
+          score: number
+          scrim_id: string
+        }
+        Insert: {
+          assists?: number
+          created_at?: string
+          damage_dealt?: number
+          damage_taken?: number
+          deaths?: number
+          game_number?: number
+          healing?: number
+          id?: string
+          is_mvp?: boolean
+          kills?: number
+          member_id: string
+          notes?: string | null
+          pokemon?: string | null
+          score?: number
+          scrim_id: string
+        }
+        Update: {
+          assists?: number
+          created_at?: string
+          damage_dealt?: number
+          damage_taken?: number
+          deaths?: number
+          game_number?: number
+          healing?: number
+          id?: string
+          is_mvp?: boolean
+          kills?: number
+          member_id?: string
+          notes?: string | null
+          pokemon?: string | null
+          score?: number
+          scrim_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_performances_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_performances_scrim_id_fkey"
+            columns: ["scrim_id"]
+            isOneToOne: false
+            referencedRelation: "scrims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           avatar_url: string | null
@@ -288,6 +357,44 @@ export type Database = {
             columns: ["linked_comp_id"]
             isOneToOne: false
             referencedRelation: "compositions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          member_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          member_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          member_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
             referencedColumns: ["id"]
           },
         ]
@@ -414,14 +521,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "coach" | "player" | "viewer"
       attendance_status: "confirmed" | "declined" | "tentative"
       event_status: "scheduled" | "completed" | "cancelled"
       event_type_kind: "training" | "scrim"
@@ -562,6 +697,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["coach", "player", "viewer"],
       attendance_status: ["confirmed", "declined", "tentative"],
       event_status: ["scheduled", "completed", "cancelled"],
       event_type_kind: ["training", "scrim"],
