@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,8 +13,11 @@ import { PokemonPicker } from "@/components/PokemonPicker";
 import { PokemonImage } from "@/components/PokemonImage";
 import { Badge } from "@/components/ui/badge";
 import { LANE_LABEL, ROLE_COLORS, ROLE_LABEL } from "@/lib/pokemon";
-import { UserCircle, Save } from "lucide-react";
+import { UserCircle, Save, BarChart3, Crosshair, Skull, Trophy, Star, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
+
+const KdaChart = lazy(() => import("@/components/dashboard/KdaChart").then((m) => ({ default: m.KdaChart })));
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({ meta: [{ title: "Perfil — Battle Arena" }] }),
@@ -67,6 +70,35 @@ function PerfilPage() {
     },
     enabled: !!memberId,
   });
+
+  const perfsQ = useQuery({
+    queryKey: ["my-perfs", memberId],
+    queryFn: async () => {
+      if (!memberId) return [] as PerfRow[];
+      const { data, error } = await supabase.from("match_performances").select("*").eq("member_id", memberId);
+      if (error) throw error;
+      return (data ?? []) as PerfRow[];
+    },
+    enabled: !!memberId,
+  });
+
+  const scrimsQ = useQuery({
+    queryKey: ["scrims-for-perfil"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result");
+      if (error) throw error;
+      return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending" }[];
+    },
+    enabled: !!memberId,
+  });
+
+  const dateMap = useMemo(() => new Map((scrimsQ.data ?? []).map((s) => [s.id, s.scheduled_at])), [scrimsQ.data]);
+  const resultMap = useMemo(() => new Map((scrimsQ.data ?? []).map((s) => [s.id, s.result])), [scrimsQ.data]);
+  const perfs = perfsQ.data ?? [];
+  const agg = useMemo(() => aggregatePlayer(perfs), [perfs]);
+  const wr = useMemo(() => playerWinRate(perfs, resultMap), [perfs, resultMap]);
+  const top = useMemo(() => topPokemon(perfs, 3), [perfs]);
+  const timeline = useMemo(() => kdaTimeline(perfs, dateMap), [perfs, dateMap]);
 
   const [form, setForm] = useState<Partial<Member>>({});
 
@@ -213,6 +245,111 @@ function PerfilPage() {
           </Button>
         </div>
       </Card>
+
+      <section className="space-y-4">
+        <div className="flex items-end justify-between flex-wrap gap-2">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Desempenho</div>
+            <h2 className="font-display text-2xl tracking-wider">MINHAS <span className="text-gold">ESTATÍSTICAS</span></h2>
+          </div>
+          {agg.games > 0 && (
+            <Link
+              to="/jogadores/$memberId"
+              params={{ memberId: memberId! }}
+              className="text-[11px] uppercase tracking-widest text-muted-foreground hover:text-gold"
+            >
+              Ver perfil completo →
+            </Link>
+          )}
+        </div>
+
+        {perfsQ.isLoading ? (
+          <Card className="p-8 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            Carregando estatísticas...
+          </Card>
+        ) : agg.games === 0 ? (
+          <Card className="p-8 text-center border-dashed">
+            <BarChart3 className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+            <div className="mt-3 text-sm text-muted-foreground">
+              Você ainda não possui partidas registradas. Suas estatísticas aparecerão aqui assim que o coach lançar performances de scrims.
+            </div>
+          </Card>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <MiniStat icon={TrendingUp} label="Win rate" value={`${wr.rate}%`} hint={`${wr.wins}V · ${wr.losses}D`} accent="gold" />
+              <MiniStat icon={BarChart3} label="KDA médio" value={agg.kda.toFixed(2)} hint={`${agg.k}/${agg.d}/${agg.a}`} accent="gold" />
+              <MiniStat icon={Star} label="MVPs" value={agg.mvp} hint={`${agg.games} jogos`} accent="gold" />
+              <MiniStat icon={BarChart3} label="Score médio" value={agg.avgScore.toLocaleString()} hint={`Dano ${agg.dmg.toLocaleString()}`} accent="primary" />
+              <MiniStat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="primary" />
+              <MiniStat icon={Skull} label="Deaths/jogo" value={agg.d} accent="primary" />
+              <MiniStat icon={Trophy} label="Assists/jogo" value={agg.a} accent="primary" />
+              <MiniStat icon={BarChart3} label="Jogos" value={agg.games} accent="primary" />
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-4">
+              <Card className="p-5 border-border shadow-card">
+                <h3 className="font-display text-lg tracking-wider mb-3">EVOLUÇÃO DE KDA</h3>
+                {timeline.length === 0 ? (
+                  <div className="text-xs text-muted-foreground py-8 text-center">Sem dados.</div>
+                ) : (
+                  <Suspense fallback={<div className="h-64" />}>
+                    <KdaChart data={timeline} />
+                  </Suspense>
+                )}
+              </Card>
+
+              <Card className="p-5 border-border shadow-card">
+                <h3 className="font-display text-lg tracking-wider mb-3">TOP POKÉMON</h3>
+                {top.length === 0 ? (
+                  <div className="text-xs text-muted-foreground py-8 text-center">Sem dados.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {top.map((t) => (
+                      <div key={t.pokemon} className="flex items-center gap-3 p-2 border border-border rounded-md">
+                        <div className="h-10 w-10 shrink-0"><PokemonImage name={t.pokemon} withRoleBg /></div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">{t.pokemon}</div>
+                          <div className="text-xs text-muted-foreground">{t.count} jogos</div>
+                        </div>
+                        <Badge variant="outline" className="border-gold/40 text-gold">KDA {t.kda}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
+          </>
+        )}
+      </section>
     </div>
+  );
+}
+
+function MiniStat({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  accent,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  hint?: string;
+  accent: "gold" | "primary";
+}) {
+  const color = accent === "gold" ? "text-gold" : "text-primary";
+  return (
+    <Card className="p-4 border-border shadow-card">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+          <div className={`font-display text-2xl mt-1 leading-none ${color}`}>{value}</div>
+          {hint && <div className="text-[10px] text-muted-foreground mt-1.5">{hint}</div>}
+        </div>
+        <Icon className={`h-5 w-5 opacity-50 ${color}`} />
+      </div>
+    </Card>
   );
 }
