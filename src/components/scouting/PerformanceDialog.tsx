@@ -53,21 +53,34 @@ type OppForm = {
 
 type OpponentDetail = { id: string; name: string; known_players: any[] | null };
 
-function emptyAlly(game: number): AllyForm {
+function emptyAlly(game: number, memberId = "", pokemon = ""): AllyForm {
   return {
-    member_id: "", game_number: game, pokemon: "",
+    member_id: memberId, game_number: game, pokemon,
     kills: 0, deaths: 0, assists: 0, score: 0,
     damage_dealt: 0, damage_taken: 0, healing: 0, is_mvp: false,
   };
 }
-function emptyOpp(scrimId: string, opponentId: string | null, game: number): OppForm {
+function emptyOpp(scrimId: string, opponentId: string | null, game: number, playerName = "", pokemon: string | null = null): OppForm {
   return {
     scrim_id: scrimId, opponent_id: opponentId, game_number: game,
-    player_name: "", pokemon: null,
+    player_name: playerName, pokemon,
     kills: 0, assists: 0, score: 0,
     damage_dealt: 0, damage_taken: 0, healing: 0,
     rating: null, notes: null,
   };
+}
+
+function normalizeKnownPlayers(raw: any[] | null | undefined): KnownPlayer[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((p) => {
+      if (typeof p === "string") return { name: p } as KnownPlayer;
+      if (p && typeof p === "object" && p.name) {
+        return { name: p.name, lane: p.lane ?? null, pokemon: p.pokemon ?? p.main_pokemon ?? null, notes: p.notes ?? null };
+      }
+      return null;
+    })
+    .filter(Boolean) as KnownPlayer[];
 }
 
 export function PerformanceDialog({
