@@ -315,7 +315,6 @@ function CreateUserDialog({
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<AppRole>("player");
   const [memberRole, setMemberRole] = useState<(typeof MEMBER_ROLES)[number]>("player");
   const [lane, setLane] = useState<(typeof LANES)[number]>("flex");
@@ -325,13 +324,13 @@ function CreateUserDialog({
     onSubmit({
       email,
       password,
-      display_name: displayName || email.split("@")[0],
+      display_name: email.split("@")[0],
       role,
       member_role: memberRole,
       lane,
     });
     setOpen(false);
-    setEmail(""); setPassword(""); setDisplayName("");
+    setEmail(""); setPassword("");
     setRole("player"); setMemberRole("player"); setLane("flex");
   }
 
@@ -348,10 +347,6 @@ function CreateUserDialog({
           <DialogDescription>Cadastre o jogador com email, senha e papel inicial.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
-          <div>
-            <Label htmlFor="ne-name">Nome de exibição (vai pro Roster)</Label>
-            <Input id="ne-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ex: Pikachu" />
-          </div>
           <div>
             <Label htmlFor="ne-email">Email (login)</Label>
             <Input id="ne-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -393,7 +388,7 @@ function CreateUserDialog({
             </div>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            O jogador completará IGN, Discord, Pokémon Main e notas na sua página de Perfil.
+            O jogador definirá nome de exibição, IGN, Discord, Pokémon Main e notas na sua página de Perfil.
           </p>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
