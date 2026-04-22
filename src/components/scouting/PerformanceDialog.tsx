@@ -106,11 +106,11 @@ export function PerformanceDialog({
   const [editingSide, setEditingSide] = useState<"ally" | "opp" | null>(null);
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members-min"],
+    queryKey: ["members-starters"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("members").select("id, name, ign, role")
-        .in("role", ["player", "substitute"]).order("name");
+        .from("members").select("id, name, ign, role, lane, main_pokemon")
+        .eq("role", "player").order("name");
       if (error) throw error;
       return data as Member[];
     },
@@ -152,27 +152,42 @@ export function PerformanceDialog({
     enabled: open,
   });
 
+  const knownPlayers = useMemo(() => normalizeKnownPlayers(opponent?.known_players), [opponent]);
+  const knownPlayerNames = useMemo(() => knownPlayers.map((p) => p.name), [knownPlayers]);
+
+  // Auto-populate allies for the current game with starting roster if no rows exist yet.
   useEffect(() => {
     if (!open) return;
-    setAllies(
-      allyExisting.filter((e) => e.game_number === game).map((e) => ({
-        id: e.id, member_id: e.member_id, game_number: e.game_number,
-        pokemon: e.pokemon ?? "",
-        kills: e.kills, deaths: e.deaths, assists: e.assists,
-        score: e.score, damage_dealt: e.damage_dealt,
-        damage_taken: e.damage_taken, healing: e.healing, is_mvp: e.is_mvp,
-      })),
-    );
-  }, [game, allyExisting, open]);
+    const existing = allyExisting.filter((e) => e.game_number === game);
+    if (existing.length > 0) {
+      setAllies(
+        existing.map((e) => ({
+          id: e.id, member_id: e.member_id, game_number: e.game_number,
+          pokemon: e.pokemon ?? "",
+          kills: e.kills, deaths: e.deaths, assists: e.assists,
+          score: e.score, damage_dealt: e.damage_dealt,
+          damage_taken: e.damage_taken, healing: e.healing, is_mvp: e.is_mvp,
+        })),
+      );
+    } else if (members.length > 0) {
+      setAllies(members.map((m) => emptyAlly(game, m.id, m.main_pokemon ?? "")));
+    } else {
+      setAllies([]);
+    }
+  }, [game, allyExisting, members, open]);
 
+  // Auto-populate opponents with known players if no rows exist yet.
   useEffect(() => {
     if (!open) return;
-    setOpps(oppExisting.filter((e) => e.game_number === game));
-  }, [game, oppExisting, open]);
-
-  const knownPlayers: string[] = Array.isArray(opponent?.known_players)
-    ? (opponent!.known_players as any[]).map((p) => (typeof p === "string" ? p : p?.name)).filter(Boolean)
-    : [];
+    const existing = oppExisting.filter((e) => e.game_number === game);
+    if (existing.length > 0) {
+      setOpps(existing);
+    } else if (knownPlayers.length > 0) {
+      setOpps(knownPlayers.map((p) => emptyOpp(scrimId, opponentId, game, p.name, p.pokemon ?? null)));
+    } else {
+      setOpps([]);
+    }
+  }, [game, oppExisting, knownPlayers, open, scrimId, opponentId]);
 
   const allyTotal = useMemo(() => allies.reduce((sum, r) => sum + (Number(r.score) || 0), 0), [allies]);
   const oppTotal = useMemo(() => opps.reduce((sum, r) => sum + (Number(r.score) || 0), 0), [opps]);
