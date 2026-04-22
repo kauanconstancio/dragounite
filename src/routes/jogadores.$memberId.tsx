@@ -63,11 +63,13 @@ function PlayerPage() {
 
       <Card className="p-6 border-border shadow-card">
         <div className="flex items-center gap-5 flex-wrap">
-          {member?.main_pokemon ? (
-            <PokemonImage name={member.main_pokemon} size="lg" />
-          ) : (
-            <div className="h-20 w-20 rounded-md bg-muted" />
-          )}
+          <div className="h-20 w-20 shrink-0">
+            {member?.main_pokemon ? (
+              <PokemonImage name={member.main_pokemon} withRoleBg />
+            ) : (
+              <div className="h-20 w-20 rounded-md bg-muted" />
+            )}
+          </div>
           <div className="flex-1">
             <h1 className="font-display text-4xl tracking-wider">{member?.name ?? "—"}</h1>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -115,7 +117,7 @@ function PlayerPage() {
             <div className="space-y-2">
               {top.map((t) => (
                 <div key={t.pokemon} className="flex items-center gap-3 p-2 border border-border rounded-md">
-                  <PokemonImage name={t.pokemon} size="sm" />
+                  <div className="h-10 w-10 shrink-0"><PokemonImage name={t.pokemon} withRoleBg /></div>
                   <div className="flex-1">
                     <div className="text-sm font-medium">{t.pokemon}</div>
                     <div className="text-xs text-muted-foreground">{t.count} jogos</div>
