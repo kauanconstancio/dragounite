@@ -52,7 +52,9 @@ function PlannerPage() {
   const [roleFilter, setRoleFilter] = useState<UniteRole | "all">("all");
   const [drawing, setDrawing] = useState<Stroke | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [mapId, setMapId] = useState<MapId>("rayquaza");
   const mapRef = useRef<HTMLDivElement>(null);
+  const currentMap = MAPS.find((m) => m.id === mapId)!;
 
   const filtered = useMemo(
     () =>
