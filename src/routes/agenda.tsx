@@ -74,6 +74,7 @@ type Scrim = {
 
 type AgendaEvent = {
   id: string;
+  rawId: string;
   kind: "training" | "scrim";
   title: string;
   date: Date;
@@ -127,6 +128,7 @@ function AgendaPage() {
   const events: AgendaEvent[] = useMemo(() => {
     const t: AgendaEvent[] = trainings.map((tr) => ({
       id: `t-${tr.id}`,
+      rawId: tr.id,
       kind: "training",
       title: tr.title,
       date: new Date(tr.scheduled_at),
@@ -135,6 +137,7 @@ function AgendaPage() {
     }));
     const s: AgendaEvent[] = scrims.map((sc) => ({
       id: `s-${sc.id}`,
+      rawId: sc.id,
       kind: "scrim",
       title: `vs ${sc.opponent}`,
       date: new Date(sc.scheduled_at),
