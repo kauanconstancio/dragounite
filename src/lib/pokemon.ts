@@ -32,6 +32,30 @@ export const UNITE_ROLE_LABEL: Record<UniteRole, string> = {
   supporter: "Suporte",
 };
 
+// Descrição detalhada e dica de gameplay para cada papel
+export const UNITE_ROLE_INFO: Record<UniteRole, { description: string; tip: string }> = {
+  attacker: {
+    description: "Atacantes têm baixa resistência mas causam dano massivo a longa distância. Vidro canhão da equipe.",
+    tip: "Fique atrás dos aliados, foque no carry inimigo e nunca entre primeiro nas trocas.",
+  },
+  speedster: {
+    description: "Velozes têm alta mobilidade e ofensiva. Especialistas em pontuar rápido e flanquear inimigos.",
+    tip: "Pressione a jungle, roube objetivos e isole alvos isolados — entre, abata e fuja.",
+  },
+  "all-rounder": {
+    description: "Versáteis equilibram ataque e defesa. Bons iniciadores de team fight e duelistas resilientes.",
+    tip: "Inicie as lutas, divida atenção do time inimigo e foque os squishies depois do CC.",
+  },
+  defender: {
+    description: "Defensores têm alta resistência. Protegem aliados, controlam zonas e absorvem dano.",
+    tip: "Tanque objetivos, segure o frontline e use CC para criar espaço para o seu carry.",
+  },
+  supporter: {
+    description: "Suportes curam aliados, aplicam status e controlam o ritmo das lutas.",
+    tip: "Fique na bot lane com o atacante, proteja o carry e priorize visão e objetivos.",
+  },
+};
+
 // Tailwind classes para fundo + borda + sombra colorida por papel
 export const UNITE_ROLE_STYLES: Record<UniteRole, { bg: string; ring: string; glow: string; text: string }> = {
   attacker: {
