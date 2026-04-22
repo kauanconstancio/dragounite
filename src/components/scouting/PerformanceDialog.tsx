@@ -16,7 +16,8 @@ import { PokemonPicker } from "@/components/PokemonPicker";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
 
-type Member = { id: string; name: string; ign: string | null; role: string };
+type Member = { id: string; name: string; ign: string | null; role: string; lane: string | null; main_pokemon: string | null };
+type KnownPlayer = { name: string; lane?: string | null; pokemon?: string | null; notes?: string | null };
 
 type AllyForm = {
   id?: string;
