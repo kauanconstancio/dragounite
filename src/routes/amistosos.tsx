@@ -126,7 +126,7 @@ function ScrimsPage() {
               <Plus className="mr-2 h-4 w-4" /> Novo amistoso
             </Button>
           </DialogTrigger>
-          <ScrimDialog editing={editing} onSave={(s) => save.mutate(s)} saving={save.isPending} />
+          <ScrimDialog editing={editing} opponents={opponents} onSave={(s) => save.mutate(s)} saving={save.isPending} />
         </Dialog>
       </div>
 
@@ -140,8 +140,8 @@ function ScrimsPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <ScrimList title="Próximos" items={upcoming} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
-          <ScrimList title="Histórico" items={past} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
+          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
+          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
         </>
       )}
     </div>
