@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ShieldCheck, UserPlus, Trash2, KeyRound, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
+import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Battle Arena" }] }),
@@ -194,6 +195,8 @@ function AdminPage() {
           <p>viewer — somente leitura.</p>
         </div>
       </Card>
+
+      <AnnouncementsManager />
     </div>
   );
 }
