@@ -348,10 +348,6 @@ function CreateUserDialog({
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <Label htmlFor="ne-name">Nome de exibição (vai pro Roster)</Label>
-            <Input id="ne-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ex: Pikachu" />
-          </div>
-          <div>
             <Label htmlFor="ne-email">Email (login)</Label>
             <Input id="ne-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
