@@ -272,7 +272,7 @@ export function PerformanceDialog({
             <button
               key={g}
               type="button"
-              onClick={() => { setGame(g); setEditingId(null); setEditingSide(null); }}
+              onClick={() => setGame(g)}
               className={cn(
                 "px-3 py-1.5 text-xs uppercase tracking-wider rounded-md border",
                 game === g
