@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trophy, Skull, Crosshair, Star, BarChart3 } from "lucide-react";
+import { ArrowLeft, Trophy, Crosshair, Star, BarChart3 } from "lucide-react";
 import { PokemonImage } from "@/components/PokemonImage";
 import { LANE_LABEL } from "@/lib/pokemon";
 import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
