@@ -194,7 +194,7 @@ export function AppLayout() {
             </div>
             <div className="leading-tight">
               <div className="font-display text-2xl tracking-wider">
-                DRAGOUNITE <span className="text-gold">Y</span>
+                DRAGOUNITE <span className="text-primary">Y</span>
               </div>
               <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                 Pokémon Unite Team OPS
