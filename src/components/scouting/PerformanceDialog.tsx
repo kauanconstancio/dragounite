@@ -187,7 +187,7 @@ export function PerformanceDialog({
                 </div>
                 <div className="col-span-3">
                   <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-                  <Input value={row.pokemon} onChange={(e) => update(i, { pokemon: e.target.value })} placeholder="Ex: Mewtwo Y" />
+                  <PokemonPicker value={row.pokemon || null} onChange={(name) => update(i, { pokemon: name ?? "" })} />
                 </div>
                 <NumField label="K" value={row.kills} onChange={(n) => update(i, { kills: n })} />
                 <NumField label="D" value={row.deaths} onChange={(n) => update(i, { deaths: n })} />
