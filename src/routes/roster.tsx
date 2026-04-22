@@ -16,6 +16,7 @@ import { PokemonImage } from "@/components/PokemonImage";
 import { PokemonPicker } from "@/components/PokemonPicker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { RequireRole } from "@/components/auth/RequireRole";
 
 export const Route = createFileRoute("/roster")({
   head: () => ({
@@ -123,11 +124,13 @@ function RosterPage() {
         </div>
 
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
-              <Plus className="mr-2 h-4 w-4" /> Novo membro
-            </Button>
-          </DialogTrigger>
+          <RequireRole roles={["coach"]}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+                <Plus className="mr-2 h-4 w-4" /> Novo membro
+              </Button>
+            </DialogTrigger>
+          </RequireRole>
           {open && (
             <MemberDialog
               key={editing?.id ?? "new"}

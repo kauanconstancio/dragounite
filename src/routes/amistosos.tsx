@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { VodEmbed } from "@/components/scouting/VodEmbed";
 import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
+import { RequireRole } from "@/components/auth/RequireRole";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
@@ -122,11 +123,13 @@ function ScrimsPage() {
           </p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
-              <Plus className="mr-2 h-4 w-4" /> Novo amistoso
-            </Button>
-          </DialogTrigger>
+          <RequireRole roles={["coach"]}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+                <Plus className="mr-2 h-4 w-4" /> Novo amistoso
+              </Button>
+            </DialogTrigger>
+          </RequireRole>
           <ScrimDialog editing={editing} opponents={opponents} onSave={(s) => save.mutate(s)} saving={save.isPending} />
         </Dialog>
       </div>
