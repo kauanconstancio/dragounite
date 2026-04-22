@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Sparkles } from "lucide-react";
 import { POKEMON_LIST } from "@/lib/pokemon";
+import { PokemonImage } from "@/components/PokemonImage";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -138,10 +139,11 @@ function CompsPage() {
                     const pkm = c[lane.key] as string | null;
                     return (
                       <div key={lane.key} className="text-center">
-                        <div className="aspect-square rounded-md bg-gradient-primary/30 border border-border flex items-center justify-center p-1 mb-1.5 shadow-card">
-                          <span className="font-display text-[10px] leading-tight text-center">{pkm || "—"}</span>
+                        <div className="aspect-square rounded-md bg-gradient-primary/30 border border-border flex items-center justify-center p-1 mb-1.5 shadow-card overflow-hidden" title={pkm ?? undefined}>
+                          <PokemonImage name={pkm} />
                         </div>
                         <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{lane.label}</div>
+                        {pkm && <div className="text-[9px] leading-tight mt-0.5 truncate">{pkm}</div>}
                       </div>
                     );
                   })}
