@@ -12,6 +12,7 @@ import { Plus, Save, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { type PerfRow } from "@/lib/player-stats";
 import { PokemonPicker } from "@/components/PokemonPicker";
+import { MatchResultsView } from "@/components/scouting/MatchResultsView";
 import { cn } from "@/lib/utils";
 
 type Member = { id: string; name: string; ign: string | null; role: string; lane: string | null; main_pokemon: string | null };
@@ -88,6 +89,7 @@ export function PerformanceDialog({
   bestOf,
   opponentId = null,
   opponentName = "",
+  status = "scheduled",
 }: {
   scrimId: string;
   open: boolean;
@@ -95,6 +97,7 @@ export function PerformanceDialog({
   bestOf: number;
   opponentId?: string | null;
   opponentName?: string;
+  status?: "scheduled" | "completed" | "cancelled";
 }) {
   const qc = useQueryClient();
   const [allies, setAllies] = useState<AllyForm[]>([]);
