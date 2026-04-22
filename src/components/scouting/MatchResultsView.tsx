@@ -298,7 +298,7 @@ function DetailsRow({
       side === "ally" ? "bg-primary/5 hover:bg-primary/10" : "bg-destructive/5 hover:bg-destructive/10",
     )}>
       <div className="flex items-center gap-2 min-w-0">
-        <PokemonImage name={pokemon} size={32} className="shrink-0" />
+        <div className="w-8 h-8 shrink-0"><PokemonImage name={pokemon} /></div>
         <span className="font-display text-sm tracking-wide truncate">{name}</span>
       </div>
       <span className={cn("font-display text-base tabular-nums w-12 text-center", accent)}>{score}</span>
@@ -342,7 +342,7 @@ function BattleRow({
       side === "ally" ? "bg-primary/5 hover:bg-primary/10" : "bg-destructive/5 hover:bg-destructive/10",
     )}>
       <div className="flex items-center gap-2 min-w-0">
-        <PokemonImage name={pokemon} size={32} className="shrink-0" />
+        <div className="w-8 h-8 shrink-0"><PokemonImage name={pokemon} /></div>
         <span className="font-display text-sm tracking-wide truncate">{name}</span>
       </div>
       <BattleStat value={damageDealt} total={dealtTotal} barClass="bg-rose-500/70" />
