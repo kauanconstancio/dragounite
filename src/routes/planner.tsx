@@ -7,7 +7,16 @@ import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move } 
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
-import mapImage from "@/assets/unite-map.jpg";
+import mapRayquaza from "@/assets/map-rayquaza.jpg";
+import mapGroudon from "@/assets/map-groudon.jpg";
+import mapKyogre from "@/assets/map-kyogre.jpg";
+
+type MapId = "rayquaza" | "groudon" | "kyogre";
+const MAPS: { id: MapId; label: string; image: string }[] = [
+  { id: "rayquaza", label: "Theia Sky Ruins · Rayquaza", image: mapRayquaza },
+  { id: "groudon", label: "Theia Sky Ruins · Groudon", image: mapGroudon },
+  { id: "kyogre", label: "Theia Sky Ruins · Kyogre", image: mapKyogre },
+];
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
@@ -43,7 +52,9 @@ function PlannerPage() {
   const [roleFilter, setRoleFilter] = useState<UniteRole | "all">("all");
   const [drawing, setDrawing] = useState<Stroke | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [mapId, setMapId] = useState<MapId>("rayquaza");
   const mapRef = useRef<HTMLDivElement>(null);
+  const currentMap = MAPS.find((m) => m.id === mapId)!;
 
   const filtered = useMemo(
     () =>
@@ -173,7 +184,15 @@ function PlannerPage() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
             <Move className="h-4 w-4" />
-            <span>Mapa: <span className="text-foreground">Theia Sky Ruins</span></span>
+            <span>Mapa:</span>
+            <Select value={mapId} onValueChange={(v) => setMapId(v as MapId)}>
+              <SelectTrigger className="h-8 w-64 text-xs uppercase tracking-widest"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {MAPS.map((m) => (
+                  <SelectItem key={m.id} value={m.id} className="text-xs uppercase tracking-widest">{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={undoLast} className="uppercase tracking-wider">
@@ -232,8 +251,8 @@ function PlannerPage() {
             }}
           >
             <img
-              src={mapImage}
-              alt="Mapa Pokémon Unite"
+              src={currentMap.image}
+              alt={`Mapa ${currentMap.label}`}
               draggable={false}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
