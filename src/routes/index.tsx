@@ -11,8 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Crown, Headphones, ClipboardList, Swords } from "lucide-react";
-import { ROLE_LABEL, ROLE_COLORS, LANE_LABEL, POKEMON_LIST } from "@/lib/pokemon";
+import { ROLE_LABEL, ROLE_COLORS, LANE_LABEL } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
+import { PokemonPicker } from "@/components/PokemonPicker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -265,12 +266,10 @@ function MemberDialog({ editing, onSave, saving }: { editing: Member | null; onS
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Pokémon Main</Label>
-            <Select value={form.main_pokemon ?? ""} onValueChange={(v) => setForm({ ...form, main_pokemon: v })}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent className="max-h-64">
-                {POKEMON_LIST.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <PokemonPicker
+              value={form.main_pokemon}
+              onChange={(v) => setForm({ ...form, main_pokemon: v })}
+            />
           </div>
           <div>
             <Label>Discord</Label>
