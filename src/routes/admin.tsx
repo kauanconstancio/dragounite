@@ -299,15 +299,19 @@ function UserRow({
   );
 }
 
+const MEMBER_ROLES = ["player", "substitute", "coach", "manager"] as const;
+const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
+
 function CreateUserDialog({
-  members, onSubmit, loading,
+  members: _members, onSubmit, loading,
 }: { members: any[]; onSubmit: (d: any) => void; loading: boolean }) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<AppRole>("player");
-  const [memberId, setMemberId] = useState<string>("none");
+  const [memberRole, setMemberRole] = useState<(typeof MEMBER_ROLES)[number]>("player");
+  const [lane, setLane] = useState<(typeof LANES)[number]>("flex");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -316,10 +320,12 @@ function CreateUserDialog({
       password,
       display_name: displayName || email.split("@")[0],
       role,
-      member_id: memberId === "none" ? null : memberId,
+      member_role: memberRole,
+      lane,
     });
     setOpen(false);
-    setEmail(""); setPassword(""); setDisplayName(""); setRole("player"); setMemberId("none");
+    setEmail(""); setPassword(""); setDisplayName("");
+    setRole("player"); setMemberRole("player"); setLane("flex");
   }
 
   return (
@@ -330,10 +336,10 @@ function CreateUserDialog({
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Criar conta de jogador</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Criar conta + entrada no Roster</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <Label htmlFor="ne-name">Nome de exibição</Label>
+            <Label htmlFor="ne-name">Nome de exibição (vai pro Roster)</Label>
             <Input id="ne-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Ex: Pikachu" />
           </div>
           <div>
@@ -344,7 +350,7 @@ function CreateUserDialog({
             <Label htmlFor="ne-pass">Senha (mín. 6)</Label>
             <Input id="ne-pass" type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <Label>Permissão</Label>
               <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
@@ -355,18 +361,30 @@ function CreateUserDialog({
               </Select>
             </div>
             <div>
-              <Label>Vincular ao Roster</Label>
-              <Select value={memberId} onValueChange={setMemberId}>
+              <Label>Função no time</Label>
+              <Select value={memberRole} onValueChange={(v) => setMemberRole(v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— nenhum —</SelectItem>
-                  {members.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                  ))}
+                  <SelectItem value="player">Titular</SelectItem>
+                  <SelectItem value="substitute">Reserva</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="manager">Gerente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Rota</Label>
+              <Select value={lane} onValueChange={(v) => setLane(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LANES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           </div>
+          <p className="text-[11px] text-muted-foreground">
+            O jogador completará IGN, Discord, Pokémon Main e notas na sua página de Perfil.
+          </p>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button type="submit" disabled={loading} className="bg-gradient-primary">

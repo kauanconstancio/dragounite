@@ -279,6 +279,11 @@ function AuthButton() {
       <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur border-border min-w-[180px]">
         <DropdownMenuLabel className="text-xs">{user.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/perfil" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+            <UserCircle className="h-3.5 w-3.5 mr-2" /> Meu perfil
+          </Link>
+        </DropdownMenuItem>
         {roles.includes("coach") && (
           <DropdownMenuItem asChild>
             <Link to="/admin" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
