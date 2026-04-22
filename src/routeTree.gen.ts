@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
+import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
   path: '/treinos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DraftRoute = DraftRouteImport.update({
+  id: '/draft',
+  path: '/draft',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComposicoesRoute = ComposicoesRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
+  '/draft': typeof DraftRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
+  '/draft': typeof DraftRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
+  '/draft': typeof DraftRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/amistosos' | '/composicoes' | '/treinos'
+  fullPaths: '/' | '/amistosos' | '/composicoes' | '/draft' | '/treinos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/amistosos' | '/composicoes' | '/treinos'
-  id: '__root__' | '/' | '/amistosos' | '/composicoes' | '/treinos'
+  to: '/' | '/amistosos' | '/composicoes' | '/draft' | '/treinos'
+  id: '__root__' | '/' | '/amistosos' | '/composicoes' | '/draft' | '/treinos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AmistososRoute: typeof AmistososRoute
   ComposicoesRoute: typeof ComposicoesRoute
+  DraftRoute: typeof DraftRoute
   TreinosRoute: typeof TreinosRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/treinos'
       fullPath: '/treinos'
       preLoaderRoute: typeof TreinosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/draft': {
+      id: '/draft'
+      path: '/draft'
+      fullPath: '/draft'
+      preLoaderRoute: typeof DraftRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/composicoes': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AmistososRoute: AmistososRoute,
   ComposicoesRoute: ComposicoesRoute,
+  DraftRoute: DraftRoute,
   TreinosRoute: TreinosRoute,
 }
 export const routeTree = rootRouteImport
