@@ -18,12 +18,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Swords, Trophy, Video } from "lucide-react";
+import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3 } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { VodEmbed } from "@/components/scouting/VodEmbed";
+import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
+import { RequireRole } from "@/components/auth/RequireRole";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
@@ -121,11 +123,13 @@ function ScrimsPage() {
           </p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
-              <Plus className="mr-2 h-4 w-4" /> Novo amistoso
-            </Button>
-          </DialogTrigger>
+          <RequireRole roles={["coach"]}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+                <Plus className="mr-2 h-4 w-4" /> Novo amistoso
+              </Button>
+            </DialogTrigger>
+          </RequireRole>
           <ScrimDialog editing={editing} opponents={opponents} onSave={(s) => save.mutate(s)} saving={save.isPending} />
         </Dialog>
       </div>
@@ -163,6 +167,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
 }
 
 function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; muted?: boolean }) {
+  const [perfFor, setPerfFor] = useState<Scrim | null>(null);
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
@@ -210,6 +215,7 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { tit
                     {s.vod_notes && <p className="mt-2 text-xs text-muted-foreground italic whitespace-pre-wrap">{s.vod_notes}</p>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="icon" variant="ghost" title="Performances/KDA" onClick={() => setPerfFor(s)}><BarChart3 className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) onDelete(s.id); }}><Trash2 className="h-4 w-4" /></Button>
                   </div>
@@ -218,6 +224,14 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { tit
             </motion.div>
           ))}
         </div>
+      )}
+      {perfFor && (
+        <PerformanceDialog
+          scrimId={perfFor.id}
+          bestOf={perfFor.best_of}
+          open={!!perfFor}
+          onOpenChange={(v) => { if (!v) setPerfFor(null); }}
+        />
       )}
     </section>
   );

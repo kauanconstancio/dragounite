@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ import { PokemonImage } from "@/components/PokemonImage";
 import { PokemonPicker } from "@/components/PokemonPicker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { RequireRole } from "@/components/auth/RequireRole";
 
 export const Route = createFileRoute("/roster")({
   head: () => ({
@@ -123,11 +124,13 @@ function RosterPage() {
         </div>
 
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
-              <Plus className="mr-2 h-4 w-4" /> Novo membro
-            </Button>
-          </DialogTrigger>
+          <RequireRole roles={["coach"]}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+                <Plus className="mr-2 h-4 w-4" /> Novo membro
+              </Button>
+            </DialogTrigger>
+          </RequireRole>
           {open && (
             <MemberDialog
               key={editing?.id ?? "new"}
@@ -184,6 +187,16 @@ function RosterPage() {
                             </div>
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {m.role === "player" || m.role === "substitute" ? (
+                              <Link
+                                to="/jogadores/$memberId"
+                                params={{ memberId: m.id }}
+                                className="inline-flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent text-muted-foreground hover:text-gold"
+                                title="Ver perfil & KDA"
+                              >
+                                <Swords className="h-3.5 w-3.5" />
+                              </Link>
+                            ) : null}
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(m); setOpen(true); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
