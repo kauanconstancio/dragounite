@@ -230,7 +230,7 @@ function AgendaPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_360px] gap-6">
+      <div className="grid lg:grid-cols-[1fr_280px_360px] gap-6">
         {/* Calendar */}
         <Card className="p-5 border-border shadow-card">
           <div className="flex items-center justify-between mb-5">
@@ -339,6 +339,12 @@ function AgendaPage() {
             </span>
           </div>
         </Card>
+
+        {/* Day Timeline (hours) */}
+        <DayTimeline
+          date={selected}
+          events={selectedEvents}
+        />
 
         {/* Selected day + upcoming */}
         <div className="space-y-5">
@@ -490,5 +496,136 @@ function EventRow({
         </div>
       </div>
     </Link>
+  );
+}
+
+function DayTimeline({
+  date,
+  events,
+}: {
+  date: Date | null;
+  events: AgendaEvent[];
+}) {
+  const START_HOUR = 7;
+  const END_HOUR = 24; // exclusive
+  const HOUR_HEIGHT = 48; // px
+  const hours = Array.from(
+    { length: END_HOUR - START_HOUR },
+    (_, i) => START_HOUR + i,
+  );
+
+  const now = new Date();
+  const showNow = date && isSameDay(date, now);
+  const nowOffset =
+    showNow && now.getHours() >= START_HOUR && now.getHours() < END_HOUR
+      ? (now.getHours() - START_HOUR + now.getMinutes() / 60) * HOUR_HEIGHT
+      : null;
+
+  const positioned = events
+    .map((e) => {
+      const h = e.date.getHours();
+      const m = e.date.getMinutes();
+      const top = (h - START_HOUR + m / 60) * HOUR_HEIGHT;
+      // try to extract duration from training meta "<n>min..."
+      let durationMin = 60;
+      if (e.kind === "training") {
+        const match = e.meta.match(/^(\d+)min/);
+        if (match) durationMin = parseInt(match[1], 10);
+      } else {
+        durationMin = 90;
+      }
+      const height = Math.max(28, (durationMin / 60) * HOUR_HEIGHT);
+      return { event: e, top, height };
+    })
+    .filter((p) => p.top >= 0 && p.top < hours.length * HOUR_HEIGHT);
+
+  return (
+    <Card className="p-5 border-border shadow-card flex flex-col">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="h-4 w-4 text-primary" />
+        <h3 className="font-display text-lg tracking-wider">Timeline</h3>
+      </div>
+      {!date ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">
+          Selecione um dia.
+        </p>
+      ) : (
+        <div className="relative overflow-y-auto pr-1" style={{ maxHeight: 520 }}>
+          <div
+            className="relative"
+            style={{ height: hours.length * HOUR_HEIGHT }}
+          >
+            {/* Hour rows */}
+            {hours.map((h, i) => (
+              <div
+                key={h}
+                className="absolute left-0 right-0 border-t border-border/60 flex"
+                style={{ top: i * HOUR_HEIGHT, height: HOUR_HEIGHT }}
+              >
+                <div className="w-10 -mt-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {String(h).padStart(2, "0")}h
+                </div>
+              </div>
+            ))}
+
+            {/* Now indicator */}
+            {nowOffset !== null && (
+              <div
+                className="absolute left-10 right-0 z-10 pointer-events-none"
+                style={{ top: nowOffset }}
+              >
+                <div className="relative">
+                  <span className="absolute -left-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-gold shadow-glow" />
+                  <div className="border-t border-gold/80" />
+                </div>
+              </div>
+            )}
+
+            {/* Events */}
+            <div className="absolute left-10 right-0 top-0 bottom-0">
+              {positioned.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground">
+                    Sem eventos neste dia.
+                  </p>
+                </div>
+              )}
+              {positioned.map(({ event, top, height }) => {
+                const isTraining = event.kind === "training";
+                const Icon = isTraining ? Dumbbell : Swords;
+                return (
+                  <Link
+                    key={event.id}
+                    to={event.href}
+                    className={cn(
+                      "absolute left-1 right-1 rounded-md border p-2 overflow-hidden transition-all hover:shadow-glow",
+                      isTraining
+                        ? "bg-primary/15 border-primary/40 hover:bg-primary/25"
+                        : "bg-gold/15 border-gold/40 hover:bg-gold/25",
+                    )}
+                    style={{ top, height }}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Icon
+                        className={cn(
+                          "h-3 w-3 shrink-0",
+                          isTraining ? "text-primary" : "text-gold",
+                        )}
+                      />
+                      <span className="font-display text-[11px] tracking-wider truncate">
+                        {event.title}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                      {format(event.date, "HH:mm")} · {event.meta}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
