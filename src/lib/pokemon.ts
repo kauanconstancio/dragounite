@@ -97,6 +97,10 @@ export type UnitePokemon = { name: string; slug: string; role: UniteRole };
 export const POKEMON_DATA: UnitePokemon[] = [
   // Attackers
   { name: "Alolan Ninetales", slug: "alolan-ninetales", role: "attacker" },
+  { name: "Articuno", slug: "articuno", role: "attacker" },
+  { name: "Moltres", slug: "moltres", role: "attacker" },
+  { name: "Zapdos", slug: "zapdos", role: "attacker" },
+  { name: "Charizard Y", slug: "charizard", role: "attacker" },
   { name: "Alolan Raichu", slug: "alolan-raichu", role: "attacker" },
   { name: "Armarouge", slug: "armarouge", role: "attacker" },
   { name: "Chandelure", slug: "chandelure", role: "attacker" },
