@@ -83,6 +83,7 @@ function OpponentsPage() {
         region: o.region?.trim() || null,
         notes: o.notes?.trim() || null,
         recurring_picks: o.recurring_picks ?? [],
+        known_players: o.known_players ?? [],
       };
       if (editing) {
         const { error } = await supabase.from("opponents").update(payload).eq("id", editing.id);
@@ -208,6 +209,22 @@ function OpponentsPage() {
                           ))}
                         </div>
                       )}
+                      {Array.isArray(o.known_players) && o.known_players.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Jogadores</div>
+                          <div className="flex flex-wrap gap-1">
+                            {(o.known_players as any[]).slice(0, 8).map((p: any, idx: number) => {
+                              const name = typeof p === "string" ? p : p?.name;
+                              if (!name) return null;
+                              return (
+                                <Badge key={`${name}-${idx}`} variant="outline" className="text-[10px] border-primary/40 text-primary">
+                                  {name}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                       {o.notes && (
                         <p className="mt-3 text-xs text-muted-foreground italic line-clamp-2">{o.notes}</p>
                       )}
@@ -248,6 +265,7 @@ type Form = {
   region: string;
   notes: string;
   recurring_picks_text: string;
+  players: { name: string; role: string; notes: string }[];
 };
 
 function OpponentDialog({ editing, onSave, saving }: { editing: Opponent | null; onSave: (o: Partial<Opponent>) => void; saving: boolean }) {
@@ -257,7 +275,20 @@ function OpponentDialog({ editing, onSave, saving }: { editing: Opponent | null;
     region: editing?.region ?? "",
     notes: editing?.notes ?? "",
     recurring_picks_text: editing?.recurring_picks?.join(", ") ?? "",
+    players: Array.isArray(editing?.known_players)
+      ? (editing!.known_players as any[]).map((p) => ({
+          name: typeof p === "string" ? p : (p?.name ?? ""),
+          role: typeof p === "object" ? (p?.role ?? "") : "",
+          notes: typeof p === "object" ? (p?.notes ?? "") : "",
+        }))
+      : [],
   }));
+
+  const addPlayer = () => setForm((f) => ({ ...f, players: [...f.players, { name: "", role: "", notes: "" }] }));
+  const updatePlayer = (i: number, patch: Partial<{ name: string; role: string; notes: string }>) =>
+    setForm((f) => ({ ...f, players: f.players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) }));
+  const removePlayer = (i: number) =>
+    setForm((f) => ({ ...f, players: f.players.filter((_, idx) => idx !== i) }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,17 +302,20 @@ function OpponentDialog({ editing, onSave, saving }: { editing: Opponent | null;
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
+      known_players: form.players
+        .map((p) => ({ name: p.name.trim(), role: p.role.trim(), notes: p.notes.trim() }))
+        .filter((p) => p.name),
     });
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="font-display text-2xl tracking-wider">
           {editing ? "Editar oponente" : "Novo oponente"}
         </DialogTitle>
         <DialogDescription>
-          Nome, tag, região, picks recorrentes e notas de scouting.
+          Nome, tag, região, picks recorrentes, jogadores e notas de scouting.
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -308,6 +342,40 @@ function OpponentDialog({ editing, onSave, saving }: { editing: Opponent | null;
             placeholder="Ex: Mewtwo Y, Comfey, Zacian"
           />
         </div>
+
+        <div className="space-y-2 border-t border-border pt-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs uppercase tracking-widest">Jogadores do time oponente</Label>
+            <Button type="button" size="sm" variant="outline" onClick={addPlayer}>
+              <Plus className="h-3 w-3 mr-1" /> Adicionar
+            </Button>
+          </div>
+          {form.players.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">Nenhum jogador cadastrado.</p>
+          )}
+          {form.players.map((p, i) => (
+            <div key={i} className="grid grid-cols-12 gap-2 items-end">
+              <div className="col-span-4">
+                <Label className="text-[10px] uppercase tracking-widest">Nome / IGN</Label>
+                <Input value={p.name} onChange={(e) => updatePlayer(i, { name: e.target.value })} placeholder="IGN" />
+              </div>
+              <div className="col-span-3">
+                <Label className="text-[10px] uppercase tracking-widest">Lane / Função</Label>
+                <Input value={p.role} onChange={(e) => updatePlayer(i, { role: e.target.value })} placeholder="Ex: Jungle" />
+              </div>
+              <div className="col-span-4">
+                <Label className="text-[10px] uppercase tracking-widest">Notas</Label>
+                <Input value={p.notes} onChange={(e) => updatePlayer(i, { notes: e.target.value })} placeholder="Mains, estilo..." />
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <Button type="button" size="icon" variant="ghost" onClick={() => removePlayer(i)} className="hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div>
           <Label htmlFor="op-notes">Notas de scouting</Label>
           <Textarea id="op-notes" rows={4} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />

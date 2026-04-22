@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { Plus, Save, Trash2, Star } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Plus, Save, Trash2, Star, Shield, Swords } from "lucide-react";
 import { toast } from "sonner";
 import { kdaRatio, type PerfRow } from "@/lib/player-stats";
 import { PokemonPicker } from "@/components/PokemonPicker";
+import { OpponentPerformanceSection } from "@/components/scouting/OpponentPerformanceSection";
 
 type Member = { id: string; name: string; ign: string | null; role: string };
 
@@ -51,11 +53,15 @@ export function PerformanceDialog({
   open,
   onOpenChange,
   bestOf,
+  opponentId = null,
+  opponentName = "",
 }: {
   scrimId: string;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   bestOf: number;
+  opponentId?: string | null;
+  opponentName?: string;
 }) {
   const qc = useQueryClient();
   const [rows, setRows] = useState<Form[]>([]);
@@ -165,64 +171,84 @@ export function PerformanceDialog({
           ))}
         </div>
 
-        <div className="space-y-3">
-          {rows.length === 0 && (
-            <Card className="p-6 border-dashed text-center text-sm text-muted-foreground">
-              Nenhuma performance neste jogo. Adicione abaixo.
-            </Card>
-          )}
-          {rows.map((row, i) => (
-            <Card key={i} className="p-3 border-border">
-              <div className="grid grid-cols-12 gap-2 items-end">
-                <div className="col-span-3">
-                  <Label className="text-[10px] uppercase tracking-widest">Jogador</Label>
-                  <Select value={row.member_id} onValueChange={(v) => update(i, { member_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      {members.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>{m.name}{m.ign ? ` (${m.ign})` : ""}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="col-span-3">
-                  <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-                  <PokemonPicker value={row.pokemon || null} onChange={(name) => update(i, { pokemon: name ?? "" })} />
-                </div>
-                <NumField label="K" value={row.kills} onChange={(n) => update(i, { kills: n })} />
-                <NumField label="A" value={row.assists} onChange={(n) => update(i, { assists: n })} />
-                <NumField label="Score" value={row.score} onChange={(n) => update(i, { score: n })} colSpan={2} />
-                <div className="col-span-1 flex flex-col items-center gap-1">
-                  <Label className="text-[10px] uppercase tracking-widest">MVP</Label>
-                  <Checkbox checked={row.is_mvp} onCheckedChange={(v) => update(i, { is_mvp: !!v })} />
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  <Button size="icon" variant="ghost" onClick={() => removeRow(i)} className="hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-12 gap-2 mt-2">
-                <NumField label="Dano" value={row.damage_dealt} onChange={(n) => update(i, { damage_dealt: n })} colSpan={3} />
-                <NumField label="Dano sofrido" value={row.damage_taken} onChange={(n) => update(i, { damage_taken: n })} colSpan={3} />
-                <NumField label="Cura" value={row.healing} onChange={(n) => update(i, { healing: n })} colSpan={3} />
-                <div className="col-span-3 text-right text-xs text-muted-foreground self-end">
-                  KDA: <span className="text-gold font-display text-base">{kdaRatio(row.kills, row.deaths, row.assists)}</span>
-                  {row.is_mvp && <Star className="inline h-3 w-3 ml-1 text-gold" />}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Tabs defaultValue="allies" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="allies" className="uppercase tracking-wider text-xs">
+              <Shield className="h-3.5 w-3.5 mr-1.5" /> Nosso time
+            </TabsTrigger>
+            <TabsTrigger value="opponents" className="uppercase tracking-wider text-xs">
+              <Swords className="h-3.5 w-3.5 mr-1.5" /> Oponentes
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="flex items-center justify-between mt-4">
-          <Button type="button" variant="outline" onClick={addRow}>
-            <Plus className="h-4 w-4 mr-2" /> Adicionar jogador
-          </Button>
-          <Button onClick={() => save.mutate(rows)} disabled={save.isPending} className="bg-gradient-primary shadow-glow uppercase tracking-wider">
-            <Save className="h-4 w-4 mr-2" /> {save.isPending ? "Salvando..." : "Salvar jogo"}
-          </Button>
-        </div>
+          <TabsContent value="allies" className="space-y-3 mt-4">
+            {rows.length === 0 && (
+              <Card className="p-6 border-dashed text-center text-sm text-muted-foreground">
+                Nenhuma performance neste jogo. Adicione abaixo.
+              </Card>
+            )}
+            {rows.map((row, i) => (
+              <Card key={i} className="p-3 border-border">
+                <div className="grid grid-cols-12 gap-2 items-end">
+                  <div className="col-span-3">
+                    <Label className="text-[10px] uppercase tracking-widest">Jogador</Label>
+                    <Select value={row.member_id} onValueChange={(v) => update(i, { member_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {members.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>{m.name}{m.ign ? ` (${m.ign})` : ""}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-3">
+                    <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
+                    <PokemonPicker value={row.pokemon || null} onChange={(name) => update(i, { pokemon: name ?? "" })} />
+                  </div>
+                  <NumField label="K" value={row.kills} onChange={(n) => update(i, { kills: n })} />
+                  <NumField label="A" value={row.assists} onChange={(n) => update(i, { assists: n })} />
+                  <NumField label="Score" value={row.score} onChange={(n) => update(i, { score: n })} colSpan={2} />
+                  <div className="col-span-1 flex flex-col items-center gap-1">
+                    <Label className="text-[10px] uppercase tracking-widest">MVP</Label>
+                    <Checkbox checked={row.is_mvp} onCheckedChange={(v) => update(i, { is_mvp: !!v })} />
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <Button size="icon" variant="ghost" onClick={() => removeRow(i)} className="hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 gap-2 mt-2">
+                  <NumField label="Dano" value={row.damage_dealt} onChange={(n) => update(i, { damage_dealt: n })} colSpan={3} />
+                  <NumField label="Dano sofrido" value={row.damage_taken} onChange={(n) => update(i, { damage_taken: n })} colSpan={3} />
+                  <NumField label="Cura" value={row.healing} onChange={(n) => update(i, { healing: n })} colSpan={3} />
+                  <div className="col-span-3 text-right text-xs text-muted-foreground self-end">
+                    KDA: <span className="text-gold font-display text-base">{kdaRatio(row.kills, row.deaths, row.assists)}</span>
+                    {row.is_mvp && <Star className="inline h-3 w-3 ml-1 text-gold" />}
+                  </div>
+                </div>
+              </Card>
+            ))}
+
+            <div className="flex items-center justify-between mt-4">
+              <Button type="button" variant="outline" onClick={addRow}>
+                <Plus className="h-4 w-4 mr-2" /> Adicionar jogador
+              </Button>
+              <Button onClick={() => save.mutate(rows)} disabled={save.isPending} className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+                <Save className="h-4 w-4 mr-2" /> {save.isPending ? "Salvando..." : "Salvar jogo"}
+              </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="opponents" className="mt-4">
+            <OpponentPerformanceSection
+              scrimId={scrimId}
+              opponentId={opponentId}
+              opponentName={opponentName}
+              game={game}
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
