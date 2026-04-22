@@ -315,7 +315,6 @@ function CreateUserDialog({
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<AppRole>("player");
   const [memberRole, setMemberRole] = useState<(typeof MEMBER_ROLES)[number]>("player");
   const [lane, setLane] = useState<(typeof LANES)[number]>("flex");
@@ -325,13 +324,13 @@ function CreateUserDialog({
     onSubmit({
       email,
       password,
-      display_name: displayName || email.split("@")[0],
+      display_name: email.split("@")[0],
       role,
       member_role: memberRole,
       lane,
     });
     setOpen(false);
-    setEmail(""); setPassword(""); setDisplayName("");
+    setEmail(""); setPassword("");
     setRole("player"); setMemberRole("player"); setLane("flex");
   }
 
