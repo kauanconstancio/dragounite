@@ -32,6 +32,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { RsvpControls } from "@/components/agenda/RsvpControls";
 
 export const Route = createFileRoute("/agenda")({
   head: () => ({
@@ -365,9 +366,12 @@ function AgendaPage() {
                 Nenhum evento neste dia.
               </p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {selectedEvents.map((e) => (
-                  <EventRow key={e.id} event={e} />
+                  <div key={e.id} className="space-y-2">
+                    <EventRow event={e} />
+                    <RsvpControls eventId={e.rawId} eventType={e.kind} />
+                  </div>
                 ))}
               </div>
             )}
