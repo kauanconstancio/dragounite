@@ -262,7 +262,7 @@ export function PerformanceDialog({
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="font-display text-2xl tracking-wider">Estatísticas da partida</DialogTitle>
           <DialogDescription>
-            Pontos somados automaticamente. Edite jogador a jogador clicando no lápis.
+            Pontos somados automaticamente. Titulares e oponentes conhecidos são pré-preenchidos.
           </DialogDescription>
         </DialogHeader>
 
