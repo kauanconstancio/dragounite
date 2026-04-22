@@ -214,10 +214,19 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { tit
                     )}
                     {s.vod_notes && <p className="mt-2 text-xs text-muted-foreground italic whitespace-pre-wrap">{s.vod_notes}</p>}
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" title="Performances/KDA" onClick={() => setPerfFor(s)}><BarChart3 className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) onDelete(s.id); }}><Trash2 className="h-4 w-4" /></Button>
+                  <div className="flex gap-1 items-center">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setPerfFor(s)}
+                      className="border-primary/40 text-primary hover:bg-primary/10 uppercase tracking-wider text-xs"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-1.5" /> Stats
+                    </Button>
+                    <RequireRole roles={["coach"]}>
+                      <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) onDelete(s.id); }}><Trash2 className="h-4 w-4" /></Button>
+                    </RequireRole>
                   </div>
                 </div>
               </Card>

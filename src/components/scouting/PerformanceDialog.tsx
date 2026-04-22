@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Plus, Save, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { kdaRatio, type PerfRow } from "@/lib/player-stats";
+import { PokemonPicker } from "@/components/PokemonPicker";
 
 type Member = { id: string; name: string; ign: string | null; role: string };
 
@@ -186,7 +187,7 @@ export function PerformanceDialog({
                 </div>
                 <div className="col-span-3">
                   <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-                  <Input value={row.pokemon} onChange={(e) => update(i, { pokemon: e.target.value })} placeholder="Ex: Mewtwo Y" />
+                  <PokemonPicker value={row.pokemon || null} onChange={(name) => update(i, { pokemon: name ?? "" })} />
                 </div>
                 <NumField label="K" value={row.kills} onChange={(n) => update(i, { kills: n })} />
                 <NumField label="D" value={row.deaths} onChange={(n) => update(i, { deaths: n })} />
