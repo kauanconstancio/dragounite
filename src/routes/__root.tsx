@@ -17,10 +17,10 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Battle Arena — Pokémon Unite Team Hub" },
+      { title: "DragoUnite Team Manager — Pokémon Unite" },
       { name: "description", content: "Hub de operações para times de Pokémon Unite: roster, treinos, amistosos e composições." },
-      { property: "og:title", content: "Battle Arena — Pokémon Unite Team Hub" },
-      { name: "twitter:title", content: "Battle Arena — Pokémon Unite Team Hub" },
+      { property: "og:title", content: "DragoUnite Team Manager — Pokémon Unite" },
+      { name: "twitter:title", content: "DragoUnite Team Manager — Pokémon Unite" },
       { property: "og:description", content: "Hub de operações para times de Pokémon Unite: roster, treinos, amistosos e composições." },
       { name: "twitter:description", content: "Hub de operações para times de Pokémon Unite: roster, treinos, amistosos e composições." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9482d3d0-c153-4279-9d79-a5a89329eb4e/id-preview-b799cdd0--c926536d-e112-4c84-933c-50b0d0bec906.lovable.app-1776836265683.png" },
