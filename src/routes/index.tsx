@@ -248,7 +248,7 @@ function MemberDialog({ editing, onSave, saving }: { editing: Member | null; onS
           </div>
           <div>
             <Label>Rota</Label>
-            <Select value={form.lane ?? "flex"} onValueChange={(v) => setForm({ ...form, lane: v })}>
+            <Select value={form.lane ?? "flex"} onValueChange={(v) => setForm({ ...form, lane: v as Member["lane"] })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.entries(LANE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
