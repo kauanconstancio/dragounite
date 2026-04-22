@@ -147,7 +147,7 @@ export function PerformanceDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl tracking-wider">Performances · KDA por jogo</DialogTitle>
-          <DialogDescription>Registre kills, deaths, assists, score e MVP de cada jogador por jogo do BO.</DialogDescription>
+          <DialogDescription>Registre kills, assists, score e MVP de cada jogador por jogo do BO.</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center gap-2 flex-wrap mb-3">
