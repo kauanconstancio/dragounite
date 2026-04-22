@@ -209,6 +209,22 @@ function OpponentsPage() {
                           ))}
                         </div>
                       )}
+                      {Array.isArray(o.known_players) && o.known_players.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Jogadores</div>
+                          <div className="flex flex-wrap gap-1">
+                            {(o.known_players as any[]).slice(0, 8).map((p: any, idx: number) => {
+                              const name = typeof p === "string" ? p : p?.name;
+                              if (!name) return null;
+                              return (
+                                <Badge key={`${name}-${idx}`} variant="outline" className="text-[10px] border-primary/40 text-primary">
+                                  {name}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                       {o.notes && (
                         <p className="mt-3 text-xs text-muted-foreground italic line-clamp-2">{o.notes}</p>
                       )}
