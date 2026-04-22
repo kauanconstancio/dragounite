@@ -321,18 +321,40 @@ function ScrimDialog({
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="font-display text-2xl tracking-wider">
           {editing ? "Editar amistoso" : "Novo amistoso"}
         </DialogTitle>
         <DialogDescription>
-          Registre oponente, formato BO, placar e resultado do scrim.
+          Registre oponente, formato BO, placar, resultado e VOD do scrim.
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="sc-opp">Oponente</Label>
+          <Label htmlFor="sc-opp-link">Oponente cadastrado (opcional)</Label>
+          <Select
+            value={form.opponent_id ?? "none"}
+            onValueChange={(v) => {
+              if (v === "none") {
+                setForm((f) => ({ ...f, opponent_id: null }));
+              } else {
+                const o = opponents.find((x) => x.id === v);
+                setForm((f) => ({ ...f, opponent_id: v, opponent: o?.name ?? f.opponent }));
+              }
+            }}
+          >
+            <SelectTrigger id="sc-opp-link"><SelectValue placeholder="Texto livre" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">— Texto livre —</SelectItem>
+              {opponents.map((o) => (
+                <SelectItem key={o.id} value={o.id}>{o.name}{o.tag ? ` [${o.tag}]` : ""}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="sc-opp">Nome do oponente</Label>
           <Input
             id="sc-opp"
             value={form.opponent}
