@@ -68,12 +68,50 @@ export function AppLayout() {
   const [notifEnabled, setNotifEnabled] = useState(false);
 
   const isAuthRoute = location.pathname === "/auth";
+  const isProfileRoute = location.pathname === "/perfil";
 
   useEffect(() => {
     if (!loading && !user && !isAuthRoute) {
       navigate({ to: "/auth", replace: true });
     }
   }, [loading, user, isAuthRoute, navigate]);
+
+  // First-login check: force profile completion (IGN, lane, main_pokemon required)
+  const { data: profileCheck } = useQuery({
+    queryKey: ["profile-complete-check", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("member_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!prof?.member_id) return { complete: true, hasMember: false };
+      const { data: m } = await supabase
+        .from("members")
+        .select("ign, lane, main_pokemon")
+        .eq("id", prof.member_id)
+        .maybeSingle();
+      const complete = !!(m?.ign && m?.lane && m?.main_pokemon);
+      return { complete, hasMember: true };
+    },
+    enabled: !!user && !isAuthRoute,
+    staleTime: 30_000,
+  });
+
+  useEffect(() => {
+    if (
+      !loading &&
+      user &&
+      !isAuthRoute &&
+      !isProfileRoute &&
+      profileCheck &&
+      profileCheck.hasMember &&
+      !profileCheck.complete
+    ) {
+      navigate({ to: "/perfil", replace: true });
+    }
+  }, [loading, user, isAuthRoute, isProfileRoute, profileCheck, navigate]);
 
   // Polling for upcoming events (only when authenticated)
   const { data: upcoming } = useQuery({
