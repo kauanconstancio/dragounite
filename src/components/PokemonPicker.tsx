@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, UNITE_ROLE_INFO, type UniteRole } from "@/lib/pokemon";
+import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
-import { Search, X, Lightbulb } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 type Props = {
   value: string | null | undefined;
@@ -102,57 +101,38 @@ export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pok
                 Nenhum Pokémon encontrado.
               </div>
             ) : (
-              <TooltipProvider delayDuration={150}>
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 py-2">
-                  {filtered.map((p) => {
-                    const selected = p.name === value;
-                    const style = UNITE_ROLE_STYLES[p.role];
-                    const info = UNITE_ROLE_INFO[p.role];
-                    return (
-                      <Tooltip key={p.name}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => { onChange(p.name); setOpen(false); setQuery(""); }}
-                            className={cn(
-                              "group flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 hover:bg-accent/30 transition-all",
-                              selected ? "border-primary shadow-glow bg-primary/10 scale-[1.03]" : "border-transparent",
-                            )}
-                          >
-                            <div className="aspect-square w-full group-hover:scale-105 transition-transform">
-                              <PokemonImage name={p.name} withRoleBg />
-                            </div>
-                            <span className="font-display text-[10px] tracking-wider text-center leading-tight truncate w-full uppercase">
-                              {p.name}
-                            </span>
-                            <span
-                              className={cn(
-                                "px-1.5 py-0.5 rounded text-[8px] uppercase tracking-widest font-display border w-full text-center truncate",
-                                style.bg, style.ring, style.text,
-                              )}
-                            >
-                              {UNITE_ROLE_LABEL[p.role]}
-                            </span>
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs p-3 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("px-2 py-0.5 rounded text-[9px] uppercase tracking-widest font-display border", style.bg, style.ring, style.text)}>
-                              {UNITE_ROLE_LABEL[p.role]}
-                            </span>
-                            <span className="font-display text-sm tracking-wider">{p.name}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed">{info.description}</p>
-                          <div className="flex gap-1.5 items-start text-xs border-t border-border pt-2">
-                            <Lightbulb className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", style.text)} />
-                            <span className="leading-relaxed">{info.tip}</span>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              </TooltipProvider>
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 py-2">
+                {filtered.map((p) => {
+                  const selected = p.name === value;
+                  const style = UNITE_ROLE_STYLES[p.role];
+                  return (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => { onChange(p.name); setOpen(false); setQuery(""); }}
+                      className={cn(
+                        "group flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 hover:bg-accent/30 transition-all",
+                        selected ? "border-primary shadow-glow bg-primary/10 scale-[1.03]" : "border-transparent",
+                      )}
+                    >
+                      <div className="aspect-square w-full group-hover:scale-105 transition-transform">
+                        <PokemonImage name={p.name} withRoleBg />
+                      </div>
+                      <span className="font-display text-[10px] tracking-wider text-center leading-tight truncate w-full uppercase">
+                        {p.name}
+                      </span>
+                      <span
+                        className={cn(
+                          "px-1.5 py-0.5 rounded text-[8px] uppercase tracking-widest font-display border w-full text-center truncate",
+                          style.bg, style.ring, style.text,
+                        )}
+                      >
+                        {UNITE_ROLE_LABEL[p.role]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
 
