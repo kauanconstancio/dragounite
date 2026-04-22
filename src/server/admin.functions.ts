@@ -143,8 +143,20 @@ export const deleteUser = createServerFn({ method: "POST" })
     if (data.user_id === context.userId) {
       throw new Error("Você não pode remover sua própria conta.");
     }
+
+    // Find linked member to remove from roster as well
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("member_id")
+      .eq("user_id", data.user_id)
+      .maybeSingle();
+
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
+
+    if (prof?.member_id) {
+      await supabaseAdmin.from("members").delete().eq("id", prof.member_id);
+    }
     return { ok: true };
   });
 
