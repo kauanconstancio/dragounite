@@ -43,12 +43,16 @@ export const listUsers = createServerFn({ method: "POST" })
     }));
   });
 
+const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
+const MEMBER_ROLES = ["player", "substitute", "coach", "manager"] as const;
+
 const createUserSchema = z.object({
   email: z.string().email().max(255),
   password: z.string().min(6).max(72),
   display_name: z.string().trim().min(1).max(80),
   role: z.enum(APP_ROLES),
-  member_id: z.string().uuid().nullable().optional(),
+  member_role: z.enum(MEMBER_ROLES).default("player"),
+  lane: z.enum(LANES).nullable().optional(),
 });
 
 export const createUser = createServerFn({ method: "POST" })
@@ -66,24 +70,31 @@ export const createUser = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const newId = created.user!.id;
 
-    // trigger creates viewer role + profile; adjust if needed
+    // Adjust app role if not viewer (trigger creates viewer + profile)
     if (data.role !== "viewer") {
       await supabaseAdmin.from("user_roles").delete().eq("user_id", newId);
       await supabaseAdmin.from("user_roles").insert({ user_id: newId, role: data.role });
     }
-    if (data.member_id !== undefined) {
-      await supabaseAdmin
-        .from("profiles")
-        .update({ member_id: data.member_id, display_name: data.display_name })
-        .eq("user_id", newId);
-    } else {
-      await supabaseAdmin
-        .from("profiles")
-        .update({ display_name: data.display_name })
-        .eq("user_id", newId);
-    }
 
-    return { id: newId };
+    // Auto-create a roster member for this account
+    const { data: newMember, error: mErr } = await supabaseAdmin
+      .from("members")
+      .insert({
+        name: data.display_name,
+        role: data.member_role,
+        lane: data.lane ?? null,
+      })
+      .select("id")
+      .single();
+    if (mErr) throw new Error(mErr.message);
+
+    // Link profile to the freshly created member
+    await supabaseAdmin
+      .from("profiles")
+      .update({ member_id: newMember.id, display_name: data.display_name })
+      .eq("user_id", newId);
+
+    return { id: newId, member_id: newMember.id };
   });
 
 const setRoleSchema = z.object({
