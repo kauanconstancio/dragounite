@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
+import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as AmistososRouteImport } from './routes/amistosos'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
   path: '/treinos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlannerRoute = PlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DraftRoute = DraftRouteImport.update({
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/planner': typeof PlannerRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/planner': typeof PlannerRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,28 @@ export interface FileRoutesById {
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/planner': typeof PlannerRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/amistosos' | '/composicoes' | '/draft' | '/treinos'
+  fullPaths:
+    | '/'
+    | '/amistosos'
+    | '/composicoes'
+    | '/draft'
+    | '/planner'
+    | '/treinos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/amistosos' | '/composicoes' | '/draft' | '/treinos'
-  id: '__root__' | '/' | '/amistosos' | '/composicoes' | '/draft' | '/treinos'
+  to: '/' | '/amistosos' | '/composicoes' | '/draft' | '/planner' | '/treinos'
+  id:
+    | '__root__'
+    | '/'
+    | '/amistosos'
+    | '/composicoes'
+    | '/draft'
+    | '/planner'
+    | '/treinos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +98,7 @@ export interface RootRouteChildren {
   AmistososRoute: typeof AmistososRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
+  PlannerRoute: typeof PlannerRoute
   TreinosRoute: typeof TreinosRoute
 }
 
@@ -86,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/treinos'
       fullPath: '/treinos'
       preLoaderRoute: typeof TreinosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planner': {
+      id: '/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof PlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/draft': {
@@ -124,6 +154,7 @@ const rootRouteChildren: RootRouteChildren = {
   AmistososRoute: AmistososRoute,
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
+  PlannerRoute: PlannerRoute,
   TreinosRoute: TreinosRoute,
 }
 export const routeTree = rootRouteImport
