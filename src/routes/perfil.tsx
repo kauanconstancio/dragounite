@@ -109,7 +109,10 @@ function PerfilPage() {
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!memberId) throw new Error("Sem vínculo com o roster.");
+      const displayName = (form.name ?? "").trim();
+      if (!displayName) throw new Error("Nome de exibição é obrigatório.");
       const payload = {
+        name: displayName,
         ign: form.ign?.trim() || null,
         discord: form.discord?.trim() || null,
         main_pokemon: form.main_pokemon ?? null,
@@ -119,9 +122,17 @@ function PerfilPage() {
       };
       const { error } = await supabase.from("members").update(payload).eq("id", memberId);
       if (error) throw error;
+      if (user) {
+        const { error: pErr } = await supabase
+          .from("profiles")
+          .update({ display_name: displayName, updated_at: new Date().toISOString() })
+          .eq("user_id", user.id);
+        if (pErr) throw pErr;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-member", memberId] });
+      qc.invalidateQueries({ queryKey: ["my-profile", user?.id] });
       qc.invalidateQueries({ queryKey: ["members"] });
       qc.invalidateQueries({ queryKey: ["profile-complete-check"] });
       toast.success("Perfil atualizado");
