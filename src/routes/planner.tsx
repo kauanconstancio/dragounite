@@ -251,8 +251,8 @@ function PlannerPage() {
             }}
           >
             <img
-              src={mapImage}
-              alt="Mapa Pokémon Unite"
+              src={currentMap.image}
+              alt={`Mapa ${currentMap.label}`}
               draggable={false}
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
