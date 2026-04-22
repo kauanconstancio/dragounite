@@ -238,6 +238,16 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, mu
                       <BarChart3 className="h-4 w-4 mr-1.5" /> Stats
                     </Button>
                     <RequireRole roles={["coach"]}>
+                      {s.status !== "completed" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onComplete(s)}
+                          className="border-gold/40 text-gold hover:bg-gold/10 uppercase tracking-wider text-xs"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-1.5" /> Concluir
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) onDelete(s.id); }}><Trash2 className="h-4 w-4" /></Button>
                     </RequireRole>
