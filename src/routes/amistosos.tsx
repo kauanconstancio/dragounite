@@ -18,11 +18,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Swords, Trophy } from "lucide-react";
+import { Plus, Trash2, Pencil, Swords, Trophy, Video } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { VodEmbed } from "@/components/scouting/VodEmbed";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/amistosos")({
 type Scrim = {
   id: string;
   opponent: string;
+  opponent_id: string | null;
   scheduled_at: string;
   best_of: number;
   result: "pending" | "win" | "loss" | "draw";
@@ -44,7 +46,11 @@ type Scrim = {
   score_them: number;
   status: "scheduled" | "completed" | "cancelled";
   notes: string | null;
+  vod_url: string | null;
+  vod_notes: string | null;
 };
+
+type Opponent = { id: string; name: string; tag: string | null };
 
 const RESULT_STYLES: Record<string, string> = {
   win: "bg-gold/20 text-gold border-gold/40",
