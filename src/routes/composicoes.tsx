@@ -11,8 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Sparkles } from "lucide-react";
-import { POKEMON_LIST } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
+import { PokemonPicker } from "@/components/PokemonPicker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -181,12 +181,10 @@ function CompDialog({ editing, onSave, saving }: { editing: Comp | null; onSave:
           {LANES.map((lane) => (
             <div key={lane.key}>
               <Label>{lane.label}</Label>
-              <Select value={(form[lane.key] as string) ?? ""} onValueChange={(v) => setForm({ ...form, [lane.key]: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {POKEMON_LIST.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <PokemonPicker
+                value={form[lane.key] as string | null}
+                onChange={(v) => setForm({ ...form, [lane.key]: v })}
+              />
             </div>
           ))}
         </div>
