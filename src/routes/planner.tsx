@@ -7,7 +7,16 @@ import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move } 
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
-import mapImage from "@/assets/unite-map.jpg";
+import mapRayquaza from "@/assets/map-rayquaza.jpg";
+import mapGroudon from "@/assets/map-groudon.jpg";
+import mapKyogre from "@/assets/map-kyogre.jpg";
+
+type MapId = "rayquaza" | "groudon" | "kyogre";
+const MAPS: { id: MapId; label: string; image: string }[] = [
+  { id: "rayquaza", label: "Theia Sky Ruins · Rayquaza", image: mapRayquaza },
+  { id: "groudon", label: "Theia Sky Ruins · Groudon", image: mapGroudon },
+  { id: "kyogre", label: "Theia Sky Ruins · Kyogre", image: mapKyogre },
+];
 
 export const Route = createFileRoute("/planner")({
   head: () => ({
