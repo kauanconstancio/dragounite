@@ -8,15 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Save, Trash2, Crown, Edit3 } from "lucide-react";
+import { Plus, Save, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { type PerfRow } from "@/lib/player-stats";
 import { PokemonPicker } from "@/components/PokemonPicker";
-import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
 
-type Member = { id: string; name: string; ign: string | null; role: string };
+type Member = { id: string; name: string; ign: string | null; role: string; lane: string | null; main_pokemon: string | null };
+type KnownPlayer = { name: string; lane?: string | null; pokemon?: string | null; notes?: string | null };
 
 type AllyForm = {
   id?: string;
@@ -52,21 +51,34 @@ type OppForm = {
 
 type OpponentDetail = { id: string; name: string; known_players: any[] | null };
 
-function emptyAlly(game: number): AllyForm {
+function emptyAlly(game: number, memberId = "", pokemon = ""): AllyForm {
   return {
-    member_id: "", game_number: game, pokemon: "",
+    member_id: memberId, game_number: game, pokemon,
     kills: 0, deaths: 0, assists: 0, score: 0,
     damage_dealt: 0, damage_taken: 0, healing: 0, is_mvp: false,
   };
 }
-function emptyOpp(scrimId: string, opponentId: string | null, game: number): OppForm {
+function emptyOpp(scrimId: string, opponentId: string | null, game: number, playerName = "", pokemon: string | null = null): OppForm {
   return {
     scrim_id: scrimId, opponent_id: opponentId, game_number: game,
-    player_name: "", pokemon: null,
+    player_name: playerName, pokemon,
     kills: 0, assists: 0, score: 0,
     damage_dealt: 0, damage_taken: 0, healing: 0,
     rating: null, notes: null,
   };
+}
+
+function normalizeKnownPlayers(raw: any[] | null | undefined): KnownPlayer[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((p) => {
+      if (typeof p === "string") return { name: p } as KnownPlayer;
+      if (p && typeof p === "object" && p.name) {
+        return { name: p.name, lane: p.lane ?? null, pokemon: p.pokemon ?? p.main_pokemon ?? null, notes: p.notes ?? null };
+      }
+      return null;
+    })
+    .filter(Boolean) as KnownPlayer[];
 }
 
 export function PerformanceDialog({
@@ -88,15 +100,13 @@ export function PerformanceDialog({
   const [allies, setAllies] = useState<AllyForm[]>([]);
   const [opps, setOpps] = useState<OppForm[]>([]);
   const [game, setGame] = useState(1);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingSide, setEditingSide] = useState<"ally" | "opp" | null>(null);
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members-min"],
+    queryKey: ["members-starters"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("members").select("id, name, ign, role")
-        .in("role", ["player", "substitute"]).order("name");
+        .from("members").select("id, name, ign, role, lane, main_pokemon")
+        .eq("role", "player").order("name");
       if (error) throw error;
       return data as Member[];
     },
@@ -138,27 +148,42 @@ export function PerformanceDialog({
     enabled: open,
   });
 
+  const knownPlayers = useMemo(() => normalizeKnownPlayers(opponent?.known_players), [opponent]);
+  const knownPlayerNames = useMemo(() => knownPlayers.map((p) => p.name), [knownPlayers]);
+
+  // Auto-populate allies for the current game with starting roster if no rows exist yet.
   useEffect(() => {
     if (!open) return;
-    setAllies(
-      allyExisting.filter((e) => e.game_number === game).map((e) => ({
-        id: e.id, member_id: e.member_id, game_number: e.game_number,
-        pokemon: e.pokemon ?? "",
-        kills: e.kills, deaths: e.deaths, assists: e.assists,
-        score: e.score, damage_dealt: e.damage_dealt,
-        damage_taken: e.damage_taken, healing: e.healing, is_mvp: e.is_mvp,
-      })),
-    );
-  }, [game, allyExisting, open]);
+    const existing = allyExisting.filter((e) => e.game_number === game);
+    if (existing.length > 0) {
+      setAllies(
+        existing.map((e) => ({
+          id: e.id, member_id: e.member_id, game_number: e.game_number,
+          pokemon: e.pokemon ?? "",
+          kills: e.kills, deaths: e.deaths, assists: e.assists,
+          score: e.score, damage_dealt: e.damage_dealt,
+          damage_taken: e.damage_taken, healing: e.healing, is_mvp: e.is_mvp,
+        })),
+      );
+    } else if (members.length > 0) {
+      setAllies(members.map((m) => emptyAlly(game, m.id, m.main_pokemon ?? "")));
+    } else {
+      setAllies([]);
+    }
+  }, [game, allyExisting, members, open]);
 
+  // Auto-populate opponents with known players if no rows exist yet.
   useEffect(() => {
     if (!open) return;
-    setOpps(oppExisting.filter((e) => e.game_number === game));
-  }, [game, oppExisting, open]);
-
-  const knownPlayers: string[] = Array.isArray(opponent?.known_players)
-    ? (opponent!.known_players as any[]).map((p) => (typeof p === "string" ? p : p?.name)).filter(Boolean)
-    : [];
+    const existing = oppExisting.filter((e) => e.game_number === game);
+    if (existing.length > 0) {
+      setOpps(existing);
+    } else if (knownPlayers.length > 0) {
+      setOpps(knownPlayers.map((p) => emptyOpp(scrimId, opponentId, game, p.name, p.pokemon ?? null)));
+    } else {
+      setOpps([]);
+    }
+  }, [game, oppExisting, knownPlayers, open, scrimId, opponentId]);
 
   const allyTotal = useMemo(() => allies.reduce((sum, r) => sum + (Number(r.score) || 0), 0), [allies]);
   const oppTotal = useMemo(() => opps.reduce((sum, r) => sum + (Number(r.score) || 0), 0), [opps]);
@@ -228,14 +253,7 @@ export function PerformanceDialog({
 
   async function saveAll() {
     await Promise.all([saveAllies.mutateAsync(), saveOpps.mutateAsync()]);
-    setEditingId(null);
-    setEditingSide(null);
     toast.success(`Jogo ${game} salvo`);
-  }
-
-  function startEdit(side: "ally" | "opp", id: string) {
-    setEditingSide(side);
-    setEditingId(id);
   }
 
   return (
@@ -244,7 +262,7 @@ export function PerformanceDialog({
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="font-display text-2xl tracking-wider">Estatísticas da partida</DialogTitle>
           <DialogDescription>
-            Pontos somados automaticamente. Edite jogador a jogador clicando no lápis.
+            Pontos somados automaticamente. Titulares e oponentes conhecidos são pré-preenchidos.
           </DialogDescription>
         </DialogHeader>
 
@@ -254,7 +272,7 @@ export function PerformanceDialog({
             <button
               key={g}
               type="button"
-              onClick={() => { setGame(g); setEditingId(null); setEditingSide(null); }}
+              onClick={() => setGame(g)}
               className={cn(
                 "px-3 py-1.5 text-xs uppercase tracking-wider rounded-md border",
                 game === g
@@ -295,121 +313,55 @@ export function PerformanceDialog({
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="details" className="w-full px-6 pb-6 mt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details" className="uppercase tracking-wider text-xs">Detalhes</TabsTrigger>
-            <TabsTrigger value="battle" className="uppercase tracking-wider text-xs">Dados de batalha</TabsTrigger>
-          </TabsList>
+        <div className="px-6 pb-6 mt-4 space-y-4">
+          {/* Ally section */}
+          <SideColumn
+            label="NOSSO TIME"
+            accent="primary"
+            won={allyWon}
+            total={allyTotal}
+            addLabel="Adicionar jogador"
+            onAdd={() => setAllies((r) => [...r, emptyAlly(game)])}
+            hint={members.length === 0 ? "Cadastre titulares no roster para preenchimento automático." : undefined}
+          >
+            {allies.map((row, i) => (
+              <AllyRow
+                key={row.id ?? `new-${i}`}
+                row={row}
+                members={members}
+                onChange={(patch) => setAllies((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
+                onRemove={() => {
+                  if (row.id) removeAlly.mutate(row.id);
+                  setAllies((rs) => rs.filter((_, idx) => idx !== i));
+                }}
+              />
+            ))}
+          </SideColumn>
 
-          <TabsContent value="details" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Ally column */}
-              <SideColumn
-                label="VITÓRIA"
-                accent="primary"
-                won={allyWon}
-                addLabel="Adicionar jogador"
-                onAdd={() => setAllies((r) => [...r, emptyAlly(game)])}
-              >
-                {allies.map((row, i) => (
-                  <AllyRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    members={members}
-                    isEditing={editingSide === "ally" && editingId === (row.id ?? `new-${i}`)}
-                    mode="details"
-                    onEdit={() => startEdit("ally", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setAllies((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeAlly.mutate(row.id);
-                      setAllies((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-
-              {/* Opponent column */}
-              <SideColumn
-                label="DERROTA"
-                accent="destructive"
-                won={oppWon}
-                addLabel="Adicionar oponente"
-                onAdd={() => setOpps((r) => [...r, emptyOpp(scrimId, opponentId, game)])}
-                disabled={!opponentId && opps.length === 0 ? false : false}
-                hint={!opponentId ? "Vincule este amistoso a um oponente cadastrado para sugerir jogadores." : undefined}
-              >
-                {opps.map((row, i) => (
-                  <OppRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    knownPlayers={knownPlayers}
-                    isEditing={editingSide === "opp" && editingId === (row.id ?? `new-${i}`)}
-                    mode="details"
-                    onEdit={() => startEdit("opp", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setOpps((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeOpp.mutate(row.id);
-                      setOpps((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="battle" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <SideColumn
-                label="VITÓRIA"
-                accent="primary"
-                won={allyWon}
-                addLabel="Adicionar jogador"
-                onAdd={() => setAllies((r) => [...r, emptyAlly(game)])}
-              >
-                {allies.map((row, i) => (
-                  <AllyRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    members={members}
-                    isEditing={editingSide === "ally" && editingId === (row.id ?? `new-${i}`)}
-                    mode="battle"
-                    onEdit={() => startEdit("ally", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setAllies((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeAlly.mutate(row.id);
-                      setAllies((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-
-              <SideColumn
-                label="DERROTA"
-                accent="destructive"
-                won={oppWon}
-                addLabel="Adicionar oponente"
-                onAdd={() => setOpps((r) => [...r, emptyOpp(scrimId, opponentId, game)])}
-              >
-                {opps.map((row, i) => (
-                  <OppRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    knownPlayers={knownPlayers}
-                    isEditing={editingSide === "opp" && editingId === (row.id ?? `new-${i}`)}
-                    mode="battle"
-                    onEdit={() => startEdit("opp", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setOpps((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeOpp.mutate(row.id);
-                      setOpps((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-            </div>
-          </TabsContent>
-        </Tabs>
+          {/* Opponent section */}
+          <SideColumn
+            label={(opponentName || "OPONENTE").toUpperCase()}
+            accent="destructive"
+            won={oppWon}
+            total={oppTotal}
+            addLabel="Adicionar oponente"
+            onAdd={() => setOpps((r) => [...r, emptyOpp(scrimId, opponentId, game)])}
+            hint={!opponentId ? "Vincule este amistoso a um oponente cadastrado para sugerir jogadores." : knownPlayers.length === 0 ? "Adicione jogadores conhecidos no cadastro do oponente para preenchimento automático." : undefined}
+          >
+            {opps.map((row, i) => (
+              <OppRow
+                key={row.id ?? `new-${i}`}
+                row={row}
+                knownPlayers={knownPlayerNames}
+                onChange={(patch) => setOpps((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
+                onRemove={() => {
+                  if (row.id) removeOpp.mutate(row.id);
+                  setOpps((rs) => rs.filter((_, idx) => idx !== i));
+                }}
+              />
+            ))}
+          </SideColumn>
+        </div>
 
         <div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-border bg-background/95 backdrop-blur px-6 py-3">
           <Button
@@ -427,22 +379,27 @@ export function PerformanceDialog({
 }
 
 function SideColumn({
-  label, accent, won, children, addLabel, onAdd, hint,
+  label, accent, won, total, children, addLabel, onAdd, hint,
 }: {
   label: string;
   accent: "primary" | "destructive";
   won: boolean;
+  total: number;
   children: React.ReactNode;
   addLabel: string;
   onAdd: () => void;
-  disabled?: boolean;
   hint?: string;
 }) {
   const accentClass = accent === "primary" ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive";
   return (
     <div className="rounded-md border border-border overflow-hidden">
-      <div className={cn("px-3 py-1.5 text-xs uppercase tracking-widest font-display", accentClass, won && "ring-1 ring-inset ring-current")}>
-        {label}
+      <div className={cn(
+        "px-3 py-2 flex items-center justify-between font-display",
+        accentClass,
+        won && "ring-1 ring-inset ring-current",
+      )}>
+        <span className="text-xs uppercase tracking-widest truncate">{label}</span>
+        <span className="text-xl tabular-nums">{total}</span>
       </div>
       <div className="p-2 space-y-2 bg-card/40">
         {hint && <p className="text-[10px] text-muted-foreground italic px-1">{hint}</p>}
@@ -455,220 +412,168 @@ function SideColumn({
   );
 }
 
-function StatCell({ label, value }: { label: string; value: React.ReactNode }) {
+function NumInput({
+  value, onChange, placeholder,
+}: { value: number; onChange: (n: number) => void; placeholder?: string }) {
   return (
-    <div className="text-center">
-      <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="font-display text-base tabular-nums">{value}</div>
+    <Input
+      type="number"
+      inputMode="numeric"
+      min={0}
+      value={value || ""}
+      placeholder={placeholder ?? "0"}
+      onChange={(e) => {
+        const v = e.target.value;
+        if (v === "") return onChange(0);
+        const n = Number(v);
+        onChange(Number.isFinite(n) ? n : 0);
+      }}
+      className="h-9 text-sm tabular-nums px-2"
+    />
+  );
+}
+
+function StatField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</Label>
+      {children}
     </div>
   );
 }
 
 function AllyRow({
-  row, members, isEditing, mode, onEdit, onChange, onRemove,
+  row, members, onChange, onRemove,
 }: {
   row: AllyForm;
   members: Member[];
-  isEditing: boolean;
-  mode: "details" | "battle";
-  onEdit: () => void;
   onChange: (patch: Partial<AllyForm>) => void;
   onRemove: () => void;
 }) {
-  const member = members.find((m) => m.id === row.member_id);
-  const displayName = member?.name ?? "Selecione";
-
-  if (isEditing) {
-    return (
-      <Card className="p-3 border-primary/40 bg-card">
-        <div className="grid grid-cols-12 gap-2 items-end">
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Jogador</Label>
-            <Select value={row.member_id} onValueChange={(v) => onChange({ member_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>{m.name}{m.ign ? ` (${m.ign})` : ""}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-            <PokemonPicker value={row.pokemon || null} onChange={(name) => onChange({ pokemon: name ?? "" })} />
-          </div>
-          <div className="col-span-3 flex items-center gap-1">
-            <Checkbox checked={row.is_mvp} onCheckedChange={(v) => onChange({ is_mvp: !!v })} id={`mvp-${row.id ?? row.member_id}`} />
-            <Label htmlFor={`mvp-${row.id ?? row.member_id}`} className="text-[10px] uppercase tracking-widest">MVP</Label>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-8 w-8">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-12 gap-2 mt-2">
-          <NumField label="Score" value={row.score} onChange={(n) => onChange({ score: n })} colSpan={3} />
-          <NumField label="K" value={row.kills} onChange={(n) => onChange({ kills: n })} colSpan={2} />
-          <NumField label="A" value={row.assists} onChange={(n) => onChange({ assists: n })} colSpan={2} />
-          <NumField label="Dano" value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} colSpan={2} />
-          <NumField label="Sofrido" value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} colSpan={2} />
-          <NumField label="Cura" value={row.healing} onChange={(n) => onChange({ healing: n })} colSpan={1} />
-        </div>
-      </Card>
-    );
-  }
-
+  const rowKey = row.id ?? `new-${row.member_id || Math.random()}`;
   return (
-    <Card className="p-2 border-border hover:border-primary/40 transition-colors">
+    <Card className="p-3 border-border hover:border-primary/40 transition-colors space-y-2.5">
+      {/* Identity row */}
       <div className="flex items-center gap-2">
-        <div className="w-10 h-10 shrink-0">
-          <PokemonImage name={row.pokemon || null} withRoleBg />
-        </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
-            <span className="font-medium text-sm truncate">{displayName}</span>
-            {row.is_mvp && <Crown className="h-3.5 w-3.5 text-gold shrink-0" />}
-          </div>
+          <Select value={row.member_id} onValueChange={(v) => onChange({ member_id: v })}>
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue placeholder="Selecione jogador" />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name}{m.ign ? ` (${m.ign})` : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        {mode === "details" ? (
-          <div className="grid grid-cols-4 gap-3 shrink-0">
-            <StatCell label="Score" value={row.score} />
-            <StatCell label="K" value={row.kills} />
-            <StatCell label="A" value={row.assists} />
-            <StatCell label="MVP" value={row.is_mvp ? "★" : "—"} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-3 shrink-0">
-            <StatCell label="Dano" value={row.damage_dealt.toLocaleString()} />
-            <StatCell label="Sofrido" value={row.damage_taken.toLocaleString()} />
-            <StatCell label="Cura" value={row.healing.toLocaleString()} />
-          </div>
-        )}
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit}>
-          <Edit3 className="h-3.5 w-3.5" />
+        <div className="w-[200px] shrink-0">
+          <PokemonPicker value={row.pokemon || null} onChange={(name) => onChange({ pokemon: name ?? "" })} />
+        </div>
+        <label className="flex items-center gap-1.5 px-2 cursor-pointer shrink-0" htmlFor={`mvp-${rowKey}`}>
+          <Checkbox
+            id={`mvp-${rowKey}`}
+            checked={row.is_mvp}
+            onCheckedChange={(v) => onChange({ is_mvp: !!v })}
+          />
+          <Crown className={cn("h-4 w-4", row.is_mvp ? "text-gold" : "text-muted-foreground")} />
+        </label>
+        <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-9 w-9 shrink-0">
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
+      </div>
+      {/* Stats grid — all visible at once */}
+      <div className="grid grid-cols-6 gap-2">
+        <StatField label="Score">
+          <NumInput value={row.score} onChange={(n) => onChange({ score: n })} />
+        </StatField>
+        <StatField label="Kills">
+          <NumInput value={row.kills} onChange={(n) => onChange({ kills: n })} />
+        </StatField>
+        <StatField label="Assist.">
+          <NumInput value={row.assists} onChange={(n) => onChange({ assists: n })} />
+        </StatField>
+        <StatField label="Dano">
+          <NumInput value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
+        </StatField>
+        <StatField label="Sofrido">
+          <NumInput value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />
+        </StatField>
+        <StatField label="Cura">
+          <NumInput value={row.healing} onChange={(n) => onChange({ healing: n })} />
+        </StatField>
       </div>
     </Card>
   );
 }
 
 function OppRow({
-  row, knownPlayers, isEditing, mode, onEdit, onChange, onRemove,
+  row, knownPlayers, onChange, onRemove,
 }: {
   row: OppForm;
   knownPlayers: string[];
-  isEditing: boolean;
-  mode: "details" | "battle";
-  onEdit: () => void;
   onChange: (patch: Partial<OppForm>) => void;
   onRemove: () => void;
 }) {
-  if (isEditing) {
-    return (
-      <Card className="p-3 border-destructive/40 bg-card">
-        <div className="grid grid-cols-12 gap-2 items-end">
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Jogador</Label>
-            {knownPlayers.length > 0 && knownPlayers.includes(row.player_name) ? (
-              <Select value={row.player_name} onValueChange={(v) => onChange({ player_name: v === "__custom" ? "" : v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {knownPlayers.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  <SelectItem value="__custom">Outro...</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                value={row.player_name}
-                onChange={(e) => onChange({ player_name: e.target.value })}
-                placeholder="Nome"
-                list={knownPlayers.length ? `kp-${row.id ?? "new"}` : undefined}
-              />
-            )}
-            {knownPlayers.length > 0 && (
-              <datalist id={`kp-${row.id ?? "new"}`}>
-                {knownPlayers.map((p) => <option key={p} value={p} />)}
-              </datalist>
-            )}
-          </div>
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-            <PokemonPicker value={row.pokemon} onChange={(name) => onChange({ pokemon: name })} />
-          </div>
-          <div className="col-span-3">
-            <Label className="text-[10px] uppercase tracking-widest">Nota (0-10)</Label>
-            <Input
-              type="number" min={0} max={10} step={0.1}
-              value={row.rating ?? ""}
-              onChange={(e) => {
-                const v = e.target.value;
-                onChange({ rating: v === "" ? null : Math.max(0, Math.min(10, Number(v))) });
-              }}
-            />
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-8 w-8">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-12 gap-2 mt-2">
-          <NumField label="Score" value={row.score} onChange={(n) => onChange({ score: n })} colSpan={3} />
-          <NumField label="K" value={row.kills} onChange={(n) => onChange({ kills: n })} colSpan={2} />
-          <NumField label="A" value={row.assists} onChange={(n) => onChange({ assists: n })} colSpan={2} />
-          <NumField label="Dano" value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} colSpan={2} />
-          <NumField label="Sofrido" value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} colSpan={2} />
-          <NumField label="Cura" value={row.healing} onChange={(n) => onChange({ healing: n })} colSpan={1} />
-        </div>
-      </Card>
-    );
-  }
-
+  const rowKey = row.id ?? `new-${row.player_name || Math.random()}`;
   return (
-    <Card className="p-2 border-border hover:border-destructive/40 transition-colors">
+    <Card className="p-3 border-border hover:border-destructive/40 transition-colors space-y-2.5">
       <div className="flex items-center gap-2">
-        <div className="w-10 h-10 shrink-0">
-          <PokemonImage name={row.pokemon} withRoleBg />
-        </div>
         <div className="flex-1 min-w-0">
-          <span className="font-medium text-sm truncate">{row.player_name || "Sem nome"}</span>
+          <Input
+            value={row.player_name}
+            onChange={(e) => onChange({ player_name: e.target.value })}
+            placeholder="Nome do oponente"
+            list={knownPlayers.length ? `kp-${rowKey}` : undefined}
+            className="h-9 text-sm"
+          />
+          {knownPlayers.length > 0 && (
+            <datalist id={`kp-${rowKey}`}>
+              {knownPlayers.map((p) => <option key={p} value={p} />)}
+            </datalist>
+          )}
         </div>
-        {mode === "details" ? (
-          <div className="grid grid-cols-4 gap-3 shrink-0">
-            <StatCell label="Score" value={row.score} />
-            <StatCell label="K" value={row.kills} />
-            <StatCell label="A" value={row.assists} />
-            <StatCell label="Nota" value={row.rating ?? "—"} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-3 shrink-0">
-            <StatCell label="Dano" value={row.damage_dealt.toLocaleString()} />
-            <StatCell label="Sofrido" value={row.damage_taken.toLocaleString()} />
-            <StatCell label="Cura" value={row.healing.toLocaleString()} />
-          </div>
-        )}
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit}>
-          <Edit3 className="h-3.5 w-3.5" />
+        <div className="w-[200px] shrink-0">
+          <PokemonPicker value={row.pokemon} onChange={(name) => onChange({ pokemon: name })} />
+        </div>
+        <div className="w-[80px] shrink-0">
+          <Input
+            type="number" min={0} max={10} step={0.1}
+            value={row.rating ?? ""}
+            placeholder="Nota"
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange({ rating: v === "" ? null : Math.max(0, Math.min(10, Number(v))) });
+            }}
+            className="h-9 text-sm tabular-nums px-2 text-center"
+          />
+        </div>
+        <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-9 w-9 shrink-0">
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
+      <div className="grid grid-cols-6 gap-2">
+        <StatField label="Score">
+          <NumInput value={row.score} onChange={(n) => onChange({ score: n })} />
+        </StatField>
+        <StatField label="Kills">
+          <NumInput value={row.kills} onChange={(n) => onChange({ kills: n })} />
+        </StatField>
+        <StatField label="Assist.">
+          <NumInput value={row.assists} onChange={(n) => onChange({ assists: n })} />
+        </StatField>
+        <StatField label="Dano">
+          <NumInput value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
+        </StatField>
+        <StatField label="Sofrido">
+          <NumInput value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />
+        </StatField>
+        <StatField label="Cura">
+          <NumInput value={row.healing} onChange={(n) => onChange({ healing: n })} />
+        </StatField>
+      </div>
     </Card>
-  );
-}
-
-function NumField({
-  label, value, onChange, colSpan = 1,
-}: { label: string; value: number; onChange: (n: number) => void; colSpan?: number }) {
-  return (
-    <div className={`col-span-${colSpan}`}>
-      <Label className="text-[10px] uppercase tracking-widest">{label}</Label>
-      <Input
-        type="number" min={0} value={value}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          onChange(Number.isFinite(n) ? n : 0);
-        }}
-      />
-    </div>
   );
 }
