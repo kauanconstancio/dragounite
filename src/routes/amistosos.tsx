@@ -222,6 +222,14 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { tit
           ))}
         </div>
       )}
+      {perfFor && (
+        <PerformanceDialog
+          scrimId={perfFor.id}
+          bestOf={perfFor.best_of}
+          open={!!perfFor}
+          onOpenChange={(v) => { if (!v) setPerfFor(null); }}
+        />
+      )}
     </section>
   );
 }
