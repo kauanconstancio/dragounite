@@ -14,6 +14,7 @@ import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as AmistososRouteImport } from './routes/amistosos'
+import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TreinosRoute = TreinosRouteImport.update({
@@ -41,6 +42,11 @@ const AmistososRoute = AmistososRouteImport.update({
   path: '/amistosos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgendaRoute = AgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
@@ -76,16 +85,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agenda'
     | '/amistosos'
     | '/composicoes'
     | '/draft'
     | '/planner'
     | '/treinos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/amistosos' | '/composicoes' | '/draft' | '/planner' | '/treinos'
+  to:
+    | '/'
+    | '/agenda'
+    | '/amistosos'
+    | '/composicoes'
+    | '/draft'
+    | '/planner'
+    | '/treinos'
   id:
     | '__root__'
     | '/'
+    | '/agenda'
     | '/amistosos'
     | '/composicoes'
     | '/draft'
@@ -95,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
@@ -139,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AmistososRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agenda': {
+      id: '/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AgendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -151,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
