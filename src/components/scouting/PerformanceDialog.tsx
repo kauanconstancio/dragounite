@@ -324,121 +324,55 @@ export function PerformanceDialog({
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="details" className="w-full px-6 pb-6 mt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details" className="uppercase tracking-wider text-xs">Detalhes</TabsTrigger>
-            <TabsTrigger value="battle" className="uppercase tracking-wider text-xs">Dados de batalha</TabsTrigger>
-          </TabsList>
+        <div className="px-6 pb-6 mt-4 space-y-4">
+          {/* Ally section */}
+          <SideColumn
+            label="NOSSO TIME"
+            accent="primary"
+            won={allyWon}
+            total={allyTotal}
+            addLabel="Adicionar jogador"
+            onAdd={() => setAllies((r) => [...r, emptyAlly(game)])}
+            hint={members.length === 0 ? "Cadastre titulares no roster para preenchimento automático." : undefined}
+          >
+            {allies.map((row, i) => (
+              <AllyRow
+                key={row.id ?? `new-${i}`}
+                row={row}
+                members={members}
+                onChange={(patch) => setAllies((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
+                onRemove={() => {
+                  if (row.id) removeAlly.mutate(row.id);
+                  setAllies((rs) => rs.filter((_, idx) => idx !== i));
+                }}
+              />
+            ))}
+          </SideColumn>
 
-          <TabsContent value="details" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Ally column */}
-              <SideColumn
-                label="VITÓRIA"
-                accent="primary"
-                won={allyWon}
-                addLabel="Adicionar jogador"
-                onAdd={() => setAllies((r) => [...r, emptyAlly(game)])}
-              >
-                {allies.map((row, i) => (
-                  <AllyRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    members={members}
-                    isEditing={editingSide === "ally" && editingId === (row.id ?? `new-${i}`)}
-                    mode="details"
-                    onEdit={() => startEdit("ally", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setAllies((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeAlly.mutate(row.id);
-                      setAllies((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-
-              {/* Opponent column */}
-              <SideColumn
-                label="DERROTA"
-                accent="destructive"
-                won={oppWon}
-                addLabel="Adicionar oponente"
-                onAdd={() => setOpps((r) => [...r, emptyOpp(scrimId, opponentId, game)])}
-                disabled={!opponentId && opps.length === 0 ? false : false}
-                hint={!opponentId ? "Vincule este amistoso a um oponente cadastrado para sugerir jogadores." : undefined}
-              >
-                {opps.map((row, i) => (
-                  <OppRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    knownPlayers={knownPlayerNames}
-                    isEditing={editingSide === "opp" && editingId === (row.id ?? `new-${i}`)}
-                    mode="details"
-                    onEdit={() => startEdit("opp", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setOpps((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeOpp.mutate(row.id);
-                      setOpps((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="battle" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <SideColumn
-                label="VITÓRIA"
-                accent="primary"
-                won={allyWon}
-                addLabel="Adicionar jogador"
-                onAdd={() => setAllies((r) => [...r, emptyAlly(game)])}
-              >
-                {allies.map((row, i) => (
-                  <AllyRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    members={members}
-                    isEditing={editingSide === "ally" && editingId === (row.id ?? `new-${i}`)}
-                    mode="battle"
-                    onEdit={() => startEdit("ally", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setAllies((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeAlly.mutate(row.id);
-                      setAllies((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-
-              <SideColumn
-                label="DERROTA"
-                accent="destructive"
-                won={oppWon}
-                addLabel="Adicionar oponente"
-                onAdd={() => setOpps((r) => [...r, emptyOpp(scrimId, opponentId, game)])}
-              >
-                {opps.map((row, i) => (
-                  <OppRow
-                    key={row.id ?? `new-${i}`}
-                    row={row}
-                    knownPlayers={knownPlayerNames}
-                    isEditing={editingSide === "opp" && editingId === (row.id ?? `new-${i}`)}
-                    mode="battle"
-                    onEdit={() => startEdit("opp", row.id ?? `new-${i}`)}
-                    onChange={(patch) => setOpps((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
-                    onRemove={() => {
-                      if (row.id) removeOpp.mutate(row.id);
-                      setOpps((rs) => rs.filter((_, idx) => idx !== i));
-                    }}
-                  />
-                ))}
-              </SideColumn>
-            </div>
-          </TabsContent>
-        </Tabs>
+          {/* Opponent section */}
+          <SideColumn
+            label={(opponentName || "OPONENTE").toUpperCase()}
+            accent="destructive"
+            won={oppWon}
+            total={oppTotal}
+            addLabel="Adicionar oponente"
+            onAdd={() => setOpps((r) => [...r, emptyOpp(scrimId, opponentId, game)])}
+            hint={!opponentId ? "Vincule este amistoso a um oponente cadastrado para sugerir jogadores." : knownPlayers.length === 0 ? "Adicione jogadores conhecidos no cadastro do oponente para preenchimento automático." : undefined}
+          >
+            {opps.map((row, i) => (
+              <OppRow
+                key={row.id ?? `new-${i}`}
+                row={row}
+                knownPlayers={knownPlayerNames}
+                onChange={(patch) => setOpps((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))}
+                onRemove={() => {
+                  if (row.id) removeOpp.mutate(row.id);
+                  setOpps((rs) => rs.filter((_, idx) => idx !== i));
+                }}
+              />
+            ))}
+          </SideColumn>
+        </div>
 
         <div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-border bg-background/95 backdrop-blur px-6 py-3">
           <Button
