@@ -17,16 +17,22 @@ import {
   ChevronDown,
   Bell,
   BellOff,
+  LogIn,
+  LogOut,
+  UserCircle,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -158,6 +164,8 @@ export function AppLayout() {
             >
               {notifEnabled ? <Bell className="h-3.5 w-3.5 text-gold" /> : <BellOff className="h-3.5 w-3.5" />}
             </button>
+
+            <AuthButton />
           </nav>
         </div>
       </header>
