@@ -8,12 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Save, Trash2, Crown, Edit3 } from "lucide-react";
+import { Plus, Save, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { type PerfRow } from "@/lib/player-stats";
 import { PokemonPicker } from "@/components/PokemonPicker";
-import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
 
 type Member = { id: string; name: string; ign: string | null; role: string; lane: string | null; main_pokemon: string | null };
