@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { POKEMON_LIST } from "@/lib/pokemon";
+import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
@@ -14,13 +14,17 @@ type Props = {
   triggerClassName?: string;
 };
 
+const ROLE_FILTERS: (UniteRole | "all")[] = ["all", "attacker", "speedster", "all-rounder", "defender", "supporter"];
+
 export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pokémon", triggerClassName }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<UniteRole | "all">("all");
 
-  const filtered = POKEMON_LIST.filter((p) =>
-    p.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = POKEMON_DATA.filter((p) => {
+    if (roleFilter !== "all" && p.role !== roleFilter) return false;
+    return p.name.toLowerCase().includes(query.toLowerCase());
+  });
 
   return (
     <>
@@ -67,6 +71,30 @@ export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pok
             />
           </div>
 
+          <div className="flex flex-wrap gap-1.5">
+            {ROLE_FILTERS.map((r) => {
+              const active = roleFilter === r;
+              const style = r !== "all" ? UNITE_ROLE_STYLES[r] : null;
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRoleFilter(r)}
+                  className={cn(
+                    "px-2.5 py-1 rounded text-[10px] uppercase tracking-widest font-display border transition-all",
+                    active
+                      ? style
+                        ? cn(style.bg, style.ring, style.text, style.glow)
+                        : "bg-primary/20 border-primary text-primary shadow-glow"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
+                  )}
+                >
+                  {r === "all" ? "Todos" : UNITE_ROLE_LABEL[r]}
+                </button>
+              );
+            })}
+          </div>
+
           <div className="overflow-y-auto -mx-2 px-2 flex-1">
             {filtered.length === 0 ? (
               <div className="text-center text-muted-foreground py-12 text-sm">
@@ -75,22 +103,22 @@ export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pok
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 py-2">
                 {filtered.map((p) => {
-                  const selected = p === value;
+                  const selected = p.name === value;
                   return (
                     <button
-                      key={p}
+                      key={p.name}
                       type="button"
-                      onClick={() => { onChange(p); setOpen(false); setQuery(""); }}
+                      onClick={() => { onChange(p.name); setOpen(false); setQuery(""); }}
                       className={cn(
-                        "group flex flex-col items-center gap-1 p-2 rounded-md border bg-card hover:bg-accent hover:border-primary/60 transition-all",
-                        selected ? "border-primary shadow-glow bg-primary/10" : "border-border",
+                        "group flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 hover:bg-accent/30 transition-all",
+                        selected ? "border-primary shadow-glow bg-primary/10 scale-[1.03]" : "border-transparent",
                       )}
                     >
-                      <div className="aspect-square w-full rounded bg-gradient-primary/20 border border-border/50 flex items-center justify-center p-1 overflow-hidden group-hover:scale-105 transition-transform">
-                        <PokemonImage name={p} />
+                      <div className="aspect-square w-full group-hover:scale-105 transition-transform">
+                        <PokemonImage name={p.name} withRoleBg />
                       </div>
                       <span className="font-display text-[10px] tracking-wider text-center leading-tight truncate w-full uppercase">
-                        {p}
+                        {p.name}
                       </span>
                     </button>
                   );
