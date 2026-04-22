@@ -277,10 +277,12 @@ function fromScrim(editing: Scrim): ScrimForm {
 
 function ScrimDialog({
   editing,
+  opponents,
   onSave,
   saving,
 }: {
   editing: Scrim | null;
+  opponents: Opponent[];
   onSave: (s: Partial<Scrim>) => void;
   saving: boolean;
 }) {
@@ -305,6 +307,7 @@ function ScrimDialog({
     }
     onSave({
       opponent: form.opponent.trim(),
+      opponent_id: form.opponent_id,
       scheduled_at: parsed.toISOString(),
       best_of: form.best_of,
       result: form.result,
@@ -312,6 +315,8 @@ function ScrimDialog({
       score_them: Math.max(0, Math.round(form.score_them) || 0),
       status: form.status,
       notes: form.notes.trim() || null,
+      vod_url: form.vod_url.trim() || null,
+      vod_notes: form.vod_notes.trim() || null,
     });
   };
 
