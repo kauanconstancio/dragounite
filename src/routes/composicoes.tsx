@@ -125,7 +125,7 @@ function CompsPage() {
                 <Plus className="mr-2 h-4 w-4" /> Nova comp
               </Button>
             </DialogTrigger>
-            <CompDialog editing={editing} opponents={opponents} onSave={(c) => save.mutate(c)} saving={save.isPending} />
+            <CompDialog key={editing?.id ?? "new"} editing={editing} opponents={opponents} onSave={(c) => save.mutate(c)} saving={save.isPending} />
           </Dialog>
         </div>
       </div>
