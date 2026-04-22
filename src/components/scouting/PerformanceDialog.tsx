@@ -379,22 +379,27 @@ export function PerformanceDialog({
 }
 
 function SideColumn({
-  label, accent, won, children, addLabel, onAdd, hint,
+  label, accent, won, total, children, addLabel, onAdd, hint,
 }: {
   label: string;
   accent: "primary" | "destructive";
   won: boolean;
+  total: number;
   children: React.ReactNode;
   addLabel: string;
   onAdd: () => void;
-  disabled?: boolean;
   hint?: string;
 }) {
   const accentClass = accent === "primary" ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive";
   return (
     <div className="rounded-md border border-border overflow-hidden">
-      <div className={cn("px-3 py-1.5 text-xs uppercase tracking-widest font-display", accentClass, won && "ring-1 ring-inset ring-current")}>
-        {label}
+      <div className={cn(
+        "px-3 py-2 flex items-center justify-between font-display",
+        accentClass,
+        won && "ring-1 ring-inset ring-current",
+      )}>
+        <span className="text-xs uppercase tracking-widest truncate">{label}</span>
+        <span className="text-xl tabular-nums">{total}</span>
       </div>
       <div className="p-2 space-y-2 bg-card/40">
         {hint && <p className="text-[10px] text-muted-foreground italic px-1">{hint}</p>}
@@ -407,220 +412,168 @@ function SideColumn({
   );
 }
 
-function StatCell({ label, value }: { label: string; value: React.ReactNode }) {
+function NumInput({
+  value, onChange, placeholder,
+}: { value: number; onChange: (n: number) => void; placeholder?: string }) {
   return (
-    <div className="text-center">
-      <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="font-display text-base tabular-nums">{value}</div>
+    <Input
+      type="number"
+      inputMode="numeric"
+      min={0}
+      value={value || ""}
+      placeholder={placeholder ?? "0"}
+      onChange={(e) => {
+        const v = e.target.value;
+        if (v === "") return onChange(0);
+        const n = Number(v);
+        onChange(Number.isFinite(n) ? n : 0);
+      }}
+      className="h-9 text-sm tabular-nums px-2"
+    />
+  );
+}
+
+function StatField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</Label>
+      {children}
     </div>
   );
 }
 
 function AllyRow({
-  row, members, isEditing, mode, onEdit, onChange, onRemove,
+  row, members, onChange, onRemove,
 }: {
   row: AllyForm;
   members: Member[];
-  isEditing: boolean;
-  mode: "details" | "battle";
-  onEdit: () => void;
   onChange: (patch: Partial<AllyForm>) => void;
   onRemove: () => void;
 }) {
-  const member = members.find((m) => m.id === row.member_id);
-  const displayName = member?.name ?? "Selecione";
-
-  if (isEditing) {
-    return (
-      <Card className="p-3 border-primary/40 bg-card">
-        <div className="grid grid-cols-12 gap-2 items-end">
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Jogador</Label>
-            <Select value={row.member_id} onValueChange={(v) => onChange({ member_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>{m.name}{m.ign ? ` (${m.ign})` : ""}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-            <PokemonPicker value={row.pokemon || null} onChange={(name) => onChange({ pokemon: name ?? "" })} />
-          </div>
-          <div className="col-span-3 flex items-center gap-1">
-            <Checkbox checked={row.is_mvp} onCheckedChange={(v) => onChange({ is_mvp: !!v })} id={`mvp-${row.id ?? row.member_id}`} />
-            <Label htmlFor={`mvp-${row.id ?? row.member_id}`} className="text-[10px] uppercase tracking-widest">MVP</Label>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-8 w-8">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-12 gap-2 mt-2">
-          <NumField label="Score" value={row.score} onChange={(n) => onChange({ score: n })} colSpan={3} />
-          <NumField label="K" value={row.kills} onChange={(n) => onChange({ kills: n })} colSpan={2} />
-          <NumField label="A" value={row.assists} onChange={(n) => onChange({ assists: n })} colSpan={2} />
-          <NumField label="Dano" value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} colSpan={2} />
-          <NumField label="Sofrido" value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} colSpan={2} />
-          <NumField label="Cura" value={row.healing} onChange={(n) => onChange({ healing: n })} colSpan={1} />
-        </div>
-      </Card>
-    );
-  }
-
+  const rowKey = row.id ?? `new-${row.member_id || Math.random()}`;
   return (
-    <Card className="p-2 border-border hover:border-primary/40 transition-colors">
+    <Card className="p-3 border-border hover:border-primary/40 transition-colors space-y-2.5">
+      {/* Identity row */}
       <div className="flex items-center gap-2">
-        <div className="w-10 h-10 shrink-0">
-          <PokemonImage name={row.pokemon || null} withRoleBg />
-        </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
-            <span className="font-medium text-sm truncate">{displayName}</span>
-            {row.is_mvp && <Crown className="h-3.5 w-3.5 text-gold shrink-0" />}
-          </div>
+          <Select value={row.member_id} onValueChange={(v) => onChange({ member_id: v })}>
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue placeholder="Selecione jogador" />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name}{m.ign ? ` (${m.ign})` : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        {mode === "details" ? (
-          <div className="grid grid-cols-4 gap-3 shrink-0">
-            <StatCell label="Score" value={row.score} />
-            <StatCell label="K" value={row.kills} />
-            <StatCell label="A" value={row.assists} />
-            <StatCell label="MVP" value={row.is_mvp ? "★" : "—"} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-3 shrink-0">
-            <StatCell label="Dano" value={row.damage_dealt.toLocaleString()} />
-            <StatCell label="Sofrido" value={row.damage_taken.toLocaleString()} />
-            <StatCell label="Cura" value={row.healing.toLocaleString()} />
-          </div>
-        )}
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit}>
-          <Edit3 className="h-3.5 w-3.5" />
+        <div className="w-[200px] shrink-0">
+          <PokemonPicker value={row.pokemon || null} onChange={(name) => onChange({ pokemon: name ?? "" })} />
+        </div>
+        <label className="flex items-center gap-1.5 px-2 cursor-pointer shrink-0" htmlFor={`mvp-${rowKey}`}>
+          <Checkbox
+            id={`mvp-${rowKey}`}
+            checked={row.is_mvp}
+            onCheckedChange={(v) => onChange({ is_mvp: !!v })}
+          />
+          <Crown className={cn("h-4 w-4", row.is_mvp ? "text-gold" : "text-muted-foreground")} />
+        </label>
+        <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-9 w-9 shrink-0">
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
+      </div>
+      {/* Stats grid — all visible at once */}
+      <div className="grid grid-cols-6 gap-2">
+        <StatField label="Score">
+          <NumInput value={row.score} onChange={(n) => onChange({ score: n })} />
+        </StatField>
+        <StatField label="Kills">
+          <NumInput value={row.kills} onChange={(n) => onChange({ kills: n })} />
+        </StatField>
+        <StatField label="Assist.">
+          <NumInput value={row.assists} onChange={(n) => onChange({ assists: n })} />
+        </StatField>
+        <StatField label="Dano">
+          <NumInput value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
+        </StatField>
+        <StatField label="Sofrido">
+          <NumInput value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />
+        </StatField>
+        <StatField label="Cura">
+          <NumInput value={row.healing} onChange={(n) => onChange({ healing: n })} />
+        </StatField>
       </div>
     </Card>
   );
 }
 
 function OppRow({
-  row, knownPlayers, isEditing, mode, onEdit, onChange, onRemove,
+  row, knownPlayers, onChange, onRemove,
 }: {
   row: OppForm;
   knownPlayers: string[];
-  isEditing: boolean;
-  mode: "details" | "battle";
-  onEdit: () => void;
   onChange: (patch: Partial<OppForm>) => void;
   onRemove: () => void;
 }) {
-  if (isEditing) {
-    return (
-      <Card className="p-3 border-destructive/40 bg-card">
-        <div className="grid grid-cols-12 gap-2 items-end">
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Jogador</Label>
-            {knownPlayers.length > 0 && knownPlayers.includes(row.player_name) ? (
-              <Select value={row.player_name} onValueChange={(v) => onChange({ player_name: v === "__custom" ? "" : v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {knownPlayers.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  <SelectItem value="__custom">Outro...</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                value={row.player_name}
-                onChange={(e) => onChange({ player_name: e.target.value })}
-                placeholder="Nome"
-                list={knownPlayers.length ? `kp-${row.id ?? "new"}` : undefined}
-              />
-            )}
-            {knownPlayers.length > 0 && (
-              <datalist id={`kp-${row.id ?? "new"}`}>
-                {knownPlayers.map((p) => <option key={p} value={p} />)}
-              </datalist>
-            )}
-          </div>
-          <div className="col-span-4">
-            <Label className="text-[10px] uppercase tracking-widest">Pokémon</Label>
-            <PokemonPicker value={row.pokemon} onChange={(name) => onChange({ pokemon: name })} />
-          </div>
-          <div className="col-span-3">
-            <Label className="text-[10px] uppercase tracking-widest">Nota (0-10)</Label>
-            <Input
-              type="number" min={0} max={10} step={0.1}
-              value={row.rating ?? ""}
-              onChange={(e) => {
-                const v = e.target.value;
-                onChange({ rating: v === "" ? null : Math.max(0, Math.min(10, Number(v))) });
-              }}
-            />
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-8 w-8">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-12 gap-2 mt-2">
-          <NumField label="Score" value={row.score} onChange={(n) => onChange({ score: n })} colSpan={3} />
-          <NumField label="K" value={row.kills} onChange={(n) => onChange({ kills: n })} colSpan={2} />
-          <NumField label="A" value={row.assists} onChange={(n) => onChange({ assists: n })} colSpan={2} />
-          <NumField label="Dano" value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} colSpan={2} />
-          <NumField label="Sofrido" value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} colSpan={2} />
-          <NumField label="Cura" value={row.healing} onChange={(n) => onChange({ healing: n })} colSpan={1} />
-        </div>
-      </Card>
-    );
-  }
-
+  const rowKey = row.id ?? `new-${row.player_name || Math.random()}`;
   return (
-    <Card className="p-2 border-border hover:border-destructive/40 transition-colors">
+    <Card className="p-3 border-border hover:border-destructive/40 transition-colors space-y-2.5">
       <div className="flex items-center gap-2">
-        <div className="w-10 h-10 shrink-0">
-          <PokemonImage name={row.pokemon} withRoleBg />
-        </div>
         <div className="flex-1 min-w-0">
-          <span className="font-medium text-sm truncate">{row.player_name || "Sem nome"}</span>
+          <Input
+            value={row.player_name}
+            onChange={(e) => onChange({ player_name: e.target.value })}
+            placeholder="Nome do oponente"
+            list={knownPlayers.length ? `kp-${rowKey}` : undefined}
+            className="h-9 text-sm"
+          />
+          {knownPlayers.length > 0 && (
+            <datalist id={`kp-${rowKey}`}>
+              {knownPlayers.map((p) => <option key={p} value={p} />)}
+            </datalist>
+          )}
         </div>
-        {mode === "details" ? (
-          <div className="grid grid-cols-4 gap-3 shrink-0">
-            <StatCell label="Score" value={row.score} />
-            <StatCell label="K" value={row.kills} />
-            <StatCell label="A" value={row.assists} />
-            <StatCell label="Nota" value={row.rating ?? "—"} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-3 shrink-0">
-            <StatCell label="Dano" value={row.damage_dealt.toLocaleString()} />
-            <StatCell label="Sofrido" value={row.damage_taken.toLocaleString()} />
-            <StatCell label="Cura" value={row.healing.toLocaleString()} />
-          </div>
-        )}
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit}>
-          <Edit3 className="h-3.5 w-3.5" />
+        <div className="w-[200px] shrink-0">
+          <PokemonPicker value={row.pokemon} onChange={(name) => onChange({ pokemon: name })} />
+        </div>
+        <div className="w-[80px] shrink-0">
+          <Input
+            type="number" min={0} max={10} step={0.1}
+            value={row.rating ?? ""}
+            placeholder="Nota"
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange({ rating: v === "" ? null : Math.max(0, Math.min(10, Number(v))) });
+            }}
+            className="h-9 text-sm tabular-nums px-2 text-center"
+          />
+        </div>
+        <Button size="icon" variant="ghost" onClick={onRemove} className="hover:text-destructive h-9 w-9 shrink-0">
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
+      <div className="grid grid-cols-6 gap-2">
+        <StatField label="Score">
+          <NumInput value={row.score} onChange={(n) => onChange({ score: n })} />
+        </StatField>
+        <StatField label="Kills">
+          <NumInput value={row.kills} onChange={(n) => onChange({ kills: n })} />
+        </StatField>
+        <StatField label="Assist.">
+          <NumInput value={row.assists} onChange={(n) => onChange({ assists: n })} />
+        </StatField>
+        <StatField label="Dano">
+          <NumInput value={row.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
+        </StatField>
+        <StatField label="Sofrido">
+          <NumInput value={row.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />
+        </StatField>
+        <StatField label="Cura">
+          <NumInput value={row.healing} onChange={(n) => onChange({ healing: n })} />
+        </StatField>
+      </div>
     </Card>
-  );
-}
-
-function NumField({
-  label, value, onChange, colSpan = 1,
-}: { label: string; value: number; onChange: (n: number) => void; colSpan?: number }) {
-  return (
-    <div className={`col-span-${colSpan}`}>
-      <Label className="text-[10px] uppercase tracking-widest">{label}</Label>
-      <Input
-        type="number" min={0} value={value}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          onChange(Number.isFinite(n) ? n : 0);
-        }}
-      />
-    </div>
   );
 }
