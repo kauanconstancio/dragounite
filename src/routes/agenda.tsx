@@ -230,7 +230,7 @@ function AgendaPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_360px] gap-6">
+      <div className="grid lg:grid-cols-[1fr_280px_360px] gap-6">
         {/* Calendar */}
         <Card className="p-5 border-border shadow-card">
           <div className="flex items-center justify-between mb-5">
