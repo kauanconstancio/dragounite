@@ -264,6 +264,7 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, mu
           bestOf={perfFor.best_of}
           opponentId={perfFor.opponent_id}
           opponentName={perfFor.opponent_id && opponentMap.get(perfFor.opponent_id)?.name ? opponentMap.get(perfFor.opponent_id)!.name : perfFor.opponent}
+          status={perfFor.status}
           open={!!perfFor}
           onOpenChange={(v) => { if (!v) setPerfFor(null); }}
         />
