@@ -30,7 +30,7 @@ type Member = {
   name: string;
   ign: string | null;
   role: "player" | "substitute" | "coach" | "manager";
-  lane: string | null;
+  lane: "top" | "jungle" | "mid" | "bot" | "support" | "flex" | null;
   main_pokemon: string | null;
   discord: string | null;
   notes: string | null;
