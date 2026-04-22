@@ -1,11 +1,12 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { Users, CalendarDays, Swords, Sparkles, Shield } from "lucide-react";
+import { Users, CalendarDays, Swords, Sparkles, Shield, Crosshair } from "lucide-react";
 
 const navItems = [
   { to: "/", label: "Roster", icon: Users },
   { to: "/treinos", label: "Treinos", icon: CalendarDays },
   { to: "/amistosos", label: "Amistosos", icon: Swords },
   { to: "/composicoes", label: "Composições", icon: Sparkles },
+  { to: "/draft", label: "Draft", icon: Crosshair },
 ];
 
 export function AppLayout() {
