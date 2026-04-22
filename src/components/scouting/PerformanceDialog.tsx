@@ -372,7 +372,7 @@ export function PerformanceDialog({
                   <OppRow
                     key={row.id ?? `new-${i}`}
                     row={row}
-                    knownPlayers={knownPlayers}
+                    knownPlayers={knownPlayerNames}
                     isEditing={editingSide === "opp" && editingId === (row.id ?? `new-${i}`)}
                     mode="details"
                     onEdit={() => startEdit("opp", row.id ?? `new-${i}`)}
@@ -424,7 +424,7 @@ export function PerformanceDialog({
                   <OppRow
                     key={row.id ?? `new-${i}`}
                     row={row}
-                    knownPlayers={knownPlayers}
+                    knownPlayers={knownPlayerNames}
                     isEditing={editingSide === "opp" && editingId === (row.id ?? `new-${i}`)}
                     mode="battle"
                     onEdit={() => startEdit("opp", row.id ?? `new-${i}`)}
