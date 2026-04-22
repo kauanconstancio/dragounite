@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Crown, Headphones, ClipboardList, Swords } from "lucide-react";
 import { ROLE_LABEL, ROLE_COLORS, LANE_LABEL, POKEMON_LIST } from "@/lib/pokemon";
+import { PokemonImage } from "@/components/PokemonImage";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -186,9 +187,14 @@ function RosterPage() {
                         </div>
 
                         {m.main_pokemon && (
-                          <div className="mt-3 text-sm">
-                            <span className="text-muted-foreground text-xs uppercase tracking-wider">Main:</span>{" "}
-                            <span className="text-foreground font-medium">{m.main_pokemon}</span>
+                          <div className="mt-3 flex items-center gap-3">
+                            <div className="h-12 w-12 rounded-md bg-gradient-primary/30 border border-border flex items-center justify-center p-1 shadow-card overflow-hidden">
+                              <PokemonImage name={m.main_pokemon} />
+                            </div>
+                            <div>
+                              <div className="text-muted-foreground text-[10px] uppercase tracking-widest">Main</div>
+                              <div className="text-foreground font-medium text-sm">{m.main_pokemon}</div>
+                            </div>
                           </div>
                         )}
                         {m.discord && (
