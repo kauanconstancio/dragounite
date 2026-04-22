@@ -298,7 +298,7 @@ function PerfilPage() {
               <MiniStat icon={Star} label="MVPs" value={agg.mvp} hint={`${agg.games} jogos`} accent="gold" />
               <MiniStat icon={BarChart3} label="Score médio" value={agg.avgScore.toLocaleString()} hint={`Dano ${agg.dmg.toLocaleString()}`} accent="primary" />
               <MiniStat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="primary" />
-              <MiniStat icon={Skull} label="Deaths/jogo" value={agg.d} accent="primary" />
+              <MiniStat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="gold" />
               <MiniStat icon={Trophy} label="Assists/jogo" value={agg.a} accent="primary" />
               <MiniStat icon={BarChart3} label="Jogos" value={agg.games} accent="primary" />
             </div>
