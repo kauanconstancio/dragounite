@@ -388,7 +388,7 @@ function CreateUserDialog({
             </div>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            O jogador completará IGN, Discord, Pokémon Main e notas na sua página de Perfil.
+            O jogador definirá nome de exibição, IGN, Discord, Pokémon Main e notas na sua página de Perfil.
           </p>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
