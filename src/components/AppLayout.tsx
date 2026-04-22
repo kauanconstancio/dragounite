@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   Users,
   CalendarDays,
@@ -63,9 +63,19 @@ function isActive(pathname: string, to: string) {
 
 export function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [notifEnabled, setNotifEnabled] = useState(false);
 
-  // Polling for upcoming events
+  const isAuthRoute = location.pathname === "/auth";
+
+  useEffect(() => {
+    if (!loading && !user && !isAuthRoute) {
+      navigate({ to: "/auth", replace: true });
+    }
+  }, [loading, user, isAuthRoute, navigate]);
+
+  // Polling for upcoming events (only when authenticated)
   const { data: upcoming } = useQuery({
     queryKey: ["upcoming-notif"],
     queryFn: async () => {
@@ -78,6 +88,7 @@ export function AppLayout() {
       return { trainings: t.data ?? [], scrims: s.data ?? [] };
     },
     refetchInterval: 5 * 60 * 1000,
+    enabled: !!user && !isAuthRoute,
   });
 
   useEffect(() => {
@@ -102,6 +113,26 @@ export function AppLayout() {
     });
     sessionStorage.setItem("notif-fired", JSON.stringify([...fired]));
   }, [notifEnabled, upcoming]);
+
+  // Auth screen: render full-bleed without app chrome
+  if (isAuthRoute) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 flex items-center justify-center px-6 py-10">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
+  // Block protected content while we resolve session / before redirect kicks in
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground text-xs uppercase tracking-[0.3em]">
+        Carregando...
+      </div>
+    );
+  }
 
   async function toggleNotif() {
     if (typeof Notification === "undefined") return;
