@@ -47,51 +47,22 @@ function AuthPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="login">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="login">Entrar</TabsTrigger>
-            <TabsTrigger value="signup">Criar conta</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4 mt-4">
-              <div>
-                <Label htmlFor="li-email">Email</Label>
-                <Input id="li-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="li-pass">Senha</Label>
-                <Input id="li-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full bg-gradient-primary shadow-glow uppercase tracking-wider">
-                {loading ? "Entrando..." : "Entrar"}
-              </Button>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4 mt-4">
-              <div>
-                <Label htmlFor="su-name">Nome de exibição</Label>
-                <Input id="su-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="su-email">Email</Label>
-                <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="su-pass">Senha</Label>
-                <Input id="su-pass" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full bg-gradient-primary shadow-glow uppercase tracking-wider">
-                {loading ? "Criando..." : "Criar conta"}
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                Novas contas começam como <span className="text-foreground">viewer</span>. Um coach pode promover você depois.
-              </p>
-            </form>
-          </TabsContent>
-        </Tabs>
+        <form onSubmit={handleLogin} className="space-y-4 mt-4">
+          <div>
+            <Label htmlFor="li-email">Email</Label>
+            <Input id="li-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="li-pass">Senha</Label>
+            <Input id="li-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <Button type="submit" disabled={loading} className="w-full bg-gradient-primary shadow-glow uppercase tracking-wider">
+            {loading ? "Entrando..." : "Entrar"}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            As contas são criadas pelos gerentes. Solicite acesso ao seu coach.
+          </p>
+        </form>
       </Card>
     </div>
   );
