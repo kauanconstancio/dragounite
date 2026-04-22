@@ -13,7 +13,7 @@ import { PokemonPicker } from "@/components/PokemonPicker";
 import { PokemonImage } from "@/components/PokemonImage";
 import { Badge } from "@/components/ui/badge";
 import { LANE_LABEL, ROLE_COLORS, ROLE_LABEL } from "@/lib/pokemon";
-import { UserCircle, Save, BarChart3, Crosshair, Skull, Trophy, Star, TrendingUp } from "lucide-react";
+import { UserCircle, Save, BarChart3, Crosshair, Trophy, Star, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
 
