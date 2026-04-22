@@ -82,6 +82,10 @@ function ScrimsPage() {
       return data as Opponent[];
     },
   });
+
+  const opponentMap = new Map(opponents.map((o) => [o.id, o]));
+
+  const save = useMutation({
     mutationFn: async (s: Partial<Scrim>) => {
       if (editing) {
         const { error } = await supabase.from("scrims").update(s).eq("id", editing.id);
