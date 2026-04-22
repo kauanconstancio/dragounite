@@ -184,7 +184,15 @@ function PlannerPage() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
             <Move className="h-4 w-4" />
-            <span>Mapa: <span className="text-foreground">Theia Sky Ruins</span></span>
+            <span>Mapa:</span>
+            <Select value={mapId} onValueChange={(v) => setMapId(v as MapId)}>
+              <SelectTrigger className="h-8 w-64 text-xs uppercase tracking-widest"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {MAPS.map((m) => (
+                  <SelectItem key={m.id} value={m.id} className="text-xs uppercase tracking-widest">{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={undoLast} className="uppercase tracking-wider">
