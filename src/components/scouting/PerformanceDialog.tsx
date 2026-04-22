@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Plus, Save, Trash2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { kdaRatio, type PerfRow } from "@/lib/player-stats";
+import { PokemonPicker } from "@/components/PokemonPicker";
 
 type Member = { id: string; name: string; ign: string | null; role: string };
 
