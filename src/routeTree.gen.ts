@@ -10,16 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
+import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
-import { Route as IndexRouteImport } from './routes/index'
 
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
   path: '/treinos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RosterRoute = RosterRouteImport.update({
+  id: '/roster',
+  path: '/roster',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlannerRoute = PlannerRouteImport.update({
@@ -47,77 +52,72 @@ const AgendaRoute = AgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
   '/planner': typeof PlannerRoute
+  '/roster': typeof RosterRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
   '/planner': typeof PlannerRoute
+  '/roster': typeof RosterRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
   '/planner': typeof PlannerRoute
+  '/roster': typeof RosterRoute
   '/treinos': typeof TreinosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/agenda'
     | '/amistosos'
     | '/composicoes'
     | '/draft'
     | '/planner'
+    | '/roster'
     | '/treinos'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/agenda'
     | '/amistosos'
     | '/composicoes'
     | '/draft'
     | '/planner'
+    | '/roster'
     | '/treinos'
   id:
     | '__root__'
-    | '/'
     | '/agenda'
     | '/amistosos'
     | '/composicoes'
     | '/draft'
     | '/planner'
+    | '/roster'
     | '/treinos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
   PlannerRoute: typeof PlannerRoute
+  RosterRoute: typeof RosterRoute
   TreinosRoute: typeof TreinosRoute
 }
 
@@ -128,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/treinos'
       fullPath: '/treinos'
       preLoaderRoute: typeof TreinosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roster': {
+      id: '/roster'
+      path: '/roster'
+      fullPath: '/roster'
+      preLoaderRoute: typeof RosterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planner': {
@@ -165,23 +172,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
   PlannerRoute: PlannerRoute,
+  RosterRoute: RosterRoute,
   TreinosRoute: TreinosRoute,
 }
 export const routeTree = rootRouteImport

@@ -17,7 +17,7 @@ import { PokemonPicker } from "@/components/PokemonPicker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/roster")({
   head: () => ({
     meta: [
       { title: "Roster — Battle Arena" },
