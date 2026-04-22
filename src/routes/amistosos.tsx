@@ -158,8 +158,8 @@ function ScrimsPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
-          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
+          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onComplete={(s) => complete.mutate(s)} />
+          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onComplete={(s) => complete.mutate(s)} muted />
         </>
       )}
     </div>
