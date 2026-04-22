@@ -284,6 +284,24 @@ export function PerformanceDialog({
     toast.success(`Jogo ${game} salvo`);
   }
 
+  if (status === "completed") {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[92vh] overflow-y-auto p-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="font-display text-2xl tracking-wider">Resultado da partida</DialogTitle>
+            <DialogDescription>
+              Amistoso concluído — visualização das estatísticas finais.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="px-6 pb-6 mt-4">
+            <MatchResultsView scrimId={scrimId} bestOf={bestOf} opponentName={opponentName} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[92vh] overflow-y-auto p-0">
