@@ -68,11 +68,25 @@ function RosterPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (m: Partial<Member>) => {
+      // Strip non-editable / server-managed fields to avoid Postgres errors
+      const { id: _id, ...rest } = m as any;
+      const payload = {
+        name: rest.name?.trim(),
+        ign: rest.ign?.trim() || null,
+        role: rest.role ?? "player",
+        lane: rest.lane ?? null,
+        main_pokemon: rest.main_pokemon ?? null,
+        discord: rest.discord?.trim() || null,
+        notes: rest.notes?.trim() || null,
+      };
       if (editing) {
-        const { error } = await supabase.from("members").update(m).eq("id", editing.id);
+        const { error } = await supabase
+          .from("members")
+          .update({ ...payload, updated_at: new Date().toISOString() })
+          .eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("members").insert(m as any);
+        const { error } = await supabase.from("members").insert(payload as any);
         if (error) throw error;
       }
     },
@@ -114,11 +128,14 @@ function RosterPage() {
               <Plus className="mr-2 h-4 w-4" /> Novo membro
             </Button>
           </DialogTrigger>
-          <MemberDialog
-            editing={editing}
-            onSave={(m) => saveMutation.mutate(m)}
-            saving={saveMutation.isPending}
-          />
+          {open && (
+            <MemberDialog
+              key={editing?.id ?? "new"}
+              editing={editing}
+              onSave={(m) => saveMutation.mutate(m)}
+              saving={saveMutation.isPending}
+            />
+          )}
         </Dialog>
       </div>
 
