@@ -454,6 +454,26 @@ function ScrimDialog({
             rows={3}
           />
         </div>
+        <div>
+          <Label htmlFor="sc-vod">VOD URL (YouTube ou Drive)</Label>
+          <Input
+            id="sc-vod"
+            type="url"
+            placeholder="https://youtube.com/watch?v=..."
+            value={form.vod_url}
+            onChange={(e) => setForm((f) => ({ ...f, vod_url: e.target.value }))}
+          />
+        </div>
+        <div>
+          <Label htmlFor="sc-vod-notes">Notas do VOD (timestamps)</Label>
+          <Textarea
+            id="sc-vod-notes"
+            placeholder="0:30 — bug do regis | 4:12 — rotação top"
+            value={form.vod_notes}
+            onChange={(e) => setForm((f) => ({ ...f, vod_notes: e.target.value }))}
+            rows={3}
+          />
+        </div>
         <DialogFooter>
           <Button
             type="submit"
