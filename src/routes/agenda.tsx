@@ -340,6 +340,12 @@ function AgendaPage() {
           </div>
         </Card>
 
+        {/* Day Timeline (hours) */}
+        <DayTimeline
+          date={selected}
+          events={selectedEvents}
+        />
+
         {/* Selected day + upcoming */}
         <div className="space-y-5">
           <Card className="p-5 border-border shadow-card">
