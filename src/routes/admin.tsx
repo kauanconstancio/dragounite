@@ -340,7 +340,10 @@ function CreateUserDialog({
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Criar conta + entrada no Roster</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Criar conta + entrada no Roster</DialogTitle>
+          <DialogDescription>Cadastre o jogador com email, senha e papel inicial.</DialogDescription>
+        </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div>
             <Label htmlFor="ne-name">Nome de exibição (vai pro Roster)</Label>
