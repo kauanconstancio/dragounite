@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Swords, Trophy } from "lucide-react";
 import { format, isPast } from "date-fns";
@@ -193,33 +201,162 @@ function toLocalInput(iso?: string) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-function ScrimDialog({ editing, onSave, saving }: { editing: Scrim | null; onSave: (s: Partial<Scrim>) => void; saving: boolean }) {
-  const [form, setForm] = useState<any>(
-    editing
-      ? { ...editing, scheduled_at: toLocalInput(editing.scheduled_at) }
-      : { best_of: 3, result: "pending", status: "scheduled", score_us: 0, score_them: 0, scheduled_at: toLocalInput(new Date().toISOString()) }
+type ScrimForm = {
+  opponent: string;
+  scheduled_at: string;
+  best_of: number;
+  result: "pending" | "win" | "loss" | "draw";
+  score_us: number;
+  score_them: number;
+  status: "scheduled" | "completed" | "cancelled";
+  notes: string;
+};
+
+function emptyScrimForm(): ScrimForm {
+  return {
+    opponent: "",
+    scheduled_at: toLocalInput(new Date().toISOString()),
+    best_of: 3,
+    result: "pending",
+    score_us: 0,
+    score_them: 0,
+    status: "scheduled",
+    notes: "",
+  };
+}
+
+function fromScrim(editing: Scrim): ScrimForm {
+  return {
+    opponent: editing.opponent,
+    scheduled_at: toLocalInput(editing.scheduled_at),
+    best_of: editing.best_of,
+    result: editing.result,
+    score_us: editing.score_us,
+    score_them: editing.score_them,
+    status: editing.status,
+    notes: editing.notes ?? "",
+  };
+}
+
+function ScrimDialog({
+  editing,
+  onSave,
+  saving,
+}: {
+  editing: Scrim | null;
+  onSave: (s: Partial<Scrim>) => void;
+  saving: boolean;
+}) {
+  const [form, setForm] = useState<ScrimForm>(() =>
+    editing ? fromScrim(editing) : emptyScrimForm(),
   );
+
+  useEffect(() => {
+    setForm(editing ? fromScrim(editing) : emptyScrimForm());
+  }, [editing]);
+
+  const canSave =
+    form.opponent.trim().length > 0 && !!form.scheduled_at && !saving;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSave) return;
+    const parsed = new Date(form.scheduled_at);
+    if (Number.isNaN(parsed.getTime())) {
+      toast.error("Data inválida");
+      return;
+    }
+    onSave({
+      opponent: form.opponent.trim(),
+      scheduled_at: parsed.toISOString(),
+      best_of: form.best_of,
+      result: form.result,
+      score_us: Math.max(0, Math.round(form.score_us) || 0),
+      score_them: Math.max(0, Math.round(form.score_them) || 0),
+      status: form.status,
+      notes: form.notes.trim() || null,
+    });
+  };
+
   return (
     <DialogContent>
-      <DialogHeader><DialogTitle className="font-display text-2xl tracking-wider">{editing ? "Editar amistoso" : "Novo amistoso"}</DialogTitle></DialogHeader>
-      <div className="space-y-4">
-        <div><Label>Oponente</Label><Input value={form.opponent ?? ""} onChange={(e) => setForm({ ...form, opponent: e.target.value })} /></div>
+      <DialogHeader>
+        <DialogTitle className="font-display text-2xl tracking-wider">
+          {editing ? "Editar amistoso" : "Novo amistoso"}
+        </DialogTitle>
+        <DialogDescription>
+          Registre oponente, formato BO, placar e resultado do scrim.
+        </DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="sc-opp">Oponente</Label>
+          <Input
+            id="sc-opp"
+            value={form.opponent}
+            onChange={(e) => setForm((f) => ({ ...f, opponent: e.target.value }))}
+            required
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
-          <div><Label>Data e hora</Label><Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} /></div>
+          <div>
+            <Label htmlFor="sc-when">Data e hora</Label>
+            <Input
+              id="sc-when"
+              type="datetime-local"
+              value={form.scheduled_at}
+              onChange={(e) => setForm((f) => ({ ...f, scheduled_at: e.target.value }))}
+              required
+            />
+          </div>
           <div>
             <Label>Best of</Label>
-            <Select value={String(form.best_of)} onValueChange={(v) => setForm({ ...form, best_of: Number(v) })}>
+            <Select
+              value={String(form.best_of)}
+              onValueChange={(v) => setForm((f) => ({ ...f, best_of: Number(v) }))}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{[1, 3, 5, 7].map((n) => <SelectItem key={n} value={String(n)}>BO{n}</SelectItem>)}</SelectContent>
+              <SelectContent>
+                {[1, 3, 5, 7].map((n) => (
+                  <SelectItem key={n} value={String(n)}>BO{n}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <div><Label>Nós</Label><Input type="number" value={form.score_us} onChange={(e) => setForm({ ...form, score_us: Number(e.target.value) })} /></div>
-          <div><Label>Eles</Label><Input type="number" value={form.score_them} onChange={(e) => setForm({ ...form, score_them: Number(e.target.value) })} /></div>
+          <div>
+            <Label htmlFor="sc-us">Nós</Label>
+            <Input
+              id="sc-us"
+              type="number"
+              min={0}
+              value={form.score_us}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                setForm((f) => ({ ...f, score_us: Number.isFinite(n) ? n : 0 }));
+              }}
+            />
+          </div>
+          <div>
+            <Label htmlFor="sc-them">Eles</Label>
+            <Input
+              id="sc-them"
+              type="number"
+              min={0}
+              value={form.score_them}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                setForm((f) => ({ ...f, score_them: Number.isFinite(n) ? n : 0 }));
+              }}
+            />
+          </div>
           <div>
             <Label>Resultado</Label>
-            <Select value={form.result} onValueChange={(v) => setForm({ ...form, result: v })}>
+            <Select
+              value={form.result}
+              onValueChange={(v) => setForm((f) => ({ ...f, result: v as ScrimForm["result"] }))}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">Pendente</SelectItem>
@@ -232,7 +369,10 @@ function ScrimDialog({ editing, onSave, saving }: { editing: Scrim | null; onSav
         </div>
         <div>
           <Label>Status</Label>
-          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+          <Select
+            value={form.status}
+            onValueChange={(v) => setForm((f) => ({ ...f, status: v as ScrimForm["status"] }))}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="scheduled">Agendado</SelectItem>
@@ -241,17 +381,25 @@ function ScrimDialog({ editing, onSave, saving }: { editing: Scrim | null; onSav
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Notas</Label><Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} /></div>
-      </div>
-      <DialogFooter>
-        <Button
-          className="bg-gradient-primary shadow-glow uppercase tracking-wider"
-          disabled={!form.opponent || !form.scheduled_at || saving}
-          onClick={() => onSave({ ...form, scheduled_at: new Date(form.scheduled_at).toISOString() })}
-        >
-          {saving ? "Salvando..." : "Salvar"}
-        </Button>
-      </DialogFooter>
+        <div>
+          <Label htmlFor="sc-notes">Notas</Label>
+          <Textarea
+            id="sc-notes"
+            value={form.notes}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            rows={3}
+          />
+        </div>
+        <DialogFooter>
+          <Button
+            type="submit"
+            className="bg-gradient-primary shadow-glow uppercase tracking-wider"
+            disabled={!canSave}
+          >
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </form>
     </DialogContent>
   );
 }
