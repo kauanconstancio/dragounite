@@ -1,0 +1,155 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+const APP_ROLES = ["coach", "player", "viewer"] as const;
+type AppRole = (typeof APP_ROLES)[number];
+
+async function assertManager(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const roles = (data ?? []).map((r) => r.role as AppRole);
+  if (!roles.includes("coach")) {
+    throw new Error("Apenas coaches/gerentes podem executar esta ação.");
+  }
+}
+
+export const listUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertManager(context.userId);
+
+    const { data: usersList, error: uErr } =
+      await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    if (uErr) throw new Error(uErr.message);
+
+    const ids = usersList.users.map((u) => u.id);
+    const [{ data: roles }, { data: profiles }] = await Promise.all([
+      supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids),
+      supabaseAdmin.from("profiles").select("user_id, display_name, member_id").in("user_id", ids),
+    ]);
+
+    return usersList.users.map((u) => ({
+      id: u.id,
+      email: u.email ?? "",
+      created_at: u.created_at,
+      last_sign_in_at: u.last_sign_in_at ?? null,
+      roles: (roles ?? []).filter((r) => r.user_id === u.id).map((r) => r.role as AppRole),
+      profile: (profiles ?? []).find((p) => p.user_id === u.id) ?? null,
+    }));
+  });
+
+const createUserSchema = z.object({
+  email: z.string().email().max(255),
+  password: z.string().min(6).max(72),
+  display_name: z.string().trim().min(1).max(80),
+  role: z.enum(APP_ROLES),
+  member_id: z.string().uuid().nullable().optional(),
+});
+
+export const createUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => createUserSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { display_name: data.display_name },
+    });
+    if (error) throw new Error(error.message);
+    const newId = created.user!.id;
+
+    // trigger creates viewer role + profile; adjust if needed
+    if (data.role !== "viewer") {
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", newId);
+      await supabaseAdmin.from("user_roles").insert({ user_id: newId, role: data.role });
+    }
+    if (data.member_id !== undefined) {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ member_id: data.member_id, display_name: data.display_name })
+        .eq("user_id", newId);
+    } else {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ display_name: data.display_name })
+        .eq("user_id", newId);
+    }
+
+    return { id: newId };
+  });
+
+const setRoleSchema = z.object({
+  user_id: z.string().uuid(),
+  role: z.enum(APP_ROLES),
+});
+
+export const setUserRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => setRoleSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.user_id);
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.user_id, role: data.role });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const linkSchema = z.object({
+  user_id: z.string().uuid(),
+  member_id: z.string().uuid().nullable(),
+});
+
+export const linkUserToMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => linkSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ member_id: data.member_id })
+      .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const deleteUserSchema = z.object({ user_id: z.string().uuid() });
+
+export const deleteUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => deleteUserSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+    if (data.user_id === context.userId) {
+      throw new Error("Você não pode remover sua própria conta.");
+    }
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const resetPwSchema = z.object({
+  user_id: z.string().uuid(),
+  password: z.string().min(6).max(72),
+});
+
+export const resetUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => resetPwSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      password: data.password,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
