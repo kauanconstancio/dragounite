@@ -144,7 +144,14 @@ function OpponentsPage() {
               <Plus className="mr-2 h-4 w-4" /> Novo oponente
             </Button>
           </DialogTrigger>
-          <OpponentDialog editing={editing} onSave={(o) => save.mutate(o)} saving={save.isPending} />
+          {open && (
+            <OpponentDialog
+              key={editing?.id ?? "new"}
+              editing={editing}
+              onSave={(o) => save.mutate(o)}
+              saving={save.isPending}
+            />
+          )}
         </Dialog>
       </div>
 
