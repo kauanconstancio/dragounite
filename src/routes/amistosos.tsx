@@ -106,6 +106,20 @@ function ScrimsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Removido"); },
   });
 
+  const complete = useMutation({
+    mutationFn: async (s: Scrim) => {
+      const result: Scrim["result"] =
+        s.score_us > s.score_them ? "win" : s.score_them > s.score_us ? "loss" : "draw";
+      const { error } = await supabase
+        .from("scrims")
+        .update({ status: "completed", result })
+        .eq("id", s.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Scrim concluída"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const wins = scrims.filter((s) => s.result === "win").length;
   const losses = scrims.filter((s) => s.result === "loss").length;
   const upcoming = scrims.filter((s) => !isPast(new Date(s.scheduled_at)) && s.status === "scheduled");
