@@ -123,6 +123,7 @@ function PerfilPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-member", memberId] });
       qc.invalidateQueries({ queryKey: ["members"] });
+      qc.invalidateQueries({ queryKey: ["profile-complete-check"] });
       toast.success("Perfil atualizado");
     },
     onError: (e: any) => toast.error(e.message),
