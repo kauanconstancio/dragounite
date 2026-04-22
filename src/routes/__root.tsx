@@ -4,6 +4,11 @@ import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLayout } from "@/components/AppLayout";
 import { AuthProvider } from "@/hooks/useAuth";
+import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
+
+if (typeof window !== "undefined") {
+  installServerFnAuthFetch();
+}
 
 import appCss from "../styles.css?url";
 
