@@ -13,6 +13,7 @@ import { Route as TreinosRouteImport } from './routes/treinos'
 import { Route as TierListRouteImport } from './routes/tier-list'
 import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OponentesRouteImport } from './routes/oponentes'
 import { Route as MuralRouteImport } from './routes/mural'
 import { Route as JogadasRouteImport } from './routes/jogadas'
@@ -44,6 +45,11 @@ const RosterRoute = RosterRouteImport.update({
 const PlannerRoute = PlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OponentesRoute = OponentesRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
+  '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
+  '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
+  '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/jogadas'
     | '/mural'
     | '/oponentes'
+    | '/perfil'
     | '/planner'
     | '/roster'
     | '/tier-list'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/jogadas'
     | '/mural'
     | '/oponentes'
+    | '/perfil'
     | '/planner'
     | '/roster'
     | '/tier-list'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/jogadas'
     | '/mural'
     | '/oponentes'
+    | '/perfil'
     | '/planner'
     | '/roster'
     | '/tier-list'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   JogadasRoute: typeof JogadasRoute
   MuralRoute: typeof MuralRoute
   OponentesRoute: typeof OponentesRoute
+  PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
   RosterRoute: typeof RosterRoute
   TierListRoute: typeof TierListRoute
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/planner'
       fullPath: '/planner'
       preLoaderRoute: typeof PlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oponentes': {
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   JogadasRoute: JogadasRoute,
   MuralRoute: MuralRoute,
   OponentesRoute: OponentesRoute,
+  PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,
   RosterRoute: RosterRoute,
   TierListRoute: TierListRoute,
@@ -376,3 +397,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
