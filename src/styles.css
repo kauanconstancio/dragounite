@@ -115,3 +115,7 @@
   .shadow-card { box-shadow: var(--shadow-card); }
   .border-gold { border-color: var(--gold); }
 }
+
+body.presentation-mode .presentation-hide { display: none !important; }
+body.presentation-mode .presentation-main { max-width: 100% !important; padding: 2rem !important; }
+body.presentation-mode { font-size: 110%; }

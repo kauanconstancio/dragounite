@@ -1,312 +1,317 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Crown, Headphones, ClipboardList, Swords } from "lucide-react";
-import { ROLE_LABEL, ROLE_COLORS, LANE_LABEL } from "@/lib/pokemon";
-import { PokemonImage } from "@/components/PokemonImage";
-import { PokemonPicker } from "@/components/PokemonPicker";
-import { toast } from "sonner";
+import {
+  Trophy,
+  Swords,
+  Dumbbell,
+  Users,
+  CalendarDays,
+  Flame,
+  Megaphone,
+  Sparkles,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { KpiCard } from "@/components/dashboard/KpiCard";
+import { WinrateChart } from "@/components/dashboard/WinrateChart";
+import {
+  computeWinrate,
+  computeStreak,
+  eventsThisMonth,
+  lastNScrimsForChart,
+  recentActivity,
+  type ScrimLite,
+  type TrainingLite,
+} from "@/lib/stats";
+import { PokemonImage } from "@/components/PokemonImage";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Roster — Battle Arena" },
-      { name: "description", content: "Jogadores, reservas, coach e gerentes do time." },
+      { title: "Dashboard — Battle Arena" },
+      { name: "description", content: "Visão geral de performance, agenda e estatísticas do time." },
     ],
   }),
-  component: RosterPage,
+  component: DashboardPage,
 });
 
-type Member = {
-  id: string;
-  name: string;
-  ign: string | null;
-  role: "player" | "substitute" | "coach" | "manager";
-  lane: "top" | "jungle" | "mid" | "bot" | "support" | "flex" | null;
-  main_pokemon: string | null;
-  discord: string | null;
-  notes: string | null;
-};
+function DashboardPage() {
+  const { data: scrims = [] } = useQuery({
+    queryKey: ["scrims"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("scrims").select("*").order("scheduled_at");
+      if (error) throw error;
+      return data as ScrimLite[];
+    },
+  });
 
-const ROLE_ICONS = {
-  player: Swords,
-  substitute: ClipboardList,
-  coach: Headphones,
-  manager: Crown,
-};
+  const { data: trainings = [] } = useQuery({
+    queryKey: ["trainings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("trainings").select("*").order("scheduled_at");
+      if (error) throw error;
+      return data as TrainingLite[];
+    },
+  });
 
-const SECTIONS: { key: Member["role"]; title: string; subtitle: string }[] = [
-  { key: "player", title: "Titulares", subtitle: "Five for the Aeos Cup" },
-  { key: "substitute", title: "Reservas", subtitle: "Backup squad" },
-  { key: "coach", title: "Coaching Staff", subtitle: "Strategy & analysis" },
-  { key: "manager", title: "Gestão", subtitle: "Operações do time" },
-];
-
-function RosterPage() {
-  const qc = useQueryClient();
-  const { data: members = [], isLoading } = useQuery({
+  const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("members").select("*").order("created_at");
+      const { data, error } = await supabase.from("members").select("id, name, role, lane, main_pokemon");
       if (error) throw error;
-      return data as Member[];
+      return data as any[];
     },
   });
 
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Member | null>(null);
-
-  const saveMutation = useMutation({
-    mutationFn: async (m: Partial<Member>) => {
-      // Strip non-editable / server-managed fields to avoid Postgres errors
-      const { id: _id, ...rest } = m as any;
-      const payload = {
-        name: rest.name?.trim(),
-        ign: rest.ign?.trim() || null,
-        role: rest.role ?? "player",
-        lane: rest.lane ?? null,
-        main_pokemon: rest.main_pokemon ?? null,
-        discord: rest.discord?.trim() || null,
-        notes: rest.notes?.trim() || null,
-      };
-      if (editing) {
-        const { error } = await supabase
-          .from("members")
-          .update({ ...payload, updated_at: new Date().toISOString() })
-          .eq("id", editing.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("members").insert(payload as any);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["members"] });
-      setOpen(false);
-      setEditing(null);
-      toast.success(editing ? "Membro atualizado" : "Membro adicionado");
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("members").delete().eq("id", id);
+  const { data: comps = [] } = useQuery({
+    queryKey: ["compositions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("compositions").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["members"] });
-      toast.success("Membro removido");
+      return data as any[];
     },
   });
+
+  const { data: announcements = [] } = useQuery({
+    queryKey: ["announcements"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("pinned", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(3);
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const wr = useMemo(() => computeWinrate(scrims), [scrims]);
+  const streak = useMemo(() => computeStreak(scrims), [scrims]);
+  const chartData = useMemo(() => lastNScrimsForChart(scrims, 10), [scrims]);
+  const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
+
+  const next = useMemo(() => {
+    const now = Date.now();
+    const allEvents = [
+      ...trainings.filter((t) => t.status === "scheduled").map((t: any) => ({
+        kind: "training" as const,
+        id: t.id,
+        title: t.title,
+        date: new Date(t.scheduled_at),
+        href: "/treinos",
+      })),
+      ...scrims
+        .filter((s: any) => s.status === "scheduled")
+        .map((s: any) => ({
+          kind: "scrim" as const,
+          id: s.id,
+          title: `vs ${s.opponent}`,
+          date: new Date(s.scheduled_at),
+          href: "/amistosos",
+        })),
+    ]
+      .filter((e) => e.date.getTime() > now)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .slice(0, 4);
+    return allEvents;
+  }, [trainings, scrims]);
+
+  const topPokemon = useMemo(() => {
+    const counts = new Map<string, number>();
+    members.forEach((m: any) => {
+      if (m.main_pokemon) counts.set(m.main_pokemon, (counts.get(m.main_pokemon) ?? 0) + 1);
+    });
+    comps.forEach((c: any) => {
+      ["top_pokemon", "jungle_pokemon", "mid_pokemon", "bot_pokemon", "support_pokemon"].forEach((k) => {
+        if (c[k]) counts.set(c[k], (counts.get(c[k]) ?? 0) + 1);
+      });
+    });
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [members, comps]);
+
+  const activeRoster = members.filter((m: any) => m.role === "player").length;
 
   return (
-    <div className="space-y-10">
-      <div className="flex items-end justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="font-display text-5xl tracking-wider">
-            ROSTER <span className="text-gold">DO TIME</span>
-          </h1>
-          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">
-            {members.length} {members.length === 1 ? "membro" : "membros"} ativos
-          </p>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="font-display text-5xl tracking-wider">
+          BATTLE <span className="text-gold">DASHBOARD</span>
+        </h1>
+        <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">
+          Visão geral · Performance · Agenda
+        </p>
+      </div>
 
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
-              <Plus className="mr-2 h-4 w-4" /> Novo membro
-            </Button>
-          </DialogTrigger>
-          {open && (
-            <MemberDialog
-              key={editing?.id ?? "new"}
-              editing={editing}
-              onSave={(m) => saveMutation.mutate(m)}
-              saving={saveMutation.isPending}
-            />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          label="Winrate geral"
+          value={wr.total ? `${wr.rate}%` : "—"}
+          hint={`${wr.wins}V · ${wr.losses}D em ${wr.total}`}
+          Icon={Trophy}
+          accent="gold"
+        />
+        <KpiCard
+          label="Streak atual"
+          value={streak.count > 0 ? `${streak.count}${streak.type === "win" ? "W" : "L"}` : "—"}
+          hint={streak.type === "win" ? "Sequência de vitórias" : streak.type === "loss" ? "Sequência de derrotas" : "Sem partidas"}
+          Icon={Flame}
+          accent={streak.type === "win" ? "emerald" : streak.type === "loss" ? "destructive" : "primary"}
+        />
+        <KpiCard
+          label="Treinos no mês"
+          value={eventsThisMonth(trainings)}
+          hint={`${activity} scrims em 30d`}
+          Icon={Dumbbell}
+          accent="primary"
+        />
+        <KpiCard
+          label="Roster ativo"
+          value={activeRoster}
+          hint={`${members.length} membros totais`}
+          Icon={Users}
+          accent="gold"
+        />
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 p-5 border-border shadow-card bg-card/70">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-gold" />
+              <h2 className="font-display text-xl tracking-wider">Evolução de Winrate</h2>
+            </div>
+            <Badge variant="outline" className="text-[10px] uppercase tracking-widest">
+              Últimas {chartData.length || 0}
+            </Badge>
+          </div>
+          <WinrateChart data={chartData} />
+        </Card>
+
+        <Card className="p-5 border-border shadow-card bg-card/70">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Megaphone className="h-4 w-4 text-primary" />
+              <h2 className="font-display text-xl tracking-wider">Mural</h2>
+            </div>
+            <Link to="/mural" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-gold">
+              Ver tudo →
+            </Link>
+          </div>
+          {announcements.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">Nenhum aviso.</p>
+          ) : (
+            <div className="space-y-3">
+              {announcements.map((a: any) => (
+                <div key={a.id} className="rounded-md border border-border p-3 bg-background/40">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {a.pinned && (
+                      <Badge variant="outline" className="border-gold/40 text-gold text-[9px] uppercase">
+                        Fixado
+                      </Badge>
+                    )}
+                    <h3 className="font-display text-sm tracking-wider">{a.title}</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
+                  <div className="text-[10px] text-muted-foreground mt-2 uppercase tracking-widest">
+                    {format(new Date(a.created_at), "dd MMM · HH:mm", { locale: ptBR })}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </Dialog>
+        </Card>
       </div>
 
-      {isLoading ? (
-        <div className="text-center text-muted-foreground py-20">Carregando roster...</div>
-      ) : (
-        SECTIONS.map((section) => {
-          const sectionMembers = members.filter((m) => m.role === section.key);
-          const Icon = ROLE_ICONS[section.key];
-          return (
-            <section key={section.key}>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-card border border-border">
-                  <Icon className="h-5 w-5 text-gold" />
-                </div>
-                <div>
-                  <h2 className="font-display text-2xl tracking-wider">{section.title}</h2>
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest">{section.subtitle}</p>
-                </div>
-                <div className="flex-1 h-px bg-border ml-3" />
-                <Badge variant="outline" className="border-border">{sectionMembers.length}</Badge>
-              </div>
-
-              {sectionMembers.length === 0 ? (
-                <div className="border border-dashed border-border rounded-lg py-8 text-center text-sm text-muted-foreground">
-                  Nenhum {ROLE_LABEL[section.key].toLowerCase()} cadastrado.
-                </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {sectionMembers.map((m, i) => (
-                    <motion.div
-                      key={m.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Card className="p-5 border-border shadow-card bg-card/70">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-primary" />
+              <h2 className="font-display text-xl tracking-wider">Próximos Eventos</h2>
+            </div>
+            <Link to="/agenda" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-gold">
+              Agenda →
+            </Link>
+          </div>
+          {next.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">Nada agendado.</p>
+          ) : (
+            <div className="space-y-2">
+              {next.map((e, i) => {
+                const Icon = e.kind === "training" ? Dumbbell : Swords;
+                return (
+                  <motion.div
+                    key={e.id}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                  >
+                    <Link
+                      to={e.href}
+                      className="flex items-center gap-3 rounded-md border border-border p-3 hover:border-primary/50 transition-all bg-background/40 group"
                     >
-                      <Card className="p-5 bg-card border-border hover:border-primary/50 transition-all shadow-card group">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-gradient-primary text-primary-foreground font-display text-xl shadow-glow">
-                              {m.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="font-display text-lg leading-tight">{m.name}</div>
-                              {m.ign && <div className="text-xs text-gold uppercase tracking-wider">@{m.ign}</div>}
-                            </div>
-                          </div>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(m); setOpen(true); }}>
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button size="icon" variant="ghost" className="h-7 w-7 hover:text-destructive" onClick={() => { if (confirm(`Remover ${m.name}?`)) deleteMutation.mutate(m.id); }}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
+                      <div
+                        className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
+                          e.kind === "training"
+                            ? "bg-primary/15 border-primary/40 text-primary"
+                            : "bg-gold/15 border-gold/40 text-gold"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-display text-sm tracking-wider truncate">{e.title}</div>
+                        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                          <Clock className="h-3 w-3" />
+                          {format(e.date, "EEE, dd MMM · HH:mm", { locale: ptBR })}
                         </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <Badge className={`uppercase tracking-wider text-[10px] ${ROLE_COLORS[m.role]}`} variant="outline">
-                            {ROLE_LABEL[m.role]}
-                          </Badge>
-                          {m.lane && (
-                            <Badge variant="outline" className="border-border text-[10px] uppercase tracking-wider">
-                              {LANE_LABEL[m.lane]}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {m.main_pokemon && (
-                          <div className="mt-3 flex items-center gap-3">
-                            <div className="h-14 w-14 shrink-0">
-                              <PokemonImage name={m.main_pokemon} withRoleBg />
-                            </div>
-                            <div>
-                              <div className="text-muted-foreground text-[10px] uppercase tracking-widest">Main</div>
-                              <div className="text-foreground font-medium text-sm">{m.main_pokemon}</div>
-                            </div>
-                          </div>
-                        )}
-                        {m.discord && (
-                          <div className="mt-1 text-xs text-muted-foreground">Discord: {m.discord}</div>
-                        )}
-                        {m.notes && (
-                          <p className="mt-3 text-xs text-muted-foreground italic line-clamp-2">{m.notes}</p>
-                        )}
-                      </Card>
-                    </motion.div>
-                  ))}
+        <Card className="p-5 border-border shadow-card bg-card/70">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-gold" />
+              <h2 className="font-display text-xl tracking-wider">Top Pokémon</h2>
+            </div>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Roster + Comps
+            </span>
+          </div>
+          {topPokemon.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">Sem dados ainda.</p>
+          ) : (
+            <div className="grid grid-cols-5 gap-2">
+              {topPokemon.map(([pkm, count], idx) => (
+                <div key={pkm} className="text-center">
+                  <div className="aspect-square mb-1.5 relative">
+                    <PokemonImage name={pkm} withRoleBg />
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{pkm}</div>
+                  <div className="text-[9px] text-muted-foreground">{count}x</div>
                 </div>
-              )}
-            </section>
-          );
-        })
-      )}
-    </div>
-  );
-}
-
-function MemberDialog({ editing, onSave, saving }: { editing: Member | null; onSave: (m: Partial<Member>) => void; saving: boolean }) {
-  const [form, setForm] = useState<Partial<Member>>(
-    editing ?? { role: "player", lane: "flex" }
-  );
-
-  return (
-    <DialogContent className="max-w-lg">
-      <DialogHeader>
-        <DialogTitle className="font-display text-2xl tracking-wider">
-          {editing ? "Editar membro" : "Novo membro"}
-        </DialogTitle>
-      </DialogHeader>
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Nome</Label>
-            <Input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </div>
-          <div>
-            <Label>IGN</Label>
-            <Input value={form.ign ?? ""} onChange={(e) => setForm({ ...form, ign: e.target.value })} />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Função</Label>
-            <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as any })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="player">Titular</SelectItem>
-                <SelectItem value="substitute">Reserva</SelectItem>
-                <SelectItem value="coach">Coach</SelectItem>
-                <SelectItem value="manager">Gerente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Rota</Label>
-            <Select value={form.lane ?? "flex"} onValueChange={(v) => setForm({ ...form, lane: v as Member["lane"] })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {Object.entries(LANE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Pokémon Main</Label>
-            <PokemonPicker
-              value={form.main_pokemon}
-              onChange={(v) => setForm({ ...form, main_pokemon: v })}
-            />
-          </div>
-          <div>
-            <Label>Discord</Label>
-            <Input value={form.discord ?? ""} onChange={(e) => setForm({ ...form, discord: e.target.value })} />
-          </div>
-        </div>
-        <div>
-          <Label>Notas</Label>
-          <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
-        </div>
+              ))}
+            </div>
+          )}
+        </Card>
       </div>
-      <DialogFooter>
-        <Button
-          className="bg-gradient-primary shadow-glow uppercase tracking-wider"
-          disabled={!form.name || saving}
-          onClick={() => onSave(form)}
-        >
-          {saving ? "Salvando..." : "Salvar"}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
+    </div>
   );
 }

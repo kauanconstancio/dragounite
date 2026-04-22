@@ -14,12 +14,125 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          author_member_id: string | null
+          body: string
+          created_at: string
+          id: string
+          pinned: boolean
+          title: string
+        }
+        Insert: {
+          author_member_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title: string
+        }
+        Update: {
+          author_member_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_author_member_id_fkey"
+            columns: ["author_member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: Database["public"]["Enums"]["event_type_kind"]
+          id: string
+          member_id: string
+          note: string | null
+          status: Database["public"]["Enums"]["attendance_status"]
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: Database["public"]["Enums"]["event_type_kind"]
+          id?: string
+          member_id: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: Database["public"]["Enums"]["event_type_kind"]
+          id?: string
+          member_id?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      builds: {
+        Row: {
+          battle_item: string | null
+          created_at: string
+          created_by: string | null
+          emblems: string | null
+          id: string
+          items: Json | null
+          moveset: Json | null
+          name: string
+          notes: string | null
+          pokemon: string
+        }
+        Insert: {
+          battle_item?: string | null
+          created_at?: string
+          created_by?: string | null
+          emblems?: string | null
+          id?: string
+          items?: Json | null
+          moveset?: Json | null
+          name: string
+          notes?: string | null
+          pokemon: string
+        }
+        Update: {
+          battle_item?: string | null
+          created_at?: string
+          created_by?: string | null
+          emblems?: string | null
+          id?: string
+          items?: Json | null
+          moveset?: Json | null
+          name?: string
+          notes?: string | null
+          pokemon?: string
+        }
+        Relationships: []
+      }
       compositions: {
         Row: {
           bot_pokemon: string | null
           created_at: string
           id: string
           jungle_pokemon: string | null
+          linked_opponent_id: string | null
           mid_pokemon: string | null
           name: string
           notes: string | null
@@ -33,6 +146,7 @@ export type Database = {
           created_at?: string
           id?: string
           jungle_pokemon?: string | null
+          linked_opponent_id?: string | null
           mid_pokemon?: string | null
           name: string
           notes?: string | null
@@ -46,6 +160,7 @@ export type Database = {
           created_at?: string
           id?: string
           jungle_pokemon?: string | null
+          linked_opponent_id?: string | null
           mid_pokemon?: string | null
           name?: string
           notes?: string | null
@@ -54,7 +169,15 @@ export type Database = {
           tier?: string | null
           top_pokemon?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "compositions_linked_opponent_id_fkey"
+            columns: ["linked_opponent_id"]
+            isOneToOne: false
+            referencedRelation: "opponents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       members: {
         Row: {
@@ -98,6 +221,77 @@ export type Database = {
         }
         Relationships: []
       }
+      opponents: {
+        Row: {
+          created_at: string
+          id: string
+          known_players: Json | null
+          name: string
+          notes: string | null
+          recurring_picks: string[] | null
+          region: string | null
+          tag: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          known_players?: Json | null
+          name: string
+          notes?: string | null
+          recurring_picks?: string[] | null
+          region?: string | null
+          tag?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          known_players?: Json | null
+          name?: string
+          notes?: string | null
+          recurring_picks?: string[] | null
+          region?: string | null
+          tag?: string | null
+        }
+        Relationships: []
+      }
+      playbooks: {
+        Row: {
+          category: Database["public"]["Enums"]["playbook_category"]
+          created_at: string
+          description: string | null
+          id: string
+          linked_comp_id: string | null
+          map_data: Json | null
+          name: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["playbook_category"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          linked_comp_id?: string | null
+          map_data?: Json | null
+          name: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["playbook_category"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          linked_comp_id?: string | null
+          map_data?: Json | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbooks_linked_comp_id_fkey"
+            columns: ["linked_comp_id"]
+            isOneToOne: false
+            referencedRelation: "compositions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scrims: {
         Row: {
           best_of: number
@@ -105,11 +299,14 @@ export type Database = {
           id: string
           notes: string | null
           opponent: string
+          opponent_id: string | null
           result: Database["public"]["Enums"]["match_result"]
           scheduled_at: string
           score_them: number
           score_us: number
           status: Database["public"]["Enums"]["event_status"]
+          vod_notes: string | null
+          vod_url: string | null
         }
         Insert: {
           best_of?: number
@@ -117,11 +314,14 @@ export type Database = {
           id?: string
           notes?: string | null
           opponent: string
+          opponent_id?: string | null
           result?: Database["public"]["Enums"]["match_result"]
           scheduled_at: string
           score_them?: number
           score_us?: number
           status?: Database["public"]["Enums"]["event_status"]
+          vod_notes?: string | null
+          vod_url?: string | null
         }
         Update: {
           best_of?: number
@@ -129,11 +329,55 @@ export type Database = {
           id?: string
           notes?: string | null
           opponent?: string
+          opponent_id?: string | null
           result?: Database["public"]["Enums"]["match_result"]
           scheduled_at?: string
           score_them?: number
           score_us?: number
           status?: Database["public"]["Enums"]["event_status"]
+          vod_notes?: string | null
+          vod_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scrims_opponent_id_fkey"
+            columns: ["opponent_id"]
+            isOneToOne: false
+            referencedRelation: "opponents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tier_list: {
+        Row: {
+          created_at: string
+          id: string
+          lane: Database["public"]["Enums"]["lane_role"] | null
+          notes: string | null
+          patch: string | null
+          pokemon: string
+          position: number
+          tier: Database["public"]["Enums"]["tier_rank"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lane?: Database["public"]["Enums"]["lane_role"] | null
+          notes?: string | null
+          patch?: string | null
+          pokemon: string
+          position?: number
+          tier?: Database["public"]["Enums"]["tier_rank"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lane?: Database["public"]["Enums"]["lane_role"] | null
+          notes?: string | null
+          patch?: string | null
+          pokemon?: string
+          position?: number
+          tier?: Database["public"]["Enums"]["tier_rank"]
         }
         Relationships: []
       }
@@ -178,10 +422,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      attendance_status: "confirmed" | "declined" | "tentative"
       event_status: "scheduled" | "completed" | "cancelled"
+      event_type_kind: "training" | "scrim"
       lane_role: "top" | "jungle" | "mid" | "bot" | "support" | "flex"
       match_result: "pending" | "win" | "loss" | "draw"
       member_role: "player" | "substitute" | "coach" | "manager"
+      playbook_category:
+        | "rotation"
+        | "objective"
+        | "lategame"
+        | "earlygame"
+        | "other"
+      tier_rank: "S" | "A" | "B" | "C" | "D"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -309,10 +562,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      attendance_status: ["confirmed", "declined", "tentative"],
       event_status: ["scheduled", "completed", "cancelled"],
+      event_type_kind: ["training", "scrim"],
       lane_role: ["top", "jungle", "mid", "bot", "support", "flex"],
       match_result: ["pending", "win", "loss", "draw"],
       member_role: ["player", "substitute", "coach", "manager"],
+      playbook_category: [
+        "rotation",
+        "objective",
+        "lategame",
+        "earlygame",
+        "other",
+      ],
+      tier_rank: ["S", "A", "B", "C", "D"],
     },
   },
 } as const
