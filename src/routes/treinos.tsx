@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Clock, Target } from "lucide-react";
 import { format, isPast } from "date-fns";
@@ -177,25 +185,141 @@ function toLocalInput(iso?: string) {
   return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
 }
 
-function TrainingDialog({ editing, onSave, saving }: { editing: Training | null; onSave: (t: Partial<Training>) => void; saving: boolean }) {
-  const [form, setForm] = useState<any>(
-    editing
-      ? { ...editing, scheduled_at: toLocalInput(editing.scheduled_at) }
-      : { duration_min: 90, status: "scheduled", scheduled_at: toLocalInput(new Date().toISOString()) }
+type TrainingForm = {
+  title: string;
+  scheduled_at: string;
+  duration_min: number;
+  focus: string;
+  notes: string;
+  status: "scheduled" | "completed" | "cancelled";
+};
+
+function emptyTrainingForm(): TrainingForm {
+  return {
+    title: "",
+    scheduled_at: toLocalInput(new Date().toISOString()),
+    duration_min: 90,
+    focus: "",
+    notes: "",
+    status: "scheduled",
+  };
+}
+
+function fromTraining(editing: Training): TrainingForm {
+  return {
+    title: editing.title,
+    scheduled_at: toLocalInput(editing.scheduled_at),
+    duration_min: editing.duration_min,
+    focus: editing.focus ?? "",
+    notes: editing.notes ?? "",
+    status: editing.status,
+  };
+}
+
+function TrainingDialog({
+  editing,
+  onSave,
+  saving,
+}: {
+  editing: Training | null;
+  onSave: (t: Partial<Training>) => void;
+  saving: boolean;
+}) {
+  const [form, setForm] = useState<TrainingForm>(() =>
+    editing ? fromTraining(editing) : emptyTrainingForm(),
   );
+
+  useEffect(() => {
+    setForm(editing ? fromTraining(editing) : emptyTrainingForm());
+  }, [editing]);
+
+  const canSave =
+    form.title.trim().length > 0 &&
+    !!form.scheduled_at &&
+    Number.isFinite(form.duration_min) &&
+    form.duration_min > 0 &&
+    !saving;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSave) return;
+    const parsed = new Date(form.scheduled_at);
+    if (Number.isNaN(parsed.getTime())) {
+      toast.error("Data inválida");
+      return;
+    }
+    onSave({
+      title: form.title.trim(),
+      scheduled_at: parsed.toISOString(),
+      duration_min: Math.max(1, Math.round(form.duration_min)),
+      focus: form.focus.trim() || null,
+      notes: form.notes.trim() || null,
+      status: form.status,
+    });
+  };
+
   return (
     <DialogContent>
-      <DialogHeader><DialogTitle className="font-display text-2xl tracking-wider">{editing ? "Editar treino" : "Novo treino"}</DialogTitle></DialogHeader>
-      <div className="space-y-4">
-        <div><Label>Título</Label><Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Ex: Treino de macro" /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><Label>Data e hora</Label><Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} /></div>
-          <div><Label>Duração (min)</Label><Input type="number" value={form.duration_min} onChange={(e) => setForm({ ...form, duration_min: Number(e.target.value) })} /></div>
+      <DialogHeader>
+        <DialogTitle className="font-display text-2xl tracking-wider">
+          {editing ? "Editar treino" : "Novo treino"}
+        </DialogTitle>
+        <DialogDescription>
+          Defina título, data, duração e foco da sessão.
+        </DialogDescription>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="tr-title">Título</Label>
+          <Input
+            id="tr-title"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="Ex: Treino de macro"
+            required
+          />
         </div>
-        <div><Label>Foco</Label><Input value={form.focus ?? ""} onChange={(e) => setForm({ ...form, focus: e.target.value })} placeholder="Ex: rotação early game" /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="tr-when">Data e hora</Label>
+            <Input
+              id="tr-when"
+              type="datetime-local"
+              value={form.scheduled_at}
+              onChange={(e) => setForm((f) => ({ ...f, scheduled_at: e.target.value }))}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="tr-dur">Duração (min)</Label>
+            <Input
+              id="tr-dur"
+              type="number"
+              min={1}
+              step={5}
+              value={form.duration_min}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                setForm((f) => ({ ...f, duration_min: Number.isFinite(n) ? n : 0 }));
+              }}
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="tr-focus">Foco</Label>
+          <Input
+            id="tr-focus"
+            value={form.focus}
+            onChange={(e) => setForm((f) => ({ ...f, focus: e.target.value }))}
+            placeholder="Ex: rotação early game"
+          />
+        </div>
         <div>
           <Label>Status</Label>
-          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+          <Select
+            value={form.status}
+            onValueChange={(v) => setForm((f) => ({ ...f, status: v as TrainingForm["status"] }))}
+          >
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="scheduled">Agendado</SelectItem>
@@ -204,17 +328,25 @@ function TrainingDialog({ editing, onSave, saving }: { editing: Training | null;
             </SelectContent>
           </Select>
         </div>
-        <div><Label>Notas</Label><Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} /></div>
-      </div>
-      <DialogFooter>
-        <Button
-          className="bg-gradient-primary shadow-glow uppercase tracking-wider"
-          disabled={!form.title || !form.scheduled_at || saving}
-          onClick={() => onSave({ ...form, scheduled_at: new Date(form.scheduled_at).toISOString() })}
-        >
-          {saving ? "Salvando..." : "Salvar"}
-        </Button>
-      </DialogFooter>
+        <div>
+          <Label htmlFor="tr-notes">Notas</Label>
+          <Textarea
+            id="tr-notes"
+            value={form.notes}
+            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            rows={3}
+          />
+        </div>
+        <DialogFooter>
+          <Button
+            type="submit"
+            className="bg-gradient-primary shadow-glow uppercase tracking-wider"
+            disabled={!canSave}
+          >
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </form>
     </DialogContent>
   );
 }
