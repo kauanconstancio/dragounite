@@ -251,8 +251,33 @@ export function PerformanceDialog({
 
   const games = Array.from({ length: bestOf }, (_, i) => i + 1);
 
+  async function recalcScrimScore() {
+    const [{ data: allyRows, error: e1 }, { data: oppRows, error: e2 }] = await Promise.all([
+      supabase.from("match_performances").select("game_number, score").eq("scrim_id", scrimId),
+      supabase.from("opponent_performances").select("game_number, score").eq("scrim_id", scrimId),
+    ]);
+    if (e1 || e2) return;
+    const allyByGame = new Map<number, number>();
+    const oppByGame = new Map<number, number>();
+    (allyRows ?? []).forEach((r: any) => allyByGame.set(r.game_number, (allyByGame.get(r.game_number) ?? 0) + (r.score ?? 0)));
+    (oppRows ?? []).forEach((r: any) => oppByGame.set(r.game_number, (oppByGame.get(r.game_number) ?? 0) + (r.score ?? 0)));
+    let usWins = 0;
+    let themWins = 0;
+    const allGames = new Set<number>([...allyByGame.keys(), ...oppByGame.keys()]);
+    allGames.forEach((g) => {
+      const a = allyByGame.get(g) ?? 0;
+      const o = oppByGame.get(g) ?? 0;
+      if (a === 0 && o === 0) return;
+      if (a > o) usWins += 1;
+      else if (o > a) themWins += 1;
+    });
+    await supabase.from("scrims").update({ score_us: usWins, score_them: themWins }).eq("id", scrimId);
+    qc.invalidateQueries({ queryKey: ["scrims"] });
+  }
+
   async function saveAll() {
     await Promise.all([saveAllies.mutateAsync(), saveOpps.mutateAsync()]);
+    await recalcScrimScore();
     toast.success(`Jogo ${game} salvo`);
   }
 

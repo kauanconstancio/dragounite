@@ -18,7 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3, CheckCircle2 } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -106,6 +106,20 @@ function ScrimsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Removido"); },
   });
 
+  const complete = useMutation({
+    mutationFn: async (s: Scrim) => {
+      const result: Scrim["result"] =
+        s.score_us > s.score_them ? "win" : s.score_them > s.score_us ? "loss" : "draw";
+      const { error } = await supabase
+        .from("scrims")
+        .update({ status: "completed", result })
+        .eq("id", s.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Scrim concluída"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const wins = scrims.filter((s) => s.result === "win").length;
   const losses = scrims.filter((s) => s.result === "loss").length;
   const upcoming = scrims.filter((s) => !isPast(new Date(s.scheduled_at)) && s.status === "scheduled");
@@ -144,8 +158,8 @@ function ScrimsPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
-          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
+          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onComplete={(s) => complete.mutate(s)} />
+          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onComplete={(s) => complete.mutate(s)} muted />
         </>
       )}
     </div>
@@ -166,7 +180,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
   );
 }
 
-function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; muted?: boolean }) {
+function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; onComplete: (s: Scrim) => void; muted?: boolean }) {
   const [perfFor, setPerfFor] = useState<Scrim | null>(null);
   return (
     <section>
@@ -224,6 +238,16 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { tit
                       <BarChart3 className="h-4 w-4 mr-1.5" /> Stats
                     </Button>
                     <RequireRole roles={["coach"]}>
+                      {s.status !== "completed" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onComplete(s)}
+                          className="border-gold/40 text-gold hover:bg-gold/10 uppercase tracking-wider text-xs"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-1.5" /> Concluir
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) onDelete(s.id); }}><Trash2 className="h-4 w-4" /></Button>
                     </RequireRole>
