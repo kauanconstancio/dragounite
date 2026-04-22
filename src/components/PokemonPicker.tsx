@@ -38,8 +38,8 @@ export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pok
       >
         {value ? (
           <>
-            <div className="h-7 w-7 rounded bg-gradient-primary/20 border border-border flex items-center justify-center overflow-hidden shrink-0">
-              <PokemonImage name={value} />
+            <div className="h-7 w-7 shrink-0">
+              <PokemonImage name={value} withRoleBg />
             </div>
             <span className="flex-1 truncate">{value}</span>
             <X

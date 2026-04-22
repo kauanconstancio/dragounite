@@ -189,8 +189,8 @@ function RosterPage() {
 
                         {m.main_pokemon && (
                           <div className="mt-3 flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-md bg-gradient-primary/30 border border-border flex items-center justify-center p-1 shadow-card overflow-hidden">
-                              <PokemonImage name={m.main_pokemon} />
+                            <div className="h-14 w-14 shrink-0">
+                              <PokemonImage name={m.main_pokemon} withRoleBg />
                             </div>
                             <div>
                               <div className="text-muted-foreground text-[10px] uppercase tracking-widest">Main</div>
