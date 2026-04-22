@@ -83,6 +83,7 @@ function OpponentsPage() {
         region: o.region?.trim() || null,
         notes: o.notes?.trim() || null,
         recurring_picks: o.recurring_picks ?? [],
+        known_players: o.known_players ?? [],
       };
       if (editing) {
         const { error } = await supabase.from("opponents").update(payload).eq("id", editing.id);
