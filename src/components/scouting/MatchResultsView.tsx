@@ -270,11 +270,11 @@ function EmptyState({ side }: { side: "ally" | "opp" }) {
 function DetailsHeader({ side }: { side: "ally" | "opp" }) {
   const color = side === "ally" ? "text-primary" : "text-destructive";
   return (
-    <div className={cn("grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-3 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground", color)}>
-      <span />
-      <Trophy className="h-3.5 w-3.5 justify-self-center" />
-      <Swords className="h-3.5 w-3.5 justify-self-center" />
-      <HandHeart className="h-3.5 w-3.5 justify-self-center" />
+    <div className={cn("flex items-center gap-3 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground", color)}>
+      <span className="flex-1 min-w-0" />
+      <span className="w-12 flex items-center justify-center"><Trophy className="h-3.5 w-3.5" /></span>
+      <span className="w-10 flex items-center justify-center"><Swords className="h-3.5 w-3.5" /></span>
+      <span className="w-10 flex items-center justify-center"><HandHeart className="h-3.5 w-3.5" /></span>
       <span className="w-10 text-center">MVP</span>
     </div>
   );
@@ -294,10 +294,10 @@ function DetailsRow({
   const accent = side === "ally" ? "text-primary" : "text-destructive";
   return (
     <div className={cn(
-      "grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-3 px-2 py-2 rounded-md",
+      "flex items-center gap-3 px-2 py-2 rounded-md",
       side === "ally" ? "bg-primary/5 hover:bg-primary/10" : "bg-destructive/5 hover:bg-destructive/10",
     )}>
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex flex-1 items-center gap-2 min-w-0">
         <div className="w-8 h-8 shrink-0"><PokemonImage name={pokemon} /></div>
         <span className="font-display text-sm tracking-wide truncate">{name}</span>
       </div>
