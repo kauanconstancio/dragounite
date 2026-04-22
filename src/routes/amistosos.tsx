@@ -18,11 +18,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Swords, Trophy } from "lucide-react";
+import { Plus, Trash2, Pencil, Swords, Trophy, Video } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { VodEmbed } from "@/components/scouting/VodEmbed";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/amistosos")({
 type Scrim = {
   id: string;
   opponent: string;
+  opponent_id: string | null;
   scheduled_at: string;
   best_of: number;
   result: "pending" | "win" | "loss" | "draw";
@@ -44,7 +46,11 @@ type Scrim = {
   score_them: number;
   status: "scheduled" | "completed" | "cancelled";
   notes: string | null;
+  vod_url: string | null;
+  vod_notes: string | null;
 };
+
+type Opponent = { id: string; name: string; tag: string | null };
 
 const RESULT_STYLES: Record<string, string> = {
   win: "bg-gold/20 text-gold border-gold/40",
@@ -67,6 +73,17 @@ function ScrimsPage() {
       return data as Scrim[];
     },
   });
+
+  const { data: opponents = [] } = useQuery({
+    queryKey: ["opponents-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("opponents").select("id, name, tag").order("name");
+      if (error) throw error;
+      return data as Opponent[];
+    },
+  });
+
+  const opponentMap = new Map(opponents.map((o) => [o.id, o]));
 
   const save = useMutation({
     mutationFn: async (s: Partial<Scrim>) => {
@@ -109,7 +126,7 @@ function ScrimsPage() {
               <Plus className="mr-2 h-4 w-4" /> Novo amistoso
             </Button>
           </DialogTrigger>
-          <ScrimDialog editing={editing} onSave={(s) => save.mutate(s)} saving={save.isPending} />
+          <ScrimDialog editing={editing} opponents={opponents} onSave={(s) => save.mutate(s)} saving={save.isPending} />
         </Dialog>
       </div>
 
@@ -123,8 +140,8 @@ function ScrimsPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <ScrimList title="Próximos" items={upcoming} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
-          <ScrimList title="Histórico" items={past} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
+          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
+          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
         </>
       )}
     </div>
@@ -145,7 +162,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
   );
 }
 
-function ScrimList({ title, items, onEdit, onDelete, muted }: { title: string; items: Scrim[]; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; muted?: boolean }) {
+function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; muted?: boolean }) {
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
@@ -172,14 +189,25 @@ function ScrimList({ title, items, onEdit, onDelete, muted }: { title: string; i
                   </div>
                   <div className="flex-1 min-w-[200px]">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-display text-xl tracking-wider">{s.opponent}</h3>
+                      <h3 className="font-display text-xl tracking-wider">
+                        {s.opponent_id && opponentMap.get(s.opponent_id)?.name ? opponentMap.get(s.opponent_id)!.name : s.opponent}
+                      </h3>
                       <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${RESULT_STYLES[s.result]}`}>{RESULT_LABEL[s.result]}</Badge>
                       <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-border">BO{s.best_of}</Badge>
+                      {s.vod_url && (
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/40 text-primary">
+                          <Video className="h-2.5 w-2.5 mr-1" /> VOD
+                        </Badge>
+                      )}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {format(new Date(s.scheduled_at), "EEE, dd MMM · HH:mm", { locale: ptBR })}
                     </div>
                     {s.notes && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{s.notes}</p>}
+                    {s.vod_url && (
+                      <div className="mt-3"><VodEmbed url={s.vod_url} /></div>
+                    )}
+                    {s.vod_notes && <p className="mt-2 text-xs text-muted-foreground italic whitespace-pre-wrap">{s.vod_notes}</p>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
@@ -203,6 +231,7 @@ function toLocalInput(iso?: string) {
 
 type ScrimForm = {
   opponent: string;
+  opponent_id: string | null;
   scheduled_at: string;
   best_of: number;
   result: "pending" | "win" | "loss" | "draw";
@@ -210,11 +239,14 @@ type ScrimForm = {
   score_them: number;
   status: "scheduled" | "completed" | "cancelled";
   notes: string;
+  vod_url: string;
+  vod_notes: string;
 };
 
 function emptyScrimForm(): ScrimForm {
   return {
     opponent: "",
+    opponent_id: null,
     scheduled_at: toLocalInput(new Date().toISOString()),
     best_of: 3,
     result: "pending",
@@ -222,12 +254,15 @@ function emptyScrimForm(): ScrimForm {
     score_them: 0,
     status: "scheduled",
     notes: "",
+    vod_url: "",
+    vod_notes: "",
   };
 }
 
 function fromScrim(editing: Scrim): ScrimForm {
   return {
     opponent: editing.opponent,
+    opponent_id: editing.opponent_id,
     scheduled_at: toLocalInput(editing.scheduled_at),
     best_of: editing.best_of,
     result: editing.result,
@@ -235,15 +270,19 @@ function fromScrim(editing: Scrim): ScrimForm {
     score_them: editing.score_them,
     status: editing.status,
     notes: editing.notes ?? "",
+    vod_url: editing.vod_url ?? "",
+    vod_notes: editing.vod_notes ?? "",
   };
 }
 
 function ScrimDialog({
   editing,
+  opponents,
   onSave,
   saving,
 }: {
   editing: Scrim | null;
+  opponents: Opponent[];
   onSave: (s: Partial<Scrim>) => void;
   saving: boolean;
 }) {
@@ -268,6 +307,7 @@ function ScrimDialog({
     }
     onSave({
       opponent: form.opponent.trim(),
+      opponent_id: form.opponent_id,
       scheduled_at: parsed.toISOString(),
       best_of: form.best_of,
       result: form.result,
@@ -275,22 +315,46 @@ function ScrimDialog({
       score_them: Math.max(0, Math.round(form.score_them) || 0),
       status: form.status,
       notes: form.notes.trim() || null,
+      vod_url: form.vod_url.trim() || null,
+      vod_notes: form.vod_notes.trim() || null,
     });
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="font-display text-2xl tracking-wider">
           {editing ? "Editar amistoso" : "Novo amistoso"}
         </DialogTitle>
         <DialogDescription>
-          Registre oponente, formato BO, placar e resultado do scrim.
+          Registre oponente, formato BO, placar, resultado e VOD do scrim.
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="sc-opp">Oponente</Label>
+          <Label htmlFor="sc-opp-link">Oponente cadastrado (opcional)</Label>
+          <Select
+            value={form.opponent_id ?? "none"}
+            onValueChange={(v) => {
+              if (v === "none") {
+                setForm((f) => ({ ...f, opponent_id: null }));
+              } else {
+                const o = opponents.find((x) => x.id === v);
+                setForm((f) => ({ ...f, opponent_id: v, opponent: o?.name ?? f.opponent }));
+              }
+            }}
+          >
+            <SelectTrigger id="sc-opp-link"><SelectValue placeholder="Texto livre" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">— Texto livre —</SelectItem>
+              {opponents.map((o) => (
+                <SelectItem key={o.id} value={o.id}>{o.name}{o.tag ? ` [${o.tag}]` : ""}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="sc-opp">Nome do oponente</Label>
           <Input
             id="sc-opp"
             value={form.opponent}
@@ -387,6 +451,26 @@ function ScrimDialog({
             id="sc-notes"
             value={form.notes}
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            rows={3}
+          />
+        </div>
+        <div>
+          <Label htmlFor="sc-vod">VOD URL (YouTube ou Drive)</Label>
+          <Input
+            id="sc-vod"
+            type="url"
+            placeholder="https://youtube.com/watch?v=..."
+            value={form.vod_url}
+            onChange={(e) => setForm((f) => ({ ...f, vod_url: e.target.value }))}
+          />
+        </div>
+        <div>
+          <Label htmlFor="sc-vod-notes">Notas do VOD (timestamps)</Label>
+          <Textarea
+            id="sc-vod-notes"
+            placeholder="0:30 — bug do regis | 4:12 — rotação top"
+            value={form.vod_notes}
+            onChange={(e) => setForm((f) => ({ ...f, vod_notes: e.target.value }))}
             rows={3}
           />
         </div>

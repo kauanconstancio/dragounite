@@ -32,6 +32,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { RsvpControls } from "@/components/agenda/RsvpControls";
 
 export const Route = createFileRoute("/agenda")({
   head: () => ({
@@ -74,6 +75,7 @@ type Scrim = {
 
 type AgendaEvent = {
   id: string;
+  rawId: string;
   kind: "training" | "scrim";
   title: string;
   date: Date;
@@ -127,6 +129,7 @@ function AgendaPage() {
   const events: AgendaEvent[] = useMemo(() => {
     const t: AgendaEvent[] = trainings.map((tr) => ({
       id: `t-${tr.id}`,
+      rawId: tr.id,
       kind: "training",
       title: tr.title,
       date: new Date(tr.scheduled_at),
@@ -135,6 +138,7 @@ function AgendaPage() {
     }));
     const s: AgendaEvent[] = scrims.map((sc) => ({
       id: `s-${sc.id}`,
+      rawId: sc.id,
       kind: "scrim",
       title: `vs ${sc.opponent}`,
       date: new Date(sc.scheduled_at),
@@ -362,9 +366,12 @@ function AgendaPage() {
                 Nenhum evento neste dia.
               </p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {selectedEvents.map((e) => (
-                  <EventRow key={e.id} event={e} />
+                  <div key={e.id} className="space-y-2">
+                    <EventRow event={e} />
+                    <RsvpControls eventId={e.rawId} eventType={e.kind} />
+                  </div>
                 ))}
               </div>
             )}
