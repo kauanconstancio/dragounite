@@ -97,6 +97,10 @@ export type UnitePokemon = { name: string; slug: string; role: UniteRole };
 export const POKEMON_DATA: UnitePokemon[] = [
   // Attackers
   { name: "Alolan Ninetales", slug: "alolan-ninetales", role: "attacker" },
+  { name: "Articuno", slug: "articuno", role: "attacker" },
+  { name: "Moltres", slug: "moltres", role: "attacker" },
+  { name: "Zapdos", slug: "zapdos", role: "attacker" },
+  { name: "Charizard Y", slug: "charizard", role: "attacker" },
   { name: "Alolan Raichu", slug: "alolan-raichu", role: "attacker" },
   { name: "Armarouge", slug: "armarouge", role: "attacker" },
   { name: "Chandelure", slug: "chandelure", role: "attacker" },
@@ -126,6 +130,10 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Buzzwole", slug: "buzzwole", role: "all-rounder" },
   { name: "Ceruledge", slug: "ceruledge", role: "all-rounder" },
   { name: "Charizard", slug: "charizard", role: "all-rounder" },
+  { name: "Charizard X", slug: "charizard", role: "all-rounder" },
+  { name: "Mega Lucario", slug: "lucario", role: "all-rounder" },
+  { name: "Mega Gyarados", slug: "gyarados", role: "all-rounder" },
+  { name: "Sirfetch'd", slug: "sirfetchd", role: "all-rounder" },
   { name: "Dragonite", slug: "dragonite", role: "all-rounder" },
   { name: "Empoleon", slug: "empoleon", role: "all-rounder" },
   { name: "Falinks", slug: "falinks", role: "all-rounder" },
