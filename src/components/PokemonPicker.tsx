@@ -53,11 +53,18 @@ export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pok
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+        <DialogContent
+          className="max-w-3xl max-h-[85vh] flex flex-col"
+          onPointerDownOutside={(e) => e.stopPropagation()}
+          onInteractOutside={(e) => e.stopPropagation()}
+        >
           <DialogHeader>
             <DialogTitle className="font-display text-2xl tracking-wider">
               Escolha um <span className="text-gold">Pokémon</span>
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Selecione um Pokémon da lista filtrando por papel ou nome.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="relative">
