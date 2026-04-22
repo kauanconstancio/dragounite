@@ -120,6 +120,16 @@ export function PokemonPicker({ value, onChange, placeholder = "Selecione um Pok
                       <span className="font-display text-[10px] tracking-wider text-center leading-tight truncate w-full uppercase">
                         {p.name}
                       </span>
+                      <span
+                        className={cn(
+                          "px-1.5 py-0.5 rounded text-[8px] uppercase tracking-widest font-display border w-full text-center truncate",
+                          UNITE_ROLE_STYLES[p.role].bg,
+                          UNITE_ROLE_STYLES[p.role].ring,
+                          UNITE_ROLE_STYLES[p.role].text,
+                        )}
+                      >
+                        {UNITE_ROLE_LABEL[p.role]}
+                      </span>
                     </button>
                   );
                 })}
