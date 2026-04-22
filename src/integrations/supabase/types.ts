@@ -290,6 +290,75 @@ export type Database = {
         }
         Relationships: []
       }
+      opponent_performances: {
+        Row: {
+          assists: number
+          created_at: string
+          damage_dealt: number
+          damage_taken: number
+          game_number: number
+          healing: number
+          id: string
+          kills: number
+          notes: string | null
+          opponent_id: string | null
+          player_name: string
+          pokemon: string | null
+          rating: number | null
+          score: number
+          scrim_id: string
+        }
+        Insert: {
+          assists?: number
+          created_at?: string
+          damage_dealt?: number
+          damage_taken?: number
+          game_number?: number
+          healing?: number
+          id?: string
+          kills?: number
+          notes?: string | null
+          opponent_id?: string | null
+          player_name: string
+          pokemon?: string | null
+          rating?: number | null
+          score?: number
+          scrim_id: string
+        }
+        Update: {
+          assists?: number
+          created_at?: string
+          damage_dealt?: number
+          damage_taken?: number
+          game_number?: number
+          healing?: number
+          id?: string
+          kills?: number
+          notes?: string | null
+          opponent_id?: string | null
+          player_name?: string
+          pokemon?: string | null
+          rating?: number | null
+          score?: number
+          scrim_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opponent_performances_opponent_id_fkey"
+            columns: ["opponent_id"]
+            isOneToOne: false
+            referencedRelation: "opponents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opponent_performances_scrim_id_fkey"
+            columns: ["scrim_id"]
+            isOneToOne: false
+            referencedRelation: "scrims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opponents: {
         Row: {
           created_at: string
