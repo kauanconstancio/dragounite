@@ -149,6 +149,7 @@ function PerfilPage() {
   }
 
   const m = memberQ.data;
+  const isIncomplete = !m.ign || !m.lane || !m.main_pokemon;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
