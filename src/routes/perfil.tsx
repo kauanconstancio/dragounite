@@ -123,6 +123,7 @@ function PerfilPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-member", memberId] });
       qc.invalidateQueries({ queryKey: ["members"] });
+      qc.invalidateQueries({ queryKey: ["profile-complete-check"] });
       toast.success("Perfil atualizado");
     },
     onError: (e: any) => toast.error(e.message),
@@ -148,6 +149,7 @@ function PerfilPage() {
   }
 
   const m = memberQ.data;
+  const isIncomplete = !m.ign || !m.lane || !m.main_pokemon;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -160,6 +162,20 @@ function PerfilPage() {
           Edite suas informações pessoais que aparecem no Roster do time.
         </p>
       </header>
+
+      {isIncomplete && (
+        <Card className="p-4 border-gold/40 bg-gold/5 flex items-start gap-3">
+          <UserCircle className="h-5 w-5 text-gold shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="font-display text-sm tracking-wider text-gold uppercase">Complete seu perfil</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Antes de navegar pelo sistema, preencha seu <strong className="text-foreground">IGN</strong>,{" "}
+              <strong className="text-foreground">rota preferida</strong> e{" "}
+              <strong className="text-foreground">Pokémon main</strong>. Essas informações são essenciais para o time.
+            </p>
+          </div>
+        </Card>
+      )}
 
       <Card className="p-6 border-border bg-card">
         <div className="flex items-center gap-4 pb-5 border-b border-border/60">
