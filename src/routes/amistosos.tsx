@@ -162,7 +162,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
   );
 }
 
-function ScrimList({ title, items, onEdit, onDelete, muted }: { title: string; items: Scrim[]; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; muted?: boolean }) {
+function ScrimList({ title, items, opponentMap, onEdit, onDelete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; muted?: boolean }) {
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
@@ -189,14 +189,25 @@ function ScrimList({ title, items, onEdit, onDelete, muted }: { title: string; i
                   </div>
                   <div className="flex-1 min-w-[200px]">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-display text-xl tracking-wider">{s.opponent}</h3>
+                      <h3 className="font-display text-xl tracking-wider">
+                        {s.opponent_id && opponentMap.get(s.opponent_id)?.name ? opponentMap.get(s.opponent_id)!.name : s.opponent}
+                      </h3>
                       <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${RESULT_STYLES[s.result]}`}>{RESULT_LABEL[s.result]}</Badge>
                       <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-border">BO{s.best_of}</Badge>
+                      {s.vod_url && (
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/40 text-primary">
+                          <Video className="h-2.5 w-2.5 mr-1" /> VOD
+                        </Badge>
+                      )}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {format(new Date(s.scheduled_at), "EEE, dd MMM · HH:mm", { locale: ptBR })}
                     </div>
                     {s.notes && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{s.notes}</p>}
+                    {s.vod_url && (
+                      <div className="mt-3"><VodEmbed url={s.vod_url} /></div>
+                    )}
+                    {s.vod_notes && <p className="mt-2 text-xs text-muted-foreground italic whitespace-pre-wrap">{s.vod_notes}</p>}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
@@ -220,6 +231,7 @@ function toLocalInput(iso?: string) {
 
 type ScrimForm = {
   opponent: string;
+  opponent_id: string | null;
   scheduled_at: string;
   best_of: number;
   result: "pending" | "win" | "loss" | "draw";
@@ -227,11 +239,14 @@ type ScrimForm = {
   score_them: number;
   status: "scheduled" | "completed" | "cancelled";
   notes: string;
+  vod_url: string;
+  vod_notes: string;
 };
 
 function emptyScrimForm(): ScrimForm {
   return {
     opponent: "",
+    opponent_id: null,
     scheduled_at: toLocalInput(new Date().toISOString()),
     best_of: 3,
     result: "pending",
@@ -239,12 +254,15 @@ function emptyScrimForm(): ScrimForm {
     score_them: 0,
     status: "scheduled",
     notes: "",
+    vod_url: "",
+    vod_notes: "",
   };
 }
 
 function fromScrim(editing: Scrim): ScrimForm {
   return {
     opponent: editing.opponent,
+    opponent_id: editing.opponent_id,
     scheduled_at: toLocalInput(editing.scheduled_at),
     best_of: editing.best_of,
     result: editing.result,
@@ -252,6 +270,8 @@ function fromScrim(editing: Scrim): ScrimForm {
     score_them: editing.score_them,
     status: editing.status,
     notes: editing.notes ?? "",
+    vod_url: editing.vod_url ?? "",
+    vod_notes: editing.vod_notes ?? "",
   };
 }
 
