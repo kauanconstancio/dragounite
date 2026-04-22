@@ -259,7 +259,10 @@ function UserRow({
               <Button size="sm" variant="ghost" title="Redefinir senha"><KeyRound className="h-4 w-4" /></Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Redefinir senha — {u.email}</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Redefinir senha — {u.email}</DialogTitle>
+                <DialogDescription>Defina uma nova senha temporária para este usuário.</DialogDescription>
+              </DialogHeader>
               <div className="space-y-2">
                 <Label htmlFor="newpw">Nova senha (mín. 6)</Label>
                 <Input id="newpw" type="text" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
