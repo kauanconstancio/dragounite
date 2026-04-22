@@ -74,7 +74,14 @@ function ScrimsPage() {
     },
   });
 
-  const save = useMutation({
+  const { data: opponents = [] } = useQuery({
+    queryKey: ["opponents-min"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("opponents").select("id, name, tag").order("name");
+      if (error) throw error;
+      return data as Opponent[];
+    },
+  });
     mutationFn: async (s: Partial<Scrim>) => {
       if (editing) {
         const { error } = await supabase.from("scrims").update(s).eq("id", editing.id);
