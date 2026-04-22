@@ -253,14 +253,7 @@ export function PerformanceDialog({
 
   async function saveAll() {
     await Promise.all([saveAllies.mutateAsync(), saveOpps.mutateAsync()]);
-    setEditingId(null);
-    setEditingSide(null);
     toast.success(`Jogo ${game} salvo`);
-  }
-
-  function startEdit(side: "ally" | "opp", id: string) {
-    setEditingSide(side);
-    setEditingId(id);
   }
 
   return (
