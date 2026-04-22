@@ -100,8 +100,6 @@ export function PerformanceDialog({
   const [allies, setAllies] = useState<AllyForm[]>([]);
   const [opps, setOpps] = useState<OppForm[]>([]);
   const [game, setGame] = useState(1);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingSide, setEditingSide] = useState<"ally" | "opp" | null>(null);
 
   const { data: members = [] } = useQuery({
     queryKey: ["members-starters"],
