@@ -88,7 +88,7 @@ export function lastNScrimsForChart(
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
     .slice(-n);
 
-  // Build cumulative match winrate up to and including each scrim's date
+  // Deduplicate matches per scrim+game and keep their result + scrim time
   const seen = new Map<string, { result: "pending" | "win" | "loss" | "draw"; scrimId: string }>();
   for (const p of perfs) {
     const key = `${p.scrim_id}:${p.game_number}`;
@@ -96,24 +96,19 @@ export function lastNScrimsForChart(
   }
   const scrimDate = new Map(scrims.map((s) => [s.id, new Date(s.scheduled_at).getTime()]));
   const matchEntries = [...seen.values()]
-    .filter((m) => m.result === "win" || m.result === "loss")
     .map((m) => ({ result: m.result, t: scrimDate.get(m.scrimId) ?? 0 }))
     .sort((a, b) => a.t - b.t);
 
-  let scrimWins = 0;
   return finished.map((s, i) => {
-    if (s.result === "win") scrimWins++;
-    const total = i + 1;
     const cutoff = new Date(s.scheduled_at).getTime();
     const matchesUpTo = matchEntries.filter((m) => m.t <= cutoff);
-    const mWins = matchesUpTo.filter((m) => m.result === "win").length;
-    const mTotal = matchesUpTo.length;
+    const total = matchesUpTo.length;
+    const wins = matchesUpTo.filter((m) => m.result === "win").length;
     return {
       label: `#${i + 1}`,
       opponent: s.opponent,
-      winrate: Math.round((scrimWins / total) * 100),
-      matchWinrate: mTotal ? Math.round((mWins / mTotal) * 100) : 0,
-      result: s.result === "win" ? 1 : 0,
+      wins,
+      total,
     };
   });
 }
