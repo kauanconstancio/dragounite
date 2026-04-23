@@ -1,28 +1,47 @@
 
-## Adicionar KPIs de Win-rate (Scrims e Partidas) no Dashboard
+## Radar Chart de Performance do Time no Dashboard
 
-Atualmente o card "Winrate geral" do dashboard mostra apenas o resultado consolidado de scrims (uma linha por scrim em `scrims.result`). Vamos separar em duas métricas distintas:
+Substituir o gráfico atual de "Partidas Ganhas vs Total" por um **Radar Chart** que mostra um panorama completo da performance do time em múltiplas dimensões normalizadas (0-100).
 
-1. **Winrate de Scrims** — baseado em `scrims.result` (resultado final do confronto best-of-N).
-2. **Winrate de Partidas** — baseado em cada game individual registrado em `match_performances.result`, contando cada partida como uma vitória/derrota.
+### Eixos do radar (6 métricas)
+
+1. **Winrate Scrims** — % de scrims ganhas (já calculado).
+2. **Winrate Partidas** — % de games individuais ganhos (já calculado).
+3. **KDA médio** — KDA agregado de todas as `match_performances`, normalizado (KDA 5.0+ = 100).
+4. **Dano médio** — média de `damage_dealt` por partida, normalizado por máximo histórico.
+5. **MVP rate** — % de partidas com pelo menos um MVP do time.
+6. **Atividade** — partidas finalizadas nos últimos 30 dias, normalizado (10+ scrims = 100).
+
+Cada eixo vai de 0 a 100 para manter escala consistente. Tooltip mostra o valor real (ex: "KDA: 3.42", "Dano médio: 78.500").
 
 ### Mudanças
 
 **`src/lib/stats.ts`**
-- Adicionar nova função `computeMatchWinrate(perfs)` que recebe linhas de `match_performances` e calcula `{ rate, wins, losses, total }`. Como cada game tem múltiplas performances (uma por jogador), agrupar por `scrim_id + game_number` e contar cada game único uma vez (usando o `result` que é o mesmo para todos os jogadores daquele game).
+- Adicionar `computeTeamRadar(scrims, perfs)` que retorna `{ axis: string; value: number; raw: string }[]` com os 6 eixos normalizados.
+
+**`src/components/dashboard/TeamRadarChart.tsx`** (novo)
+- Componente usando `RadarChart`, `PolarGrid`, `PolarAngleAxis`, `PolarRadiusAxis` e `Radar` do Recharts.
+- Cores: `var(--primary)` (azul) para preenchimento da área com opacidade ~0.4, stroke `var(--gold)`.
+- Tooltip customizado mostrando o valor bruto (raw) ao invés do normalizado.
+- Estado vazio: mensagem "Sem dados suficientes para gerar radar".
 
 **`src/routes/index.tsx`**
-- Adicionar nova `useQuery` buscando `match_performances` (campos: `scrim_id, game_number, result`).
-- Renomear o KPI atual "Winrate geral" para **"Winrate Scrims"** (mantém lógica existente baseada em `scrims`).
-- Adicionar novo KPI **"Winrate Partidas"** usando `computeMatchWinrate`, com hint mostrando `XV · YD em Z partidas`.
-- Reorganizar grid de KPIs: passar de `grid-cols-2 lg:grid-cols-4` para `grid-cols-2 lg:grid-cols-5` para acomodar os 5 cards (Winrate Scrims, Winrate Partidas, Streak, Treinos no mês, Roster ativo).
+- Substituir importação de `WinrateChart` por `TeamRadarChart`.
+- Atualizar `useMemo` do `chartData` para chamar `computeTeamRadar(scrims, matchPerfs)`.
+- Atualizar título do card para **"Visão Geral do Time"** com subtítulo "6 dimensões de performance".
 
 ### Detalhes técnicos
 
-- A query busca apenas `scrim_id, game_number, result` de `match_performances` para minimizar payload.
-- Deduplicação por chave `${scrim_id}:${game_number}` antes de contar wins/losses (ignora `pending` e `draw` no cálculo de taxa, igual ao comportamento atual de scrims).
-- Ícone do novo KPI: `Swords` (lucide-react, já importado) com accent `gold` para diferenciar do "Winrate Scrims" que mantém `Trophy`/`gold`. Para evitar dois cards dourados lado a lado, mudar accent do novo card para `primary`.
+- Normalizações:
+  - Winrates: já em 0-100.
+  - KDA: `min(kda / 5 * 100, 100)`.
+  - Dano: `min(avgDmg / 100000 * 100, 100)` (referência ~100k de dano por partida = topo).
+  - MVP rate: `(games_with_mvp / total_games) * 100`.
+  - Atividade: `min(scrims_30d / 10 * 100, 100)`.
+- `matchPerfs` precisa ser estendido para incluir `kills, deaths, assists, damage_dealt, is_mvp` — atualizar a query em `index.tsx` para selecionar esses campos adicionais.
+- Reutilizar tipo `PerfRow` de `src/lib/player-stats.ts` ou criar um tipo local mais leve em `stats.ts`.
 
 ### Arquivos editados
 - `src/lib/stats.ts`
+- `src/components/dashboard/TeamRadarChart.tsx` (novo)
 - `src/routes/index.tsx`
