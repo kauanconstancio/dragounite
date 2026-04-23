@@ -86,7 +86,7 @@ export function WinrateBarChart({ scrimWr, matchWr }: Props) {
             {data.map((entry, idx) => (
               <Cell
                 key={idx}
-                fill={idx === 0 ? "var(--gold)" : "hsl(var(--primary))"}
+                fill={idx === 0 ? "var(--gold)" : "var(--primary)"}
               />
             ))}
           </Bar>
