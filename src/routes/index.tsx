@@ -125,6 +125,51 @@ function DashboardPage() {
     },
   });
 
+  const { data: announcementLikes = [] } = useQuery({
+    queryKey: ["announcement_likes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("announcement_likes")
+        .select("announcement_id, user_id");
+      if (error) throw error;
+      return data as LikeRow[];
+    },
+  });
+
+  const toggleLike = useMutation({
+    mutationFn: async ({ id, liked }: { id: string; liked: boolean }) => {
+      if (!user) throw new Error("Faça login para curtir");
+      if (liked) {
+        const { error } = await supabase
+          .from("announcement_likes")
+          .delete()
+          .eq("announcement_id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("announcement_likes")
+          .insert({ announcement_id: id, user_id: user.id });
+        if (error) throw error;
+      }
+    },
+    onMutate: async ({ id, liked }) => {
+      if (!user) return;
+      await qc.cancelQueries({ queryKey: ["announcement_likes"] });
+      const prev = qc.getQueryData<LikeRow[]>(["announcement_likes"]) ?? [];
+      const next = liked
+        ? prev.filter((l) => !(l.announcement_id === id && l.user_id === user.id))
+        : [...prev, { announcement_id: id, user_id: user.id }];
+      qc.setQueryData(["announcement_likes"], next);
+      return { prev };
+    },
+    onError: (e: Error, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["announcement_likes"], ctx.prev);
+      toast.error(e.message);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["announcement_likes"] }),
+  });
+
   const wr = useMemo(() => computeWinrate(scrims), [scrims]);
   const matchWr = useMemo(() => computeMatchWinrate(matchPerfs), [matchPerfs]);
   const streak = useMemo(() => computeStreak(scrims), [scrims]);
