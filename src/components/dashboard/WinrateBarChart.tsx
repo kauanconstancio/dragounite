@@ -64,24 +64,24 @@ export function WinrateBarChart({ scrimWr, matchWr }: Props) {
     <div className="h-[280px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 16, right: 16, bottom: 8, left: 0 }}>
-          <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.4} strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid stroke="var(--border)" strokeOpacity={0.4} strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="label"
             tick={{
-              fill: "hsl(var(--muted-foreground))",
+              fill: "var(--muted-foreground)",
               fontSize: 11,
               letterSpacing: "0.1em",
             }}
-            stroke="hsl(var(--border))"
+            stroke="var(--border)"
           />
           <YAxis
             domain={[0, 100]}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-            stroke="hsl(var(--border))"
+            tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+            stroke="var(--border)"
             tickCount={6}
             tickFormatter={(v) => `${v}%`}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", fillOpacity: 0.1 }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--muted)", fillOpacity: 0.1 }} />
           <Bar dataKey="rate" radius={[6, 6, 0, 0]} maxBarSize={80}>
             {data.map((entry, idx) => (
               <Cell
