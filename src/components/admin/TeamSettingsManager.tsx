@@ -7,8 +7,86 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings2, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { Settings2, Upload, Loader2, Image as ImageIcon, Check, Palette } from "lucide-react";
 import { toast } from "sonner";
+
+type ColorPreset = {
+  id: string;
+  name: string;
+  description: string;
+  primary: string;
+  accent: string;
+};
+
+const COLOR_PRESETS: ColorPreset[] = [
+  {
+    id: "battle-arena",
+    name: "Battle Arena",
+    description: "Carmesim + dourado (padrão)",
+    primary: "#DC2626",
+    accent: "#FBBF24",
+  },
+  {
+    id: "royal-purple",
+    name: "Royal Purple",
+    description: "Roxo majestoso + âmbar",
+    primary: "#7C3AED",
+    accent: "#F59E0B",
+  },
+  {
+    id: "ocean-deep",
+    name: "Ocean Deep",
+    description: "Azul oceano + ciano",
+    primary: "#0EA5E9",
+    accent: "#22D3EE",
+  },
+  {
+    id: "forest-strike",
+    name: "Forest Strike",
+    description: "Verde mata + lima",
+    primary: "#16A34A",
+    accent: "#A3E635",
+  },
+  {
+    id: "sunset-blaze",
+    name: "Sunset Blaze",
+    description: "Laranja fogo + rosa",
+    primary: "#F97316",
+    accent: "#EC4899",
+  },
+  {
+    id: "neon-mint",
+    name: "Neon Mint",
+    description: "Verde neon + esmeralda",
+    primary: "#10B981",
+    accent: "#34D399",
+  },
+  {
+    id: "cyber-pink",
+    name: "Cyber Pink",
+    description: "Magenta + violeta elétrico",
+    primary: "#EC4899",
+    accent: "#8B5CF6",
+  },
+  {
+    id: "noir-gold",
+    name: "Noir Gold",
+    description: "Grafite + ouro luxo",
+    primary: "#3F3F46",
+    accent: "#EAB308",
+  },
+  {
+    id: "ice-storm",
+    name: "Ice Storm",
+    description: "Azul gelo + prata",
+    primary: "#3B82F6",
+    accent: "#94A3B8",
+  },
+];
+
+function normalizeHex(hex: string): string {
+  return hex.trim().toUpperCase();
+}
 
 export function TeamSettingsManager() {
   const { data, isLoading } = useTeamSettings();
@@ -178,9 +256,64 @@ export function TeamSettingsManager() {
               {description.length}/240
             </div>
           </div>
+          {/* Presets de cores */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+              <Label className="text-[10px] uppercase tracking-[0.2em]">
+                Esquemas pré-definidos
+              </Label>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {COLOR_PRESETS.map((preset) => {
+                const isActive =
+                  normalizeHex(primaryColor) === normalizeHex(preset.primary) &&
+                  normalizeHex(accentColor) === normalizeHex(preset.accent);
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setPrimaryColor(preset.primary);
+                      setAccentColor(preset.accent);
+                    }}
+                    className={`group relative flex flex-col gap-2 rounded-lg border p-3 text-left transition-all hover:border-primary/60 hover:bg-muted/30 ${
+                      isActive
+                        ? "border-primary bg-primary/5 shadow-[0_0_0_1px_var(--primary)]"
+                        : "border-border bg-muted/10"
+                    }`}
+                    title={preset.description}
+                  >
+                    {isActive && (
+                      <span className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />
+                      </span>
+                    )}
+                    <div className="flex gap-1">
+                      <span
+                        className="h-6 flex-1 rounded-md border border-border/50"
+                        style={{ background: preset.primary }}
+                      />
+                      <span
+                        className="h-6 w-6 rounded-md border border-border/50"
+                        style={{ background: preset.accent }}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-medium leading-tight">{preset.name}</div>
+                      <div className="text-[9px] text-muted-foreground leading-tight mt-0.5">
+                        {preset.description}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="primary-color">Cor primária</Label>
+              <Label htmlFor="primary-color">Cor primária (personalizar)</Label>
               <div className="flex items-center gap-2">
                 <input
                   id="primary-color"
@@ -198,7 +331,7 @@ export function TeamSettingsManager() {
               </div>
             </div>
             <div>
-              <Label htmlFor="accent-color">Cor de destaque</Label>
+              <Label htmlFor="accent-color">Cor de destaque (personalizar)</Label>
               <div className="flex items-center gap-2">
                 <input
                   id="accent-color"
