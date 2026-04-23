@@ -7,8 +7,86 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings2, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { Settings2, Upload, Loader2, Image as ImageIcon, Check, Palette } from "lucide-react";
 import { toast } from "sonner";
+
+type ColorPreset = {
+  id: string;
+  name: string;
+  description: string;
+  primary: string;
+  accent: string;
+};
+
+const COLOR_PRESETS: ColorPreset[] = [
+  {
+    id: "battle-arena",
+    name: "Battle Arena",
+    description: "Carmesim + dourado (padrão)",
+    primary: "#DC2626",
+    accent: "#FBBF24",
+  },
+  {
+    id: "royal-purple",
+    name: "Royal Purple",
+    description: "Roxo majestoso + âmbar",
+    primary: "#7C3AED",
+    accent: "#F59E0B",
+  },
+  {
+    id: "ocean-deep",
+    name: "Ocean Deep",
+    description: "Azul oceano + ciano",
+    primary: "#0EA5E9",
+    accent: "#22D3EE",
+  },
+  {
+    id: "forest-strike",
+    name: "Forest Strike",
+    description: "Verde mata + lima",
+    primary: "#16A34A",
+    accent: "#A3E635",
+  },
+  {
+    id: "sunset-blaze",
+    name: "Sunset Blaze",
+    description: "Laranja fogo + rosa",
+    primary: "#F97316",
+    accent: "#EC4899",
+  },
+  {
+    id: "neon-mint",
+    name: "Neon Mint",
+    description: "Verde neon + esmeralda",
+    primary: "#10B981",
+    accent: "#34D399",
+  },
+  {
+    id: "cyber-pink",
+    name: "Cyber Pink",
+    description: "Magenta + violeta elétrico",
+    primary: "#EC4899",
+    accent: "#8B5CF6",
+  },
+  {
+    id: "noir-gold",
+    name: "Noir Gold",
+    description: "Grafite + ouro luxo",
+    primary: "#3F3F46",
+    accent: "#EAB308",
+  },
+  {
+    id: "ice-storm",
+    name: "Ice Storm",
+    description: "Azul gelo + prata",
+    primary: "#3B82F6",
+    accent: "#94A3B8",
+  },
+];
+
+function normalizeHex(hex: string): string {
+  return hex.trim().toUpperCase();
+}
 
 export function TeamSettingsManager() {
   const { data, isLoading } = useTeamSettings();
