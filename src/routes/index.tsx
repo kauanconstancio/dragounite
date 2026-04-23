@@ -20,12 +20,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { KpiCard } from "@/components/dashboard/KpiCard";
-import { TeamRadarChart } from "@/components/dashboard/TeamRadarChart";
+import { WinrateBarChart } from "@/components/dashboard/WinrateBarChart";
 import {
   computeWinrate,
   computeMatchWinrate,
   computeStreak,
-  computeTeamRadar,
   eventsThisMonth,
   recentActivity,
   type ScrimLite,
