@@ -146,7 +146,7 @@ function DashboardPage() {
         if (c[k]) counts.set(c[k], (counts.get(c[k]) ?? 0) + 1);
       });
     });
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
   }, [members, comps]);
 
   const activeRoster = members.filter((m: any) => m.role === "player").length;
