@@ -27,6 +27,29 @@ export function computeWinrate(scrims: ScrimLite[]) {
   };
 }
 
+export type MatchPerfLite = {
+  scrim_id: string;
+  game_number: number;
+  result: "pending" | "win" | "loss" | "draw";
+};
+
+export function computeMatchWinrate(perfs: MatchPerfLite[]) {
+  const seen = new Map<string, "pending" | "win" | "loss" | "draw">();
+  for (const p of perfs) {
+    const key = `${p.scrim_id}:${p.game_number}`;
+    if (!seen.has(key)) seen.set(key, p.result);
+  }
+  const games = [...seen.values()].filter((r) => r === "win" || r === "loss");
+  if (!games.length) return { rate: 0, wins: 0, losses: 0, total: 0 };
+  const wins = games.filter((r) => r === "win").length;
+  return {
+    rate: Math.round((wins / games.length) * 100),
+    wins,
+    losses: games.length - wins,
+    total: games.length,
+  };
+}
+
 export function computeStreak(scrims: ScrimLite[]) {
   const finished = scrims
     .filter((s) => s.result === "win" || s.result === "loss")

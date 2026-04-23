@@ -23,12 +23,14 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import { WinrateChart } from "@/components/dashboard/WinrateChart";
 import {
   computeWinrate,
+  computeMatchWinrate,
   computeStreak,
   eventsThisMonth,
   lastNScrimsForChart,
   recentActivity,
   type ScrimLite,
   type TrainingLite,
+  type MatchPerfLite,
 } from "@/lib/stats";
 import { PokemonImage } from "@/components/PokemonImage";
 
@@ -58,6 +60,17 @@ function DashboardPage() {
       const { data, error } = await supabase.from("trainings").select("*").order("scheduled_at");
       if (error) throw error;
       return data as TrainingLite[];
+    },
+  });
+
+  const { data: matchPerfs = [] } = useQuery({
+    queryKey: ["match_performances", "winrate"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("match_performances")
+        .select("scrim_id, game_number, result");
+      if (error) throw error;
+      return data as MatchPerfLite[];
     },
   });
 
@@ -94,6 +107,7 @@ function DashboardPage() {
   });
 
   const wr = useMemo(() => computeWinrate(scrims), [scrims]);
+  const matchWr = useMemo(() => computeMatchWinrate(matchPerfs), [matchPerfs]);
   const streak = useMemo(() => computeStreak(scrims), [scrims]);
   const chartData = useMemo(() => lastNScrimsForChart(scrims, 10), [scrims]);
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
@@ -150,13 +164,20 @@ function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard
-          label="Winrate geral"
+          label="Winrate Scrims"
           value={wr.total ? `${wr.rate}%` : "—"}
           hint={`${wr.wins}V · ${wr.losses}D em ${wr.total}`}
           Icon={Trophy}
           accent="gold"
+        />
+        <KpiCard
+          label="Winrate Partidas"
+          value={matchWr.total ? `${matchWr.rate}%` : "—"}
+          hint={`${matchWr.wins}V · ${matchWr.losses}D em ${matchWr.total} partidas`}
+          Icon={Swords}
+          accent="primary"
         />
         <KpiCard
           label="Streak atual"
