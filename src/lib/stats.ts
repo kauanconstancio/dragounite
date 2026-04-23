@@ -1,5 +1,16 @@
 import { isAfter, isSameMonth, subDays } from "date-fns";
 
+export type RadarPerfLite = {
+  scrim_id: string;
+  game_number: number;
+  result: "pending" | "win" | "loss" | "draw";
+  kills: number;
+  deaths: number;
+  assists: number;
+  damage_dealt: number;
+  is_mvp: boolean;
+};
+
 export type ScrimLite = {
   id: string;
   result: "pending" | "win" | "loss" | "draw";
