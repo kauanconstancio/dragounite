@@ -20,6 +20,7 @@ import {
   LogIn,
   LogOut,
   UserCircle,
+  Menu,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -29,6 +30,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -187,22 +196,23 @@ export function AppLayout() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl print:hidden presentation-hide">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 gap-4">
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-primary shadow-glow">
-              <Shield className="h-5 w-5 text-primary-foreground" />
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2 sm:gap-4">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-gradient-primary shadow-glow shrink-0">
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
             </div>
-            <div className="leading-tight">
-              <div className="font-display text-2xl tracking-wider">
+            <div className="leading-tight min-w-0">
+              <div className="font-display text-lg sm:text-2xl tracking-wider truncate">
                 DRAGOUNITE <span className="text-primary">Y</span>
               </div>
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+              <div className="hidden sm:block text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                 Pokémon Unite Team OPS
               </div>
             </div>
           </Link>
 
-          <nav className="flex items-center gap-1 flex-wrap justify-end">
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1 flex-wrap justify-end">
             {main.map((item) => {
               const active = isActive(location.pathname, item.to);
               const Icon = item.icon;
@@ -236,17 +246,90 @@ export function AppLayout() {
 
             <AuthButton />
           </nav>
+
+          {/* Mobile controls */}
+          <div className="flex lg:hidden items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={toggleNotif}
+              title={notifEnabled ? "Desativar notificações" : "Ativar notificações"}
+              className="h-9 w-9 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              {notifEnabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />}
+            </button>
+            <AuthButton />
+            <MobileNav pathname={location.pathname} />
+          </div>
         </div>
       </header>
 
-      <main className={`flex-1 mx-auto w-full max-w-[1400px] px-6 py-10 ${isPresentation ? "presentation-main" : ""}`}>
+      <main className={`flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-6 sm:py-10 ${isPresentation ? "presentation-main" : ""}`}>
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/60 py-6 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground print:hidden presentation-hide">
+      <footer className="border-t border-border/60 py-6 px-4 text-center text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground print:hidden presentation-hide">
         Battle Arena · Team Operations Hub
       </footer>
     </div>
+  );
+}
+
+function MobileNav({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const sections: { label: string; items: { to: string; label: string; icon: any }[] }[] = [
+    { label: "Principal", items: main },
+    { label: "Operação", items: operacao },
+    { label: "Estratégia", items: estrategia },
+  ];
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          type="button"
+          aria-label="Abrir menu"
+          className="h-9 w-9 rounded-md border border-border flex items-center justify-center text-foreground"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-[85vw] max-w-sm overflow-y-auto p-0">
+        <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/60">
+          <SheetTitle className="font-display text-xl tracking-wider">
+            DRAGOUNITE <span className="text-primary">Y</span>
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col gap-6 px-5 py-5">
+          {sections.map((section) => (
+            <div key={section.label}>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2 px-1">
+                {section.label}
+              </div>
+              <div className="flex flex-col gap-1">
+                {section.items.map((item) => {
+                  const active = isActive(pathname, item.to);
+                  const Icon = item.icon;
+                  return (
+                    <SheetClose asChild key={item.to}>
+                      <Link
+                        to={item.to}
+                        className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-wider transition-all ${
+                          active
+                            ? "bg-primary text-primary-foreground shadow-glow"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </SheetContent>
+    </Sheet>
   );
 }
 
