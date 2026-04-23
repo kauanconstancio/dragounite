@@ -311,22 +311,40 @@ function DashboardPage() {
             <p className="text-sm text-muted-foreground py-6 text-center">Nenhum aviso.</p>
           ) : (
             <div className="space-y-3">
-              {announcements.map((a: any) => (
-                <div key={a.id} className="rounded-md border border-border p-3 bg-background/40">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {a.pinned && (
-                      <Badge variant="outline" className="border-gold/40 text-gold text-[9px] uppercase">
-                        Fixado
-                      </Badge>
-                    )}
-                    <h3 className="font-display text-sm tracking-wider">{a.title}</h3>
+              {announcements.map((a: any) => {
+                const list = announcementLikes.filter((l) => l.announcement_id === a.id);
+                const count = list.length;
+                const liked = !!user && list.some((l) => l.user_id === user.id);
+                return (
+                  <div key={a.id} className="rounded-md border border-border p-3 bg-background/40">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {a.pinned && (
+                        <Badge variant="outline" className="border-gold/40 text-gold text-[9px] uppercase">
+                          Fixado
+                        </Badge>
+                      )}
+                      <h3 className="font-display text-sm tracking-wider">{a.title}</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                        {format(new Date(a.created_at), "dd MMM · HH:mm", { locale: ptBR })}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={liked ? "default" : "outline"}
+                        disabled={!user}
+                        onClick={() => toggleLike.mutate({ id: a.id, liked })}
+                        className={`h-6 px-2 text-[10px] gap-1 ${liked ? "" : "hover:text-gold hover:border-gold/40"}`}
+                        title={user ? (liked ? "Descurtir" : "Curtir") : "Faça login para curtir"}
+                      >
+                        <Heart className={`h-3 w-3 ${liked ? "fill-current" : ""}`} />
+                        {count}
+                      </Button>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
-                  <div className="text-[10px] text-muted-foreground mt-2 uppercase tracking-widest">
-                    {format(new Date(a.created_at), "dd MMM · HH:mm", { locale: ptBR })}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
