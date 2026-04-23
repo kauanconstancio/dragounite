@@ -97,7 +97,7 @@ function PlayerPage() {
 
       <section className="grid lg:grid-cols-2 gap-5">
         <Card className="p-5 border-border shadow-card">
-          <h2 className="font-display text-xl tracking-wider mb-4">EVOLUÇÃO DE KILLS</h2>
+          <h2 className="font-display text-xl tracking-wider mb-4">EVOLUÇÃO DE KILLS E ASSISTÊNCIAS</h2>
           {timeline.length === 0 ? (
             <div className="text-sm text-muted-foreground py-10 text-center">Sem partidas registradas.</div>
           ) : (
