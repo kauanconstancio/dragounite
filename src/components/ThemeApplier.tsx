@@ -29,8 +29,9 @@ function hexToOklch(hex: string): { l: number; c: number; h: number } | null {
   return { l: L, c: C, h: H };
 }
 
-function oklchStr(l: number, c: number, h: number) {
-  return `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(2)})`;
+function oklchStr(l: number, c: number, h: number, alpha?: number) {
+  const base = `${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(2)}`;
+  return alpha === undefined ? `oklch(${base})` : `oklch(${base} / ${alpha})`;
 }
 
 function relLum(hex: string): number {
