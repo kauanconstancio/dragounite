@@ -177,6 +177,7 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Greedent", slug: "greedent", role: "defender" },
   { name: "Ho-Oh", slug: "ho-oh", role: "defender" },
   { name: "Lapras", slug: "lapras", role: "defender" },
+  { name: "Mamoswine", slug: "mamoswine", role: "defender" },
   { name: "Mr. Mime", slug: "mr-mime", role: "defender" },
   { name: "Slowbro", slug: "slowbro", role: "defender" },
   { name: "Snorlax", slug: "snorlax", role: "defender" },
