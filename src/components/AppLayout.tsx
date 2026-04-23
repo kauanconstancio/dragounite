@@ -43,6 +43,7 @@ import { supabase } from "@/integrations/supabase/client";
 import dragouniteLogo from "@/assets/dragounite-logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamSettings } from "@/hooks/useTeamSettings";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -75,7 +76,13 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { data: team } = useTeamSettings();
   const [notifEnabled, setNotifEnabled] = useState(false);
+
+  const teamName = team?.team_name ?? "DragoUnite Y";
+  const teamLogo = team?.logo_url ?? dragouniteLogo;
+  const [teamHead, ...teamRest] = teamName.split(" ");
+  const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
   const isProfileRoute = location.pathname === "/perfil";
@@ -200,14 +207,15 @@ export function AppLayout() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2 sm:gap-4">
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
             <img
-              src={dragouniteLogo}
-              alt="DragoUnite"
+              src={teamLogo}
+              alt={teamName}
               className="h-10 w-10 sm:h-12 sm:w-12 object-contain shrink-0 drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)]"
             />
-            
+
             <div className="leading-tight min-w-0">
-              <div className="font-display text-lg sm:text-2xl tracking-wider truncate">
-                DRAGOUNITE <span className="text-primary">Y</span>
+              <div className="font-display text-lg sm:text-2xl tracking-wider truncate uppercase">
+                {teamHead}
+                {teamTail && <> <span className="text-primary">{teamTail}</span></>}
               </div>
               <div className="hidden sm:block text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
                 Pokémon Unite Team OPS
@@ -298,8 +306,8 @@ function MobileNav({ pathname }: { pathname: string }) {
       </SheetTrigger>
       <SheetContent side="right" className="w-[85vw] max-w-sm overflow-y-auto p-0">
         <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/60">
-          <SheetTitle className="font-display text-xl tracking-wider">
-            DRAGOUNITE <span className="text-primary">Y</span>
+          <SheetTitle className="font-display text-xl tracking-wider uppercase">
+            <MobileTeamTitle />
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-6 px-5 py-5">
