@@ -556,6 +556,42 @@ export type Database = {
           },
         ]
       }
+      team_settings: {
+        Row: {
+          accent_color: string
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string
+          singleton: boolean
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          singleton?: boolean
+          team_name?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          singleton?: boolean
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tier_list: {
         Row: {
           created_at: string
