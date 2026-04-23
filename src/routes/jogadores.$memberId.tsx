@@ -87,18 +87,17 @@ function PlayerPage() {
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Stat icon={BarChart3} label="KDA médio" value={agg.kda.toFixed(2)} accent="gold" />
         <Stat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="gold" />
         <Stat icon={Trophy} label="Assists/jogo" value={agg.a} accent="gold" />
         <Stat icon={Star} label="MVPs" value={agg.mvp} accent="gold" />
+        <Stat icon={BarChart3} label="Jogos" value={agg.games} accent="gold" />
         <Stat icon={BarChart3} label="Score médio" value={agg.avgScore.toLocaleString()} accent="primary" />
         <Stat icon={BarChart3} label="Dano médio" value={agg.dmg.toLocaleString()} accent="primary" />
-        <Stat icon={BarChart3} label="Jogos" value={agg.games} accent="primary" />
       </div>
 
       <section className="grid lg:grid-cols-2 gap-5">
         <Card className="p-5 border-border shadow-card">
-          <h2 className="font-display text-xl tracking-wider mb-4">EVOLUÇÃO DE KDA</h2>
+          <h2 className="font-display text-xl tracking-wider mb-4">EVOLUÇÃO DE KILLS</h2>
           {timeline.length === 0 ? (
             <div className="text-sm text-muted-foreground py-10 text-center">Sem partidas registradas.</div>
           ) : (
@@ -121,7 +120,7 @@ function PlayerPage() {
                     <div className="text-sm font-medium">{t.pokemon}</div>
                     <div className="text-xs text-muted-foreground">{t.count} jogos</div>
                   </div>
-                  <Badge variant="outline" className="border-gold/40 text-gold">KDA {t.kda}</Badge>
+                  <Badge variant="outline" className="border-gold/40 text-gold">{t.count} {t.count === 1 ? "jogo" : "jogos"}</Badge>
                 </div>
               ))}
             </div>
