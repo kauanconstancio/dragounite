@@ -73,6 +73,17 @@ function DashboardPage() {
     },
   });
 
+  const { data: pokemonUsage = [] } = useQuery({
+    queryKey: ["match_performances", "pokemon_usage"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("match_performances")
+        .select("pokemon, result, scrim_id, game_number");
+      if (error) throw error;
+      return data as { pokemon: string | null; result: string; scrim_id: string; game_number: number }[];
+    },
+  });
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -137,17 +148,30 @@ function DashboardPage() {
   }, [trainings, scrims]);
 
   const topPokemon = useMemo(() => {
-    const counts = new Map<string, number>();
-    members.forEach((m: any) => {
-      if (m.main_pokemon) counts.set(m.main_pokemon, (counts.get(m.main_pokemon) ?? 0) + 1);
-    });
-    comps.forEach((c: any) => {
-      ["top_pokemon", "jungle_pokemon", "mid_pokemon", "bot_pokemon", "support_pokemon"].forEach((k) => {
-        if (c[k]) counts.set(c[k], (counts.get(c[k]) ?? 0) + 1);
-      });
-    });
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  }, [members, comps]);
+    // Dedup por scrim+game+pokemon: cada game de cada pokemon conta 1x (result vem do game)
+    const seen = new Map<string, { pokemon: string; result: string }>();
+    for (const p of pokemonUsage) {
+      if (!p.pokemon) continue;
+      const key = `${p.scrim_id}:${p.game_number}:${p.pokemon}`;
+      if (!seen.has(key)) seen.set(key, { pokemon: p.pokemon, result: p.result });
+    }
+    const stats = new Map<string, { uses: number; wins: number; losses: number }>();
+    for (const { pokemon, result } of seen.values()) {
+      const s = stats.get(pokemon) ?? { uses: 0, wins: 0, losses: 0 };
+      s.uses += 1;
+      if (result === "win") s.wins += 1;
+      else if (result === "loss") s.losses += 1;
+      stats.set(pokemon, s);
+    }
+    return [...stats.entries()]
+      .map(([pokemon, s]) => {
+        const decided = s.wins + s.losses;
+        const wr = decided ? Math.round((s.wins / decided) * 100) : null;
+        return { pokemon, uses: s.uses, wins: s.wins, losses: s.losses, wr };
+      })
+      .sort((a, b) => b.uses - a.uses)
+      .slice(0, 10);
+  }, [pokemonUsage]);
 
   const activeRoster = members.filter((m: any) => m.role === "player").length;
 
@@ -312,25 +336,38 @@ function DashboardPage() {
             <h2 className="font-display text-xl tracking-wider">Pokémon Mais Utilizados</h2>
           </div>
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Roster + Comps
+            Partidas registradas
           </span>
         </div>
         {topPokemon.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">Sem dados ainda.</p>
         ) : (
           <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-3">
-            {topPokemon.map(([pkm, count], idx) => (
-              <div key={pkm} className="text-center">
-                <div className="aspect-square mb-1.5 relative">
-                  <PokemonImage name={pkm} withRoleBg />
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
-                    {idx + 1}
-                  </span>
+            {topPokemon.map((p, idx) => {
+              const wrColor =
+                p.wr === null
+                  ? "text-muted-foreground"
+                  : p.wr >= 60
+                    ? "text-emerald-400"
+                    : p.wr >= 45
+                      ? "text-gold"
+                      : "text-destructive";
+              return (
+                <div key={p.pokemon} className="text-center">
+                  <div className="aspect-square mb-1.5 relative">
+                    <PokemonImage name={p.pokemon} withRoleBg />
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{p.pokemon}</div>
+                  <div className="text-[9px] text-muted-foreground">{p.uses}x</div>
+                  <div className={`text-[10px] font-display tracking-wider ${wrColor}`}>
+                    {p.wr === null ? "—" : `${p.wr}%`}
+                  </div>
                 </div>
-                <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{pkm}</div>
-                <div className="text-[9px] text-muted-foreground">{count}x</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>
