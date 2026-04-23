@@ -63,6 +63,17 @@ function DashboardPage() {
     },
   });
 
+  const { data: matchPerfs = [] } = useQuery({
+    queryKey: ["match_performances", "winrate"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("match_performances")
+        .select("scrim_id, game_number, result");
+      if (error) throw error;
+      return data as MatchPerfLite[];
+    },
+  });
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
