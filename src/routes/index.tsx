@@ -20,17 +20,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { KpiCard } from "@/components/dashboard/KpiCard";
-import { WinrateChart } from "@/components/dashboard/WinrateChart";
+import { TeamRadarChart } from "@/components/dashboard/TeamRadarChart";
 import {
   computeWinrate,
   computeMatchWinrate,
   computeStreak,
+  computeTeamRadar,
   eventsThisMonth,
-  lastNScrimsForChart,
   recentActivity,
   type ScrimLite,
   type TrainingLite,
-  type MatchPerfLite,
+  type RadarPerfLite,
 } from "@/lib/stats";
 import { PokemonImage } from "@/components/PokemonImage";
 
@@ -64,13 +64,13 @@ function DashboardPage() {
   });
 
   const { data: matchPerfs = [] } = useQuery({
-    queryKey: ["match_performances", "winrate"],
+    queryKey: ["match_performances", "radar"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("match_performances")
-        .select("scrim_id, game_number, result");
+        .select("scrim_id, game_number, result, kills, deaths, assists, damage_dealt, is_mvp");
       if (error) throw error;
-      return data as MatchPerfLite[];
+      return data as RadarPerfLite[];
     },
   });
 
@@ -109,7 +109,7 @@ function DashboardPage() {
   const wr = useMemo(() => computeWinrate(scrims), [scrims]);
   const matchWr = useMemo(() => computeMatchWinrate(matchPerfs), [matchPerfs]);
   const streak = useMemo(() => computeStreak(scrims), [scrims]);
-  const chartData = useMemo(() => lastNScrimsForChart(scrims, matchPerfs, 10), [scrims, matchPerfs]);
+  const radarData = useMemo(() => computeTeamRadar(scrims, matchPerfs), [scrims, matchPerfs]);
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
 
   const next = useMemo(() => {
@@ -207,13 +207,18 @@ function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-gold" />
-              <h2 className="font-display text-xl tracking-wider">Partidas Ganhas vs Total</h2>
+              <div>
+                <h2 className="font-display text-xl tracking-wider">Visão Geral do Time</h2>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+                  6 dimensões de performance
+                </p>
+              </div>
             </div>
             <Badge variant="outline" className="text-[10px] uppercase tracking-widest">
-              Últimas {chartData.length || 0}
+              Radar
             </Badge>
           </div>
-          <WinrateChart data={chartData} />
+          <TeamRadarChart data={radarData} />
         </Card>
 
         <Card className="p-5 border-border shadow-card bg-card/70">
