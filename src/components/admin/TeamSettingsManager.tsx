@@ -256,9 +256,64 @@ export function TeamSettingsManager() {
               {description.length}/240
             </div>
           </div>
+          {/* Presets de cores */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+              <Label className="text-[10px] uppercase tracking-[0.2em]">
+                Esquemas pré-definidos
+              </Label>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {COLOR_PRESETS.map((preset) => {
+                const isActive =
+                  normalizeHex(primaryColor) === normalizeHex(preset.primary) &&
+                  normalizeHex(accentColor) === normalizeHex(preset.accent);
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setPrimaryColor(preset.primary);
+                      setAccentColor(preset.accent);
+                    }}
+                    className={`group relative flex flex-col gap-2 rounded-lg border p-3 text-left transition-all hover:border-primary/60 hover:bg-muted/30 ${
+                      isActive
+                        ? "border-primary bg-primary/5 shadow-[0_0_0_1px_var(--primary)]"
+                        : "border-border bg-muted/10"
+                    }`}
+                    title={preset.description}
+                  >
+                    {isActive && (
+                      <span className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />
+                      </span>
+                    )}
+                    <div className="flex gap-1">
+                      <span
+                        className="h-6 flex-1 rounded-md border border-border/50"
+                        style={{ background: preset.primary }}
+                      />
+                      <span
+                        className="h-6 w-6 rounded-md border border-border/50"
+                        style={{ background: preset.accent }}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-medium leading-tight">{preset.name}</div>
+                      <div className="text-[9px] text-muted-foreground leading-tight mt-0.5">
+                        {preset.description}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="primary-color">Cor primária</Label>
+              <Label htmlFor="primary-color">Cor primária (personalizar)</Label>
               <div className="flex items-center gap-2">
                 <input
                   id="primary-color"
@@ -275,6 +330,25 @@ export function TeamSettingsManager() {
                 />
               </div>
             </div>
+            <div>
+              <Label htmlFor="accent-color">Cor de destaque (personalizar)</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="accent-color"
+                  type="color"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer"
+                />
+                <Input
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  maxLength={9}
+                  className="font-mono text-xs"
+                />
+              </div>
+            </div>
+          </div>
             <div>
               <Label htmlFor="accent-color">Cor de destaque</Label>
               <div className="flex items-center gap-2">
