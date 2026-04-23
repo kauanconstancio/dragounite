@@ -88,6 +88,39 @@ export function lastNScrimsForChart(
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
     .slice(-n);
 
+  // Deduplicate matches per scrim+game and keep their result + scrim time
+  const seen = new Map<string, { result: "pending" | "win" | "loss" | "draw"; scrimId: string }>();
+  for (const p of perfs) {
+    const key = `${p.scrim_id}:${p.game_number}`;
+    if (!seen.has(key)) seen.set(key, { result: p.result, scrimId: p.scrim_id });
+  }
+  const scrimDate = new Map(scrims.map((s) => [s.id, new Date(s.scheduled_at).getTime()]));
+  const matchEntries = [...seen.values()]
+    .map((m) => ({ result: m.result, t: scrimDate.get(m.scrimId) ?? 0 }))
+    .sort((a, b) => a.t - b.t);
+
+  return finished.map((s, i) => {
+    const cutoff = new Date(s.scheduled_at).getTime();
+    const matchesUpTo = matchEntries.filter((m) => m.t <= cutoff);
+    const total = matchesUpTo.length;
+    const wins = matchesUpTo.filter((m) => m.result === "win").length;
+    return {
+      label: `#${i + 1}`,
+      opponent: s.opponent,
+      wins,
+      total,
+    };
+  });
+}
+  scrims: ScrimLite[],
+  perfs: MatchPerfLite[] = [],
+  n = 10,
+) {
+  const finished = scrims
+    .filter((s) => s.result === "win" || s.result === "loss")
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+    .slice(-n);
+
   // Build cumulative match winrate up to and including each scrim's date
   const seen = new Map<string, { result: "pending" | "win" | "loss" | "draw"; scrimId: string }>();
   for (const p of perfs) {
