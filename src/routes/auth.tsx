@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import dragouniteLogo from "@/assets/dragounite-logo.png";
+import { useTeamSettings } from "@/hooks/useTeamSettings";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Acesso — Battle Arena" }] }),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { data: team } = useTeamSettings();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,22 +36,32 @@ function AuthPage() {
     navigate({ to: "/" });
   }
 
+  const teamName = team?.team_name ?? "DragoUnite Y";
+  const teamLogo = team?.logo_url ?? dragouniteLogo;
+  const [teamHead, ...teamRest] = teamName.split(" ");
+  const teamTail = teamRest.join(" ");
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
       <Card className="w-full max-w-md p-8 border-border shadow-card">
         <div className="flex flex-col items-center gap-3 mb-6 text-center">
           <img
-            src={dragouniteLogo}
-            alt="DragoUnite Time Y"
+            src={teamLogo}
+            alt={teamName}
             className="h-24 w-24 object-contain drop-shadow-[0_0_16px_hsl(var(--primary)/0.5)]"
           />
           <div>
-            <div className="font-display text-3xl tracking-wider">
-              DRAGOUNITE <span className="text-primary">Y</span>
+            <div className="font-display text-3xl tracking-wider uppercase">
+              {teamHead}
+              {teamTail && <> <span className="text-primary">{teamTail}</span></>}
             </div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-1">
-              Pokémon Unite · Team OPS Access
-            </div>
+            {team?.description ? (
+              <div className="text-xs text-muted-foreground mt-2 max-w-xs">{team.description}</div>
+            ) : (
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-1">
+                Pokémon Unite · Team OPS Access
+              </div>
+            )}
           </div>
         </div>
 

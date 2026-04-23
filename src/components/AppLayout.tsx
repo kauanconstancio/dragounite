@@ -286,6 +286,19 @@ export function AppLayout() {
   );
 }
 
+function MobileTeamTitle() {
+  const { data: team } = useTeamSettings();
+  const name = team?.team_name ?? "DragoUnite Y";
+  const [head, ...rest] = name.split(" ");
+  const tail = rest.join(" ");
+  return (
+    <>
+      {head}
+      {tail && <> <span className="text-primary">{tail}</span></>}
+    </>
+  );
+}
+
 function MobileNav({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
   const sections: { label: string; items: { to: string; label: string; icon: any }[] }[] = [
