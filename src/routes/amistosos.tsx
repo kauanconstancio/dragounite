@@ -148,7 +148,7 @@ function ScrimsPage() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Vitórias" value={wins} accent="gold" icon={Trophy} />
         <StatCard label="Derrotas" value={losses} accent="primary" icon={Swords} />
         <StatCard label="Win rate" value={scrims.filter(s => s.result !== "pending").length > 0 ? `${Math.round((wins / scrims.filter(s => s.result !== "pending").length) * 100)}%` : "—"} accent="gold" icon={Trophy} />
