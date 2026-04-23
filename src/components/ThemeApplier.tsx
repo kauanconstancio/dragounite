@@ -95,12 +95,12 @@ export function ThemeApplier() {
     // Background ambient glow (arena)
     root.style.setProperty(
       "--gradient-arena",
-      `radial-gradient(circle at 20% 0%, ${oklchStr(Math.max(0.22, p.l - 0.3), p.c * 0.5, p.h)} / 0.4, transparent 50%), radial-gradient(circle at 80% 100%, ${oklchStr(Math.max(0.25, a.l - 0.55), a.c * 0.35, a.h)} / 0.18, transparent 50%)`,
+      `radial-gradient(circle at 20% 0%, ${oklchStr(Math.max(0.22, p.l - 0.3), p.c * 0.5, p.h, 0.4)}, transparent 50%), radial-gradient(circle at 80% 100%, ${oklchStr(Math.max(0.25, a.l - 0.55), a.c * 0.35, a.h, 0.18)}, transparent 50%)`,
     );
 
     // Shadows
-    root.style.setProperty("--shadow-glow", `0 0 40px ${primary} / 0.35`);
-    root.style.setProperty("--shadow-gold", `0 0 30px ${gold} / 0.25`);
+    root.style.setProperty("--shadow-glow", `0 0 40px ${oklchStr(p.l, p.c, p.h, 0.35)}`);
+    root.style.setProperty("--shadow-gold", `0 0 30px ${oklchStr(a.l, a.c, a.h, 0.25)}`);
 
     // Force a repaint on body background so arena gradient updates
     document.body.style.backgroundImage = "var(--gradient-arena)";
