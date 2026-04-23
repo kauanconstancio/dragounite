@@ -158,7 +158,7 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Dodrio", slug: "dodrio", role: "speedster" },
   { name: "Galarian Rapidash", slug: "galarian-rapidash", role: "speedster" },
   { name: "Gengar", slug: "gengar", role: "speedster" },
-  { name: "Latias", slug: "latias", role: "speedster" },
+  
   { name: "Leafeon", slug: "leafeon", role: "speedster" },
   { name: "Meowscarada", slug: "meowscarada", role: "speedster" },
   { name: "Meowth", slug: "meowth", role: "speedster" },
