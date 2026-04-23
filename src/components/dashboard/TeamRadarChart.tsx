@@ -49,7 +49,6 @@ export function TeamRadarChart({ data }: Props) {
               fill: "hsl(var(--muted-foreground))",
               fontSize: 11,
               letterSpacing: "0.1em",
-              textTransform: "uppercase",
             }}
           />
           <PolarRadiusAxis
