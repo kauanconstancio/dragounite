@@ -43,6 +43,41 @@ function relLum(hex: string): number {
   return 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
 }
 
+function contrast(lumA: number, lumB: number) {
+  const [hi, lo] = lumA > lumB ? [lumA, lumB] : [lumB, lumA];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+// Pure-white & pure-black approx luminance
+const WHITE_LUM = 1;
+const BLACK_LUM = 0;
+
+/** Pick foreground (white vs near-black) that maximizes contrast against `bgHex`. WCAG AA target ≥ 4.5. */
+function pickForeground(bgHex: string): { token: string; useDark: boolean } {
+  const bgL = relLum(bgHex);
+  const cWhite = contrast(bgL, WHITE_LUM);
+  const cBlack = contrast(bgL, BLACK_LUM);
+  // Prefer the higher-contrast option; tie-break to white for vibrant colors
+  const useDark = cBlack > cWhite;
+  return {
+    token: useDark ? "oklch(0.13 0.005 25)" : "oklch(0.985 0.005 90)",
+    useDark,
+  };
+}
+
+/** Tone a hex toward a target luminance for use as on-dark accent text (links/badges). */
+function tonedForOnDark(p: { l: number; c: number; h: number }, bgHex: string) {
+  // Walk lightness up until contrast vs bg ≥ 4.5
+  const bgL = relLum(bgHex);
+  let l = Math.max(p.l, 0.6);
+  for (let i = 0; i < 12; i++) {
+    // approximate luminance from oklch L (close enough for monotonic check)
+    if (contrast(bgL, Math.min(1, Math.pow(l, 2.2))) >= 4.5) break;
+    l = Math.min(0.95, l + 0.04);
+  }
+  return oklchStr(l, p.c * 0.85, p.h);
+}
+
 export function ThemeApplier() {
   const { data } = useTeamSettings();
 
@@ -57,10 +92,15 @@ export function ThemeApplier() {
 
     const primary = oklchStr(p.l, p.c, p.h);
     const primaryDark = oklchStr(Math.max(0.18, p.l - 0.18), p.c * 0.9, p.h);
-    const primaryFg = relLum(primaryHex) > 0.45 ? "oklch(0.13 0.005 25)" : "oklch(0.98 0.01 90)";
+    const primaryFg = pickForeground(primaryHex).token;
 
     const gold = oklchStr(a.l, a.c, a.h);
-    const goldFg = relLum(accentHex) > 0.45 ? "oklch(0.13 0.005 25)" : "oklch(0.98 0.01 90)";
+    const goldFg = pickForeground(accentHex).token;
+
+    // Background hex (dark surface) ≈ what's in :root
+    const surfaceHex = "#1f1a1a";
+    const primaryOnDark = tonedForOnDark(p, surfaceHex);
+    const goldOnDark = tonedForOnDark(a, surfaceHex);
 
     // Core tokens
     root.style.setProperty("--primary", primary);
@@ -72,7 +112,11 @@ export function ThemeApplier() {
     root.style.setProperty("--gold", gold);
     root.style.setProperty("--gold-foreground", goldFg);
 
-    // Charts (mix of primary + accent variants)
+    // Accessible "on dark surface" variants — used for links, badge text, inline accents
+    root.style.setProperty("--primary-on-dark", primaryOnDark);
+    root.style.setProperty("--gold-on-dark", goldOnDark);
+
+    // Charts
     root.style.setProperty("--chart-1", primary);
     root.style.setProperty("--chart-2", gold);
     root.style.setProperty("--chart-3", primaryDark);
