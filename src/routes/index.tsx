@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Trophy,
   Swords,
@@ -15,6 +16,7 @@ import {
   Sparkles,
   TrendingUp,
   Clock,
+  Heart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -32,6 +34,10 @@ import {
   type RadarPerfLite,
 } from "@/lib/stats";
 import { PokemonImage } from "@/components/PokemonImage";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
+type LikeRow = { announcement_id: string; user_id: string };
 
 export const Route = createFileRoute("/")({
   head: () => ({
