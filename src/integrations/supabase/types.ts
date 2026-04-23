@@ -282,6 +282,7 @@ export type Database = {
       }
       members: {
         Row: {
+          archived: boolean
           avatar_url: string | null
           created_at: string
           discord: string | null
@@ -295,6 +296,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived?: boolean
           avatar_url?: string | null
           created_at?: string
           discord?: string | null
@@ -308,6 +310,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived?: boolean
           avatar_url?: string | null
           created_at?: string
           discord?: string | null
