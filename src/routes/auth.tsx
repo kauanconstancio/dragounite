@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
 import { toast } from "sonner";
+import dragouniteLogo from "@/assets/dragounite-logo.png";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Acesso — Battle Arena" }] }),
@@ -37,13 +37,19 @@ function AuthPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
       <Card className="w-full max-w-md p-8 border-border shadow-card">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-12 w-12 rounded-md bg-gradient-primary flex items-center justify-center shadow-glow">
-            <Shield className="h-6 w-6 text-primary-foreground" />
-          </div>
+        <div className="flex flex-col items-center gap-3 mb-6 text-center">
+          <img
+            src={dragouniteLogo}
+            alt="DragoUnite Time Y"
+            className="h-24 w-24 object-contain drop-shadow-[0_0_16px_hsl(var(--primary)/0.5)]"
+          />
           <div>
-            <div className="font-display text-2xl tracking-wider">BATTLE <span className="text-gold">ARENA</span></div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Team OPS Access</div>
+            <div className="font-display text-3xl tracking-wider">
+              DRAGOUNITE <span className="text-primary">Y</span>
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-1">
+              Pokémon Unite · Team OPS Access
+            </div>
           </div>
         </div>
 

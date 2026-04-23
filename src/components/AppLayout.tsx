@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import dragouniteLogo from "@/assets/dragounite-logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -198,9 +199,12 @@ export function AppLayout() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl print:hidden presentation-hide">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2 sm:gap-4">
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-gradient-primary shadow-glow shrink-0">
-              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
-            </div>
+            <img
+              src={dragouniteLogo}
+              alt="DragoUnite"
+              className="h-10 w-10 sm:h-12 sm:w-12 object-contain shrink-0 drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)]"
+            />
+            
             <div className="leading-tight min-w-0">
               <div className="font-display text-lg sm:text-2xl tracking-wider truncate">
                 DRAGOUNITE <span className="text-primary">Y</span>
