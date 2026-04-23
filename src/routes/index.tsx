@@ -336,25 +336,38 @@ function DashboardPage() {
             <h2 className="font-display text-xl tracking-wider">Pokémon Mais Utilizados</h2>
           </div>
           <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Roster + Comps
+            Partidas registradas
           </span>
         </div>
         {topPokemon.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">Sem dados ainda.</p>
         ) : (
           <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-3">
-            {topPokemon.map(([pkm, count], idx) => (
-              <div key={pkm} className="text-center">
-                <div className="aspect-square mb-1.5 relative">
-                  <PokemonImage name={pkm} withRoleBg />
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
-                    {idx + 1}
-                  </span>
+            {topPokemon.map((p, idx) => {
+              const wrColor =
+                p.wr === null
+                  ? "text-muted-foreground"
+                  : p.wr >= 60
+                    ? "text-emerald-400"
+                    : p.wr >= 45
+                      ? "text-gold"
+                      : "text-destructive";
+              return (
+                <div key={p.pokemon} className="text-center">
+                  <div className="aspect-square mb-1.5 relative">
+                    <PokemonImage name={p.pokemon} withRoleBg />
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{p.pokemon}</div>
+                  <div className="text-[9px] text-muted-foreground">{p.uses}x</div>
+                  <div className={`text-[10px] font-display tracking-wider ${wrColor}`}>
+                    {p.wr === null ? "—" : `${p.wr}%`}
+                  </div>
                 </div>
-                <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{pkm}</div>
-                <div className="text-[9px] text-muted-foreground">{count}x</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>
