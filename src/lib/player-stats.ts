@@ -65,7 +65,7 @@ export function kdaTimeline(perfs: PerfRow[], scrimDateMap: Map<string, string>)
     })
     .map((p, i) => ({
       label: `#${i + 1}`,
-      kda: kdaRatio(p.kills, p.deaths, p.assists),
+      kda: p.kills,
       score: p.score,
     }));
 }
