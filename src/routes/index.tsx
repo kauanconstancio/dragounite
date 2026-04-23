@@ -148,17 +148,30 @@ function DashboardPage() {
   }, [trainings, scrims]);
 
   const topPokemon = useMemo(() => {
-    const counts = new Map<string, number>();
-    members.forEach((m: any) => {
-      if (m.main_pokemon) counts.set(m.main_pokemon, (counts.get(m.main_pokemon) ?? 0) + 1);
-    });
-    comps.forEach((c: any) => {
-      ["top_pokemon", "jungle_pokemon", "mid_pokemon", "bot_pokemon", "support_pokemon"].forEach((k) => {
-        if (c[k]) counts.set(c[k], (counts.get(c[k]) ?? 0) + 1);
-      });
-    });
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  }, [members, comps]);
+    // Dedup por scrim+game+pokemon: cada game de cada pokemon conta 1x (result vem do game)
+    const seen = new Map<string, { pokemon: string; result: string }>();
+    for (const p of pokemonUsage) {
+      if (!p.pokemon) continue;
+      const key = `${p.scrim_id}:${p.game_number}:${p.pokemon}`;
+      if (!seen.has(key)) seen.set(key, { pokemon: p.pokemon, result: p.result });
+    }
+    const stats = new Map<string, { uses: number; wins: number; losses: number }>();
+    for (const { pokemon, result } of seen.values()) {
+      const s = stats.get(pokemon) ?? { uses: 0, wins: 0, losses: 0 };
+      s.uses += 1;
+      if (result === "win") s.wins += 1;
+      else if (result === "loss") s.losses += 1;
+      stats.set(pokemon, s);
+    }
+    return [...stats.entries()]
+      .map(([pokemon, s]) => {
+        const decided = s.wins + s.losses;
+        const wr = decided ? Math.round((s.wins / decided) * 100) : null;
+        return { pokemon, uses: s.uses, wins: s.wins, losses: s.losses, wr };
+      })
+      .sort((a, b) => b.uses - a.uses)
+      .slice(0, 10);
+  }, [pokemonUsage]);
 
   const activeRoster = members.filter((m: any) => m.role === "player").length;
 
