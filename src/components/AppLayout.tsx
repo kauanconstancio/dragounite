@@ -44,6 +44,7 @@ import dragouniteLogo from "@/assets/dragounite-logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { ThemeApplier } from "@/components/ThemeApplier";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -173,6 +174,7 @@ export function AppLayout() {
   if (isAuthRoute) {
     return (
       <div className="min-h-screen flex flex-col">
+        <ThemeApplier />
         <main className="flex-1 flex items-center justify-center px-6 py-10">
           <Outlet />
         </main>
@@ -203,6 +205,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ThemeApplier />
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl print:hidden presentation-hide">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2 sm:gap-4">
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
