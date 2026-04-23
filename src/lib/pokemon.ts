@@ -141,7 +141,7 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Gyarados", slug: "gyarados", role: "all-rounder" },
   { name: "Lucario", slug: "lucario", role: "all-rounder" },
   { name: "Machamp", slug: "machamp", role: "all-rounder" },
-  { name: "Mamoswine", slug: "mamoswine", role: "all-rounder" },
+  
   { name: "Metagross", slug: "metagross", role: "all-rounder" },
   { name: "Mewtwo X", slug: "mewtwo", role: "all-rounder" },
   { name: "Pawmot", slug: "pawmot", role: "all-rounder" },
@@ -177,6 +177,7 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Greedent", slug: "greedent", role: "defender" },
   { name: "Ho-Oh", slug: "ho-oh", role: "defender" },
   { name: "Lapras", slug: "lapras", role: "defender" },
+  { name: "Mamoswine", slug: "mamoswine", role: "defender" },
   { name: "Mr. Mime", slug: "mr-mime", role: "defender" },
   { name: "Slowbro", slug: "slowbro", role: "defender" },
   { name: "Snorlax", slug: "snorlax", role: "defender" },
