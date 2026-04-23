@@ -14,6 +14,7 @@ export type PerfRow = {
   is_mvp: boolean;
   notes: string | null;
   created_at: string;
+  result?: "win" | "loss" | "draw" | "pending";
 };
 
 export function kdaRatio(k: number, d: number, a: number) {
@@ -43,15 +44,31 @@ export function aggregatePlayer(perfs: PerfRow[]) {
 }
 
 export function topPokemon(perfs: PerfRow[], limit = 5) {
-  const map = new Map<string, { count: number; k: number; d: number; a: number }>();
+  const map = new Map<string, { count: number; k: number; d: number; a: number; w: number; l: number }>();
   for (const p of perfs) {
     if (!p.pokemon) continue;
-    const cur = map.get(p.pokemon) ?? { count: 0, k: 0, d: 0, a: 0 };
-    cur.count++; cur.k += p.kills; cur.d += p.deaths; cur.a += p.assists;
+    const cur = map.get(p.pokemon) ?? { count: 0, k: 0, d: 0, a: 0, w: 0, l: 0 };
+    cur.count++;
+    cur.k += p.kills;
+    cur.d += p.deaths;
+    cur.a += p.assists;
+    if (p.result === "win") cur.w++;
+    else if (p.result === "loss") cur.l++;
     map.set(p.pokemon, cur);
   }
   return [...map.entries()]
-    .map(([pokemon, v]) => ({ pokemon, count: v.count, kda: kdaRatio(v.k, v.d, v.a) }))
+    .map(([pokemon, v]) => {
+      const decided = v.w + v.l;
+      const winrate = decided > 0 ? Math.round((v.w / decided) * 100) : null;
+      return {
+        pokemon,
+        count: v.count,
+        kda: kdaRatio(v.k, v.d, v.a),
+        wins: v.w,
+        losses: v.l,
+        winrate,
+      };
+    })
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
 }
@@ -70,17 +87,16 @@ export function kdaTimeline(perfs: PerfRow[], scrimDateMap: Map<string, string>)
     }));
 }
 
-export function playerWinRate(
-  perfs: PerfRow[],
-  scrimResultMap: Map<string, "win" | "loss" | "draw" | "pending">,
-) {
-  const seen = new Set<string>();
-  let w = 0, l = 0;
+/**
+ * Win rate por jogo individual (cada partida de scrim conta separado).
+ * Usa o campo `result` de match_performances.
+ */
+export function playerWinRate(perfs: PerfRow[]) {
+  let w = 0;
+  let l = 0;
   for (const p of perfs) {
-    if (seen.has(p.scrim_id)) continue;
-    seen.add(p.scrim_id);
-    const r = scrimResultMap.get(p.scrim_id);
-    if (r === "win") w++; else if (r === "loss") l++;
+    if (p.result === "win") w++;
+    else if (p.result === "loss") l++;
   }
   const total = w + l;
   return { rate: total ? Math.round((w / total) * 100) : 0, wins: w, losses: l };

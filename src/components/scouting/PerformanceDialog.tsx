@@ -267,15 +267,32 @@ export function PerformanceDialog({
     let usWins = 0;
     let themWins = 0;
     const allGames = new Set<number>([...allyByGame.keys(), ...oppByGame.keys()]);
+    const gameResults: { game: number; result: "win" | "loss" | "pending" }[] = [];
     allGames.forEach((g) => {
       const a = allyByGame.get(g) ?? 0;
       const o = oppByGame.get(g) ?? 0;
-      if (a === 0 && o === 0) return;
-      if (a > o) usWins += 1;
-      else if (o > a) themWins += 1;
+      if (a === 0 && o === 0) {
+        gameResults.push({ game: g, result: "pending" });
+        return;
+      }
+      if (a > o) { usWins += 1; gameResults.push({ game: g, result: "win" }); }
+      else if (o > a) { themWins += 1; gameResults.push({ game: g, result: "loss" }); }
+      else gameResults.push({ game: g, result: "pending" });
     });
+    // Persistir resultado em cada match_performance do game
+    await Promise.all(
+      gameResults.map((gr) =>
+        supabase
+          .from("match_performances")
+          .update({ result: gr.result })
+          .eq("scrim_id", scrimId)
+          .eq("game_number", gr.game),
+      ),
+    );
     await supabase.from("scrims").update({ score_us: usWins, score_them: themWins }).eq("id", scrimId);
     qc.invalidateQueries({ queryKey: ["scrims"] });
+    qc.invalidateQueries({ queryKey: ["perfs-scrim", scrimId] });
+    qc.invalidateQueries({ queryKey: ["perfs"] });
   }
 
   async function saveAll() {

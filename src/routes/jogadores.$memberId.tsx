@@ -51,7 +51,7 @@ function PlayerPage() {
   const resultMap = useMemo(() => new Map(scrims.map((s) => [s.id, s.result])), [scrims]);
 
   const agg = aggregatePlayer(perfs);
-  const wr = playerWinRate(perfs, resultMap);
+  const wr = playerWinRate(perfs);
   const top = topPokemon(perfs);
   const timeline = kdaTimeline(perfs, dateMap);
 
@@ -118,9 +118,15 @@ function PlayerPage() {
                   <div className="h-10 w-10 shrink-0"><PokemonImage name={t.pokemon} withRoleBg /></div>
                   <div className="flex-1">
                     <div className="text-sm font-medium">{t.pokemon}</div>
-                    <div className="text-xs text-muted-foreground">{t.count} jogos</div>
+                    <div className="text-xs text-muted-foreground">{t.count} {t.count === 1 ? "jogo" : "jogos"} · {t.wins}V {t.losses}D</div>
                   </div>
-                  <Badge variant="outline" className="border-gold/40 text-gold">{t.count} {t.count === 1 ? "jogo" : "jogos"}</Badge>
+                  {t.winrate !== null ? (
+                    <Badge variant="outline" className={t.winrate >= 50 ? "border-gold/40 text-gold" : "border-destructive/40 text-destructive"}>
+                      {t.winrate}% WR
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="border-border text-muted-foreground">—</Badge>
+                  )}
                 </div>
               ))}
             </div>

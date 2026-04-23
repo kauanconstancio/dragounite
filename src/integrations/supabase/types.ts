@@ -194,6 +194,7 @@ export type Database = {
           member_id: string
           notes: string | null
           pokemon: string | null
+          result: Database["public"]["Enums"]["match_result"]
           score: number
           scrim_id: string
         }
@@ -211,6 +212,7 @@ export type Database = {
           member_id: string
           notes?: string | null
           pokemon?: string | null
+          result?: Database["public"]["Enums"]["match_result"]
           score?: number
           scrim_id: string
         }
@@ -228,6 +230,7 @@ export type Database = {
           member_id?: string
           notes?: string | null
           pokemon?: string | null
+          result?: Database["public"]["Enums"]["match_result"]
           score?: number
           scrim_id?: string
         }
