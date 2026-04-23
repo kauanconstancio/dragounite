@@ -201,22 +201,22 @@ function DashboardPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-5 border-border shadow-card bg-card/70">
+        <Card className="p-5 border-border shadow-card bg-card/70">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-gold" />
               <div>
-                <h2 className="font-display text-xl tracking-wider">Visão Geral do Time</h2>
+                <h2 className="font-display text-xl tracking-wider">Winrate</h2>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                  6 dimensões de performance
+                  Scrims · Partidas
                 </p>
               </div>
             </div>
             <Badge variant="outline" className="text-[10px] uppercase tracking-widest">
-              Radar
+              Time
             </Badge>
           </div>
-          <TeamRadarChart data={radarData} />
+          <WinrateBarChart scrimWr={wr} matchWr={matchWr} />
         </Card>
 
         <Card className="p-5 border-border shadow-card bg-card/70">
@@ -252,9 +252,7 @@ function DashboardPage() {
             </div>
           )}
         </Card>
-      </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
         <Card className="p-5 border-border shadow-card bg-card/70">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -305,37 +303,37 @@ function DashboardPage() {
             </div>
           )}
         </Card>
-
-        <Card className="p-5 border-border shadow-card bg-card/70">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-gold" />
-              <h2 className="font-display text-xl tracking-wider">Top Pokémon</h2>
-            </div>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Roster + Comps
-            </span>
-          </div>
-          {topPokemon.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Sem dados ainda.</p>
-          ) : (
-            <div className="grid grid-cols-5 gap-2">
-              {topPokemon.map(([pkm, count], idx) => (
-                <div key={pkm} className="text-center">
-                  <div className="aspect-square mb-1.5 relative">
-                    <PokemonImage name={pkm} withRoleBg />
-                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
-                      {idx + 1}
-                    </span>
-                  </div>
-                  <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{pkm}</div>
-                  <div className="text-[9px] text-muted-foreground">{count}x</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
       </div>
+
+      <Card className="p-5 border-border shadow-card bg-card/70">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-gold" />
+            <h2 className="font-display text-xl tracking-wider">Pokémon Mais Utilizados</h2>
+          </div>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            Roster + Comps
+          </span>
+        </div>
+        {topPokemon.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">Sem dados ainda.</p>
+        ) : (
+          <div className="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-3">
+            {topPokemon.map(([pkm, count], idx) => (
+              <div key={pkm} className="text-center">
+                <div className="aspect-square mb-1.5 relative">
+                  <PokemonImage name={pkm} withRoleBg />
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-gold-foreground text-[10px] font-display flex items-center justify-center shadow-gold">
+                    {idx + 1}
+                  </span>
+                </div>
+                <div className="text-[9px] uppercase tracking-widest truncate text-foreground">{pkm}</div>
+                <div className="text-[9px] text-muted-foreground">{count}x</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
