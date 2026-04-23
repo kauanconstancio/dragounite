@@ -23,12 +23,14 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import { WinrateChart } from "@/components/dashboard/WinrateChart";
 import {
   computeWinrate,
+  computeMatchWinrate,
   computeStreak,
   eventsThisMonth,
   lastNScrimsForChart,
   recentActivity,
   type ScrimLite,
   type TrainingLite,
+  type MatchPerfLite,
 } from "@/lib/stats";
 import { PokemonImage } from "@/components/PokemonImage";
 
