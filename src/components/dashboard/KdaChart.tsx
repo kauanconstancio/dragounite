@@ -44,7 +44,7 @@ export function KdaChart({ data }: { data: { label: string; kda: number; score: 
             boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
           }}
           labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
-          formatter={(value: number) => [value.toFixed(2), "KDA"]}
+          formatter={(value) => [Number(value).toFixed(2), "KDA"]}
         />
         <Area
           type="monotone"
@@ -62,7 +62,7 @@ export function KdaChart({ data }: { data: { label: string; kda: number; score: 
             fill="hsl(var(--foreground))"
             fontSize={11}
             fontWeight={600}
-            formatter={(value: number) => value.toFixed(1)}
+            formatter={(value) => Number(value).toFixed(1)}
           />
         </Area>
       </AreaChart>
