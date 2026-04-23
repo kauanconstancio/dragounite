@@ -96,7 +96,7 @@ function PerfilPage() {
   const resultMap = useMemo(() => new Map((scrimsQ.data ?? []).map((s) => [s.id, s.result])), [scrimsQ.data]);
   const perfs = perfsQ.data ?? [];
   const agg = useMemo(() => aggregatePlayer(perfs), [perfs]);
-  const wr = useMemo(() => playerWinRate(perfs, resultMap), [perfs, resultMap]);
+  const wr = useMemo(() => playerWinRate(perfs), [perfs]);
   const top = useMemo(() => topPokemon(perfs, 3), [perfs]);
   const timeline = useMemo(() => kdaTimeline(perfs, dateMap), [perfs, dateMap]);
 

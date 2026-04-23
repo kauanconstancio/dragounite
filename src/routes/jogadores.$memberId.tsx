@@ -51,7 +51,7 @@ function PlayerPage() {
   const resultMap = useMemo(() => new Map(scrims.map((s) => [s.id, s.result])), [scrims]);
 
   const agg = aggregatePlayer(perfs);
-  const wr = playerWinRate(perfs, resultMap);
+  const wr = playerWinRate(perfs);
   const top = topPokemon(perfs);
   const timeline = kdaTimeline(perfs, dateMap);
 
