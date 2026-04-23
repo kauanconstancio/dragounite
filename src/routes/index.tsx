@@ -73,6 +73,17 @@ function DashboardPage() {
     },
   });
 
+  const { data: pokemonUsage = [] } = useQuery({
+    queryKey: ["match_performances", "pokemon_usage"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("match_performances")
+        .select("pokemon, result, scrim_id, game_number");
+      if (error) throw error;
+      return data as { pokemon: string | null; result: string; scrim_id: string; game_number: number }[];
+    },
+  });
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
