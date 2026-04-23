@@ -47,6 +47,7 @@ import { ShieldCheck, UserPlus, Trash2, KeyRound, Link as LinkIcon } from "lucid
 import { toast } from "sonner";
 import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 import { TeamSettingsManager } from "@/components/admin/TeamSettingsManager";
+import { RosterManager } from "@/components/admin/RosterManager";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Battle Arena" }] }),
@@ -196,6 +197,8 @@ function AdminPage() {
           <p>viewer — somente leitura.</p>
         </div>
       </Card>
+
+      <RosterManager />
 
       <TeamSettingsManager />
 
