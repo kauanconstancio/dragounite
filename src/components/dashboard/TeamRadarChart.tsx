@@ -1,9 +1,9 @@
 import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
@@ -33,7 +33,7 @@ export function TeamRadarChart({ data }: Props) {
   if (!hasData) {
     return (
       <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-        Sem dados suficientes para gerar radar.
+        Sem dados suficientes para gerar gráfico.
       </div>
     );
   }
@@ -41,33 +41,33 @@ export function TeamRadarChart({ data }: Props) {
   return (
     <div className="h-[320px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} outerRadius="75%">
-          <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.5} />
-          <PolarAngleAxis
+        <LineChart data={data} margin={{ top: 16, right: 24, bottom: 8, left: 0 }}>
+          <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.4} strokeDasharray="3 3" />
+          <XAxis
             dataKey="axis"
             tick={{
               fill: "hsl(var(--muted-foreground))",
               fontSize: 11,
               letterSpacing: "0.1em",
             }}
-          />
-          <PolarRadiusAxis
-            angle={90}
-            domain={[0, 100]}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
             stroke="hsl(var(--border))"
-            tickCount={5}
           />
-          <Radar
-            name="Time"
-            dataKey="value"
-            stroke="var(--gold)"
-            strokeWidth={2}
-            fill="hsl(var(--primary))"
-            fillOpacity={0.4}
+          <YAxis
+            domain={[0, 100]}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+            stroke="hsl(var(--border))"
+            tickCount={6}
           />
           <Tooltip content={<CustomTooltip />} />
-        </RadarChart>
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="var(--gold)"
+            strokeWidth={2.5}
+            dot={{ fill: "hsl(var(--primary))", stroke: "var(--gold)", strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7, fill: "var(--gold)" }}
+          />
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );
