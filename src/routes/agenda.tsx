@@ -191,23 +191,35 @@ function AgendaPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-end justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="font-display text-5xl tracking-wider">
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl tracking-wider break-words">
             AGENDA <span className="text-gold">DO TIME</span>
           </h1>
-          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">
+          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-[10px] sm:text-xs">
             Treinos e amistosos em um só lugar
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" className="uppercase tracking-wider">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="uppercase tracking-wider flex-1 sm:flex-none"
+          >
             <Link to="/treinos">
-              <Dumbbell className="mr-2 h-4 w-4" /> Gerenciar treinos
+              <Dumbbell className="mr-2 h-4 w-4" />
+              <span className="truncate">Gerenciar treinos</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="uppercase tracking-wider">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="uppercase tracking-wider flex-1 sm:flex-none"
+          >
             <Link to="/amistosos">
-              <Swords className="mr-2 h-4 w-4" /> Gerenciar scrims
+              <Swords className="mr-2 h-4 w-4" />
+              <span className="truncate">Gerenciar scrims</span>
             </Link>
           </Button>
         </div>
