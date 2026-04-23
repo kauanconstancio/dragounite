@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Trophy,
   Swords,
@@ -15,6 +16,7 @@ import {
   Sparkles,
   TrendingUp,
   Clock,
+  Heart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -32,6 +34,10 @@ import {
   type RadarPerfLite,
 } from "@/lib/stats";
 import { PokemonImage } from "@/components/PokemonImage";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
+type LikeRow = { announcement_id: string; user_id: string };
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,6 +50,9 @@ export const Route = createFileRoute("/")({
 });
 
 function DashboardPage() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
   const { data: scrims = [] } = useQuery({
     queryKey: ["scrims"],
     queryFn: async () => {
@@ -114,6 +123,51 @@ function DashboardPage() {
       if (error) throw error;
       return data as any[];
     },
+  });
+
+  const { data: announcementLikes = [] } = useQuery({
+    queryKey: ["announcement_likes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("announcement_likes")
+        .select("announcement_id, user_id");
+      if (error) throw error;
+      return data as LikeRow[];
+    },
+  });
+
+  const toggleLike = useMutation({
+    mutationFn: async ({ id, liked }: { id: string; liked: boolean }) => {
+      if (!user) throw new Error("Faça login para curtir");
+      if (liked) {
+        const { error } = await supabase
+          .from("announcement_likes")
+          .delete()
+          .eq("announcement_id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("announcement_likes")
+          .insert({ announcement_id: id, user_id: user.id });
+        if (error) throw error;
+      }
+    },
+    onMutate: async ({ id, liked }) => {
+      if (!user) return;
+      await qc.cancelQueries({ queryKey: ["announcement_likes"] });
+      const prev = qc.getQueryData<LikeRow[]>(["announcement_likes"]) ?? [];
+      const next = liked
+        ? prev.filter((l) => !(l.announcement_id === id && l.user_id === user.id))
+        : [...prev, { announcement_id: id, user_id: user.id }];
+      qc.setQueryData(["announcement_likes"], next);
+      return { prev };
+    },
+    onError: (e: Error, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["announcement_likes"], ctx.prev);
+      toast.error(e.message);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["announcement_likes"] }),
   });
 
   const wr = useMemo(() => computeWinrate(scrims), [scrims]);
@@ -257,22 +311,40 @@ function DashboardPage() {
             <p className="text-sm text-muted-foreground py-6 text-center">Nenhum aviso.</p>
           ) : (
             <div className="space-y-3">
-              {announcements.map((a: any) => (
-                <div key={a.id} className="rounded-md border border-border p-3 bg-background/40">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {a.pinned && (
-                      <Badge variant="outline" className="border-gold/40 text-gold text-[9px] uppercase">
-                        Fixado
-                      </Badge>
-                    )}
-                    <h3 className="font-display text-sm tracking-wider">{a.title}</h3>
+              {announcements.map((a: any) => {
+                const list = announcementLikes.filter((l) => l.announcement_id === a.id);
+                const count = list.length;
+                const liked = !!user && list.some((l) => l.user_id === user.id);
+                return (
+                  <div key={a.id} className="rounded-md border border-border p-3 bg-background/40">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {a.pinned && (
+                        <Badge variant="outline" className="border-gold/40 text-gold text-[9px] uppercase">
+                          Fixado
+                        </Badge>
+                      )}
+                      <h3 className="font-display text-sm tracking-wider">{a.title}</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                        {format(new Date(a.created_at), "dd MMM · HH:mm", { locale: ptBR })}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={liked ? "default" : "outline"}
+                        disabled={!user}
+                        onClick={() => toggleLike.mutate({ id: a.id, liked })}
+                        className={`h-6 px-2 text-[10px] gap-1 ${liked ? "" : "hover:text-gold hover:border-gold/40"}`}
+                        title={user ? (liked ? "Descurtir" : "Curtir") : "Faça login para curtir"}
+                      >
+                        <Heart className={`h-3 w-3 ${liked ? "fill-current" : ""}`} />
+                        {count}
+                      </Button>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
-                  <div className="text-[10px] text-muted-foreground mt-2 uppercase tracking-widest">
-                    {format(new Date(a.created_at), "dd MMM · HH:mm", { locale: ptBR })}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
