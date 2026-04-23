@@ -207,7 +207,7 @@ function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-gold" />
-              <h2 className="font-display text-xl tracking-wider">Evolução de Winrate</h2>
+              <h2 className="font-display text-xl tracking-wider">Partidas Ganhas vs Total</h2>
             </div>
             <Badge variant="outline" className="text-[10px] uppercase tracking-widest">
               Últimas {chartData.length || 0}
