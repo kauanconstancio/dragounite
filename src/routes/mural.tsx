@@ -30,6 +30,9 @@ type Announcement = {
 };
 
 function MuralPage() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
   const { data: posts = [] } = useQuery({
     queryKey: ["announcements"],
     queryFn: async () => {
@@ -41,6 +44,46 @@ function MuralPage() {
       if (error) throw error;
       return data as Announcement[];
     },
+  });
+
+  const { data: likes = [] } = useQuery({
+    queryKey: ["announcement_likes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("announcement_likes")
+        .select("announcement_id, user_id");
+      if (error) throw error;
+      return data as { announcement_id: string; user_id: string }[];
+    },
+  });
+
+  const likeStats = (id: string) => {
+    const list = likes.filter((l) => l.announcement_id === id);
+    return {
+      count: list.length,
+      liked: !!user && list.some((l) => l.user_id === user.id),
+    };
+  };
+
+  const toggleLike = useMutation({
+    mutationFn: async ({ id, liked }: { id: string; liked: boolean }) => {
+      if (!user) throw new Error("Faça login para curtir");
+      if (liked) {
+        const { error } = await supabase
+          .from("announcement_likes")
+          .delete()
+          .eq("announcement_id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("announcement_likes")
+          .insert({ announcement_id: id, user_id: user.id });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["announcement_likes"] }),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -61,7 +104,9 @@ function MuralPage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {posts.map((p, i) => (
+          {posts.map((p, i) => {
+            const { count, liked } = likeStats(p.id);
+            return (
             <motion.div
               key={p.id}
               initial={{ opacity: 0, y: 8 }}
@@ -78,12 +123,26 @@ function MuralPage() {
                   <h3 className="font-display text-xl tracking-wider">{p.title}</h3>
                 </div>
                 <p className="mt-2 text-sm text-foreground whitespace-pre-wrap">{p.body}</p>
-                <div className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {format(new Date(p.created_at), "EEE, dd MMM yyyy · HH:mm", { locale: ptBR })}
+                <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {format(new Date(p.created_at), "EEE, dd MMM yyyy · HH:mm", { locale: ptBR })}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={liked ? "default" : "outline"}
+                    disabled={!user || toggleLike.isPending}
+                    onClick={() => toggleLike.mutate({ id: p.id, liked })}
+                    className={`h-7 px-2.5 text-xs gap-1.5 ${liked ? "" : "hover:text-gold hover:border-gold/40"}`}
+                    title={user ? (liked ? "Descurtir" : "Curtir") : "Faça login para curtir"}
+                  >
+                    <Heart className={`h-3.5 w-3.5 ${liked ? "fill-current" : ""}`} />
+                    {count}
+                  </Button>
                 </div>
               </Card>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
