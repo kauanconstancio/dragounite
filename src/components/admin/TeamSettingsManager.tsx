@@ -349,25 +349,6 @@ export function TeamSettingsManager() {
               </div>
             </div>
           </div>
-            <div>
-              <Label htmlFor="accent-color">Cor de destaque</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  id="accent-color"
-                  type="color"
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  className="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer"
-                />
-                <Input
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  maxLength={9}
-                  className="font-mono text-xs"
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Preview */}
           <div className="rounded-lg border border-border bg-muted/10 p-4">
