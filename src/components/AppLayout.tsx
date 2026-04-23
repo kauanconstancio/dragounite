@@ -44,6 +44,7 @@ import dragouniteLogo from "@/assets/dragounite-logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { ThemeApplier } from "@/components/ThemeApplier";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
