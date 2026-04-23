@@ -107,6 +107,7 @@ function DashboardPage() {
   });
 
   const wr = useMemo(() => computeWinrate(scrims), [scrims]);
+  const matchWr = useMemo(() => computeMatchWinrate(matchPerfs), [matchPerfs]);
   const streak = useMemo(() => computeStreak(scrims), [scrims]);
   const chartData = useMemo(() => lastNScrimsForChart(scrims, 10), [scrims]);
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
