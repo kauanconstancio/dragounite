@@ -50,6 +50,9 @@ export const Route = createFileRoute("/")({
 });
 
 function DashboardPage() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
   const { data: scrims = [] } = useQuery({
     queryKey: ["scrims"],
     queryFn: async () => {
