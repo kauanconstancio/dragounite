@@ -103,7 +103,7 @@ function AdminOrgPage() {
   });
 
   const createMut = useMutation({
-    mutationFn: async (input: { name: string; slug: string; description: string | null; primary_color: string; accent_color: string }) => {
+    mutationFn: async (input: { name: string; slug: string; description: string | null; primary_color: string; accent_color: string; logo_url: string | null }) => {
       const { data, error } = await supabase
         .from("teams")
         .insert(input)
