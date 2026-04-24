@@ -162,7 +162,7 @@ function AdminOrgPage() {
     },
     onSuccess: (_d, v) => {
       toast.success(v.makeSuper ? "Promovido a super-admin" : "Removido como super-admin");
-      qc.invalidateQueries({ queryKey: ["org-users-roles"] });
+      qc.invalidateQueries({ queryKey: ["org-users-full"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
