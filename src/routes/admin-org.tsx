@@ -205,6 +205,11 @@ function AdminOrgPage() {
     onSuccess: () => toast.success("Senha redefinida"),
     onError: (e: any) => toast.error(e.message),
   });
+  const memberRoleMut = useMutation({
+    mutationFn: (input: any) => memberRoleFn({ data: input }),
+    onSuccess: () => { toast.success("Função no roster atualizada"); invalidateUsers(); qc.invalidateQueries({ queryKey: ["org-all-members"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   if (authLoading) return null;
   if (!user) return null;
