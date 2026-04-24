@@ -20,6 +20,19 @@ function EquipesPage() {
     if (!authLoading && !user) navigate({ to: "/auth" });
   }, [authLoading, user, navigate]);
 
+  // Auto-seleciona quando o usuário tem apenas uma equipe disponível
+  // (caso típico após o login com membership única).
+  useEffect(() => {
+    if (loading || !user) return;
+    if (teams.length === 1 && !team) {
+      const only = teams[0].team;
+      if (!only.archived) {
+        setActiveTeam(only.id);
+        navigate({ to: "/" });
+      }
+    }
+  }, [loading, user, teams, team, setActiveTeam, navigate]);
+
   if (authLoading || loading) {
     return (
       <div className="text-center text-muted-foreground text-xs uppercase tracking-[0.3em] py-20">
