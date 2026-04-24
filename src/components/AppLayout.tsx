@@ -281,6 +281,7 @@ export function AppLayout() {
               {notifEnabled ? <Bell className="h-3.5 w-3.5 text-gold" /> : <BellOff className="h-3.5 w-3.5" />}
             </button>
 
+            <TeamSwitcher />
             <AuthButton />
           </nav>
 
@@ -312,8 +313,9 @@ export function AppLayout() {
 }
 
 function MobileTeamTitle() {
-  const { data: team } = useTeamSettings();
-  const name = team?.team_name ?? "DragoUnite Y";
+  const { team } = useCurrentTeam();
+  const { data: settings } = useTeamSettings();
+  const name = team?.name ?? settings?.team_name ?? "DragoUnite Y";
   const [head, ...rest] = name.split(" ");
   const tail = rest.join(" ");
   return (
