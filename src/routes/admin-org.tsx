@@ -5,7 +5,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
-import { createUser } from "@/server/admin.functions";
+import {
+  createUser,
+  listUsers,
+  setUserRole,
+  linkUserToMember,
+  deleteUser,
+  resetUserPassword,
+} from "@/server/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
