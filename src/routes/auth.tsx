@@ -22,7 +22,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) navigate({ to: "/equipes" });
     });
   }, [navigate]);
 
@@ -32,8 +32,10 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Bem-vindo de volta!");
-    navigate({ to: "/" });
+    // Limpa equipe ativa anterior para forçar nova escolha após o login.
+    try { localStorage.removeItem("active-team-id"); } catch {}
+    toast.success("Bem-vindo de volta! Escolha sua equipe para continuar.");
+    navigate({ to: "/equipes" });
   }
 
   const teamName = team?.team_name ?? "DragoUnite Y";
