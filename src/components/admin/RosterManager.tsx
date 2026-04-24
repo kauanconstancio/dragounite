@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_TEAM_ID } from "@/lib/default-team";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -146,7 +147,7 @@ export function RosterManager() {
 
   const createMut = useMutation({
     mutationFn: async (input: Omit<MemberRow, "id" | "archived">) => {
-      const { error } = await supabase.from("members").insert({ ...input, archived: false });
+      const { error } = await supabase.from("members").insert({ ...input, archived: false, team_id: DEFAULT_TEAM_ID });
       if (error) throw error;
     },
     onSuccess: () => {
