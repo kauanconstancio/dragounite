@@ -74,76 +74,85 @@ function EquipesPage() {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map(({ team: t, team_role }) => {
-            const active = t.id === team?.id;
-            return (
-              <Card
-                key={t.id}
-                className={`p-5 border-border bg-card/70 hover:border-primary/50 transition-all flex flex-col gap-4 ${
-                  active ? "ring-1 ring-primary shadow-glow" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
+        <Card className="border-border bg-card/70 overflow-hidden">
+          <div className="px-5 py-3 border-b border-border/60 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            {teams.length} equipe{teams.length === 1 ? "" : "s"} disponíve{teams.length === 1 ? "l" : "is"}
+          </div>
+          <ul className="divide-y divide-border/60">
+            {teams.map(({ team: t, team_role }) => {
+              const active = t.id === team?.id;
+              return (
+                <li
+                  key={t.id}
+                  className={`flex items-center gap-4 px-5 py-3 transition-colors hover:bg-accent/40 ${
+                    active ? "bg-primary/5" : ""
+                  } ${t.archived ? "opacity-60" : ""}`}
+                >
                   {t.logo_url ? (
                     <img
                       src={t.logo_url}
                       alt={t.name}
-                      className="h-12 w-12 object-contain rounded-md border border-border bg-background/40 p-1"
+                      className="h-10 w-10 object-contain rounded-md border border-border bg-background/40 p-1 shrink-0"
                     />
                   ) : (
                     <div
-                      className="h-12 w-12 rounded-md flex items-center justify-center font-display text-lg text-white"
+                      className="h-10 w-10 rounded-md flex items-center justify-center font-display text-base text-white shrink-0"
                       style={{ background: t.primary_color }}
                     >
                       {t.name.slice(0, 1).toUpperCase()}
                     </div>
                   )}
-                  <div className="min-w-0">
-                    <div className="font-display text-lg tracking-wider truncate">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display text-base sm:text-lg tracking-wider truncate flex items-center gap-2">
                       {t.name}
+                      {active && (
+                        <span className="text-[9px] uppercase tracking-widest text-primary border border-primary/40 rounded px-1.5 py-0.5">
+                          ativa
+                        </span>
+                      )}
                     </div>
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                       {team_role === "coach" && <Crown className="h-3 w-3 text-gold" />}
                       {team_role}
                       {t.archived && <span className="text-destructive">· arquivada</span>}
+                      {t.description && (
+                        <span className="hidden sm:inline normal-case tracking-normal text-muted-foreground/80 truncate">
+                          · {t.description}
+                        </span>
+                      )}
                     </div>
                   </div>
-                </div>
-                {t.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {t.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-2 mt-auto">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setActiveTeam(t.id);
-                      navigate({ to: "/" });
-                    }}
-                    disabled={t.archived}
-                    className={active ? "bg-primary/80" : "bg-gradient-primary"}
-                  >
-                    {active ? "Continuar" : "Entrar"}
-                  </Button>
-                  {team_role === "coach" && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    {team_role === "coach" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setActiveTeam(t.id);
+                          navigate({ to: "/admin" });
+                        }}
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Admin</span>
+                      </Button>
+                    )}
                     <Button
                       size="sm"
-                      variant="outline"
                       onClick={() => {
                         setActiveTeam(t.id);
-                        navigate({ to: "/admin" });
+                        navigate({ to: "/" });
                       }}
+                      disabled={t.archived}
+                      className={active ? "bg-primary/80" : "bg-gradient-primary"}
                     >
-                      <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Admin
+                      {active ? "Continuar" : "Entrar"}
                     </Button>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
       )}
     </div>
   );
