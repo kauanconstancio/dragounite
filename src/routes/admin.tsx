@@ -150,11 +150,6 @@ function AdminPage() {
             Gerencie contas, permissões e vínculos com o roster.
           </p>
         </div>
-        <CreateUserDialog
-          members={members}
-          onSubmit={(d) => createMut.mutate(d)}
-          loading={createMut.isPending}
-        />
       </header>
 
       <Card className="overflow-hidden border-border">
