@@ -818,6 +818,23 @@ function UserRow({
           </SelectContent>
         </Select>
       </td>
+      <td className="px-4 py-3">
+        {memberId ? (
+          <Select
+            value={(u.member_role as MemberRoleOpt) ?? "player"}
+            onValueChange={(v) => onMemberRoleChange(memberId, v as MemberRoleOpt)}
+          >
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ROSTER_ROLE_OPTS.map((r) => (
+                <SelectItem key={r} value={r}>{MEMBER_ROLE_LABEL[r]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <span className="text-xs text-muted-foreground">— sem vínculo —</span>
+        )}
+      </td>
       <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
         {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR") : "nunca"}
       </td>
