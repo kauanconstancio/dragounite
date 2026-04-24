@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 // Convert #RRGGBB → oklch(L C H) string
 function hexToOklch(hex: string): { l: number; c: number; h: number } | null {
@@ -80,11 +81,13 @@ function tonedForOnDark(p: { l: number; c: number; h: number }, bgHex: string) {
 
 export function ThemeApplier() {
   const { data } = useTeamSettings();
+  const { team } = useCurrentTeam();
 
   useEffect(() => {
     const root = document.documentElement;
-    const primaryHex = data?.primary_color ?? "#DC2626";
-    const accentHex = data?.accent_color ?? "#FBBF24";
+    // Prefer active team's branding; fallback to global team_settings.
+    const primaryHex = team?.primary_color ?? data?.primary_color ?? "#DC2626";
+    const accentHex = team?.accent_color ?? data?.accent_color ?? "#FBBF24";
 
     const p = hexToOklch(primaryHex);
     const a = hexToOklch(accentHex);
@@ -148,7 +151,7 @@ export function ThemeApplier() {
 
     // Force a repaint on body background so arena gradient updates
     document.body.style.backgroundImage = "var(--gradient-arena)";
-  }, [data?.primary_color, data?.accent_color]);
+  }, [data?.primary_color, data?.accent_color, team?.primary_color, team?.accent_color]);
 
   return null;
 }
