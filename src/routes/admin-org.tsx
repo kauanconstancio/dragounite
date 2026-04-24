@@ -29,13 +29,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown } from "lucide-react";
 import { toast } from "sonner";
 

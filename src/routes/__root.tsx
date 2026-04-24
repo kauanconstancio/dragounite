@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLayout } from "@/components/AppLayout";
 import { AuthProvider } from "@/hooks/useAuth";
+import { TeamProvider } from "@/hooks/useCurrentTeam";
 import { installServerFnAuthFetch } from "@/integrations/supabase/server-fn-fetch";
 
 if (typeof window !== "undefined") {
@@ -72,8 +73,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppLayout />
-        <Toaster />
+        <TeamProvider>
+          <AppLayout />
+          <Toaster />
+        </TeamProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
