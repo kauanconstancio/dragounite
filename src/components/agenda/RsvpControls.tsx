@@ -57,6 +57,7 @@ export function RsvpControls({ eventId, eventType }: Props) {
           event_type: eventType,
           member_id: memberId,
           status,
+          team_id: DEFAULT_TEAM_ID,
         });
         if (error) throw error;
       }
