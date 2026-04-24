@@ -2,10 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { DEFAULT_TEAM_ID } from "@/lib/default-team";
 
 const APP_ROLES = ["coach", "player", "viewer"] as const;
 type AppRole = (typeof APP_ROLES)[number];
+const TEAM_ROLES = ["coach", "player", "viewer"] as const;
 
 async function assertManager(userId: string) {
   const { data, error } = await supabaseAdmin
@@ -13,9 +13,21 @@ async function assertManager(userId: string) {
     .select("role")
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
-  const roles = (data ?? []).map((r) => r.role as AppRole);
-  if (!roles.includes("coach")) {
+  const roles = (data ?? []).map((r) => r.role as AppRole | "super_admin");
+  if (!roles.includes("coach") && !roles.includes("super_admin")) {
     throw new Error("Apenas coaches/gerentes podem executar esta ação.");
+  }
+}
+
+async function assertSuperAdmin(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const roles = (data ?? []).map((r) => r.role as string);
+  if (!roles.includes("super_admin")) {
+    throw new Error("Apenas super-administradores podem executar esta ação.");
   }
 }
 
