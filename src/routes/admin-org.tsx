@@ -12,6 +12,7 @@ import {
   linkUserToMember,
   deleteUser,
   resetUserPassword,
+  setMemberRoleAndLane,
 } from "@/server/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
