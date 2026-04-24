@@ -162,6 +162,16 @@ function AdminOrgPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const createUserFn = useServerFn(createUser);
+  const createUserMut = useMutation({
+    mutationFn: (input: any) => createUserFn({ data: input }),
+    onSuccess: () => {
+      toast.success("Usuário criado e vinculado à equipe");
+      qc.invalidateQueries({ queryKey: ["org-users-roles"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Falha ao criar usuário"),
+  });
+
   if (authLoading) return null;
   if (!user) return null;
   if (!isSuperAdmin) {
