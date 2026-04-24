@@ -1,11 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
-import { createUser } from "@/server/admin.functions";
+import {
+  createUser,
+  listUsers,
+  setUserRole,
+  linkUserToMember,
+  deleteUser,
+  resetUserPassword,
+} from "@/server/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +45,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown, UserPlus } from "lucide-react";
+import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown, UserPlus, KeyRound, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-org")({
@@ -90,23 +97,21 @@ function AdminOrgPage() {
     enabled: !!user && isSuperAdmin,
   });
 
+  const listUsersFn = useServerFn(listUsers);
   const usersQ = useQuery({
-    queryKey: ["org-users-roles"],
+    queryKey: ["org-users-full"],
+    queryFn: () => listUsersFn({ data: undefined }),
+    enabled: !!user && isSuperAdmin,
+  });
+
+  const allMembersQ = useQuery({
+    queryKey: ["org-all-members"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
+        .from("members")
+        .select("id, name, lane, role, team_id");
       if (error) throw error;
-      const profileRes = await supabase.from("profiles").select("user_id, display_name");
-      const profileMap = new Map<string, string>();
-      (profileRes.data ?? []).forEach((p) => profileMap.set(p.user_id, p.display_name ?? ""));
-      const byUser = new Map<string, { id: string; name: string; roles: string[] }>();
-      (data ?? []).forEach((r) => {
-        const entry = byUser.get(r.user_id) ?? { id: r.user_id, name: profileMap.get(r.user_id) ?? "", roles: [] };
-        entry.roles.push(r.role);
-        byUser.set(r.user_id, entry);
-      });
-      return [...byUser.values()].sort((a, b) => a.name.localeCompare(b.name));
+      return data ?? [];
     },
     enabled: !!user && isSuperAdmin,
   });
@@ -157,19 +162,46 @@ function AdminOrgPage() {
     },
     onSuccess: (_d, v) => {
       toast.success(v.makeSuper ? "Promovido a super-admin" : "Removido como super-admin");
-      qc.invalidateQueries({ queryKey: ["org-users-roles"] });
+      qc.invalidateQueries({ queryKey: ["org-users-full"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
 
   const createUserFn = useServerFn(createUser);
+  const setRoleFn = useServerFn(setUserRole);
+  const linkFn = useServerFn(linkUserToMember);
+  const delFn = useServerFn(deleteUser);
+  const pwFn = useServerFn(resetUserPassword);
+
+  const invalidateUsers = () => qc.invalidateQueries({ queryKey: ["org-users-full"] });
+
   const createUserMut = useMutation({
     mutationFn: (input: any) => createUserFn({ data: input }),
     onSuccess: () => {
       toast.success("Usuário criado e vinculado à equipe");
-      qc.invalidateQueries({ queryKey: ["org-users-roles"] });
+      invalidateUsers();
     },
     onError: (e: any) => toast.error(e.message ?? "Falha ao criar usuário"),
+  });
+  const roleMut = useMutation({
+    mutationFn: (input: any) => setRoleFn({ data: input }),
+    onSuccess: () => { toast.success("Permissão atualizada"); invalidateUsers(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const linkMut = useMutation({
+    mutationFn: (input: any) => linkFn({ data: input }),
+    onSuccess: () => { toast.success("Vínculo de roster atualizado"); invalidateUsers(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const delMut = useMutation({
+    mutationFn: (input: any) => delFn({ data: input }),
+    onSuccess: () => { toast.success("Conta removida"); invalidateUsers(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const pwMut = useMutation({
+    mutationFn: (input: any) => pwFn({ data: input }),
+    onSuccess: () => toast.success("Senha redefinida"),
+    onError: (e: any) => toast.error(e.message),
   });
 
   if (authLoading) return null;
@@ -193,6 +225,7 @@ function AdminOrgPage() {
 
   const teams = teamsQ.data ?? [];
   const users = usersQ.data ?? [];
+  const allMembers = allMembersQ.data ?? [];
 
   return (
     <div className="space-y-8">
@@ -271,89 +304,55 @@ function AdminOrgPage() {
 
       <Card className="overflow-hidden border-border">
         <div className="p-4 border-b border-border">
-          <h2 className="font-display tracking-wider text-lg">SUPER-ADMINISTRADORES</h2>
+          <h2 className="font-display tracking-wider text-lg">USUÁRIOS</h2>
           <p className="text-xs text-muted-foreground">
-            Super-admins têm acesso a todas as equipes e podem gerenciar a organização.
+            Todas as contas, suas permissões globais, equipes vinculadas e ações administrativas.
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               <tr>
-                <th className="text-left px-4 py-3">Usuário</th>
-                <th className="text-left px-4 py-3">Papéis</th>
+                <th className="text-left px-4 py-3">Email</th>
+                <th className="text-left px-4 py-3">Nome</th>
+                <th className="text-left px-4 py-3">Permissão</th>
+                <th className="text-left px-4 py-3">Equipes</th>
+                <th className="text-left px-4 py-3">Vínculo (Roster)</th>
+                <th className="text-left px-4 py-3">Último acesso</th>
                 <th className="text-right px-4 py-3">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => {
-                const isSuper = u.roles.includes("super_admin");
-                const isSelf = u.id === user.id;
-                return (
-                  <tr key={u.id} className="border-t border-border/50">
-                    <td className="px-4 py-3">
-                      <span className="font-medium">{u.name || u.id.slice(0, 8)}</span>
-                      {isSelf && <span className="ml-2 text-[9px] uppercase text-gold">(você)</span>}
-                    </td>
-                    <td className="px-4 py-3 text-xs flex flex-wrap gap-1">
-                      {u.roles.map((r) => (
-                        <span
-                          key={r}
-                          className={`px-2 py-0.5 rounded border text-[10px] uppercase tracking-wider ${
-                            r === "super_admin"
-                              ? "border-gold/40 text-gold"
-                              : r === "coach"
-                                ? "border-primary/40 text-primary"
-                                : "border-border text-muted-foreground"
-                          }`}
-                        >
-                          {r === "super_admin" && <Crown className="inline h-3 w-3 mr-1" />}
-                          {r}
-                        </span>
-                      ))}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end">
-                        {isSuper ? (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" disabled={isSelf}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Remover super-admin?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {u.name || u.id.slice(0, 8)} perderá acesso global à organização.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => promoteMut.mutate({ user_id: u.id, makeSuper: false })}
-                                  className="bg-destructive text-destructive-foreground"
-                                >Remover</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => promoteMut.mutate({ user_id: u.id, makeSuper: true })}
-                            className="text-xs uppercase tracking-wider"
-                          >
-                            <Crown className="h-3.5 w-3.5 mr-1.5 text-gold" /> Promover
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {usersQ.isLoading && (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
+              )}
+              {!usersQ.isLoading && users.length === 0 && (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário.</td></tr>
+              )}
+              {users.map((u) => (
+                <UserRow
+                  key={u.id}
+                  u={u}
+                  allMembers={allMembers}
+                  isSelf={u.id === user.id}
+                  isSuper={u.roles.includes("super_admin")}
+                  onRoleChange={(role) => roleMut.mutate({ user_id: u.id, role })}
+                  onLinkChange={(member_id) => linkMut.mutate({ user_id: u.id, member_id })}
+                  onDelete={() => delMut.mutate({ user_id: u.id })}
+                  onResetPw={(password) => pwMut.mutate({ user_id: u.id, password })}
+                  onPromote={(makeSuper) => promoteMut.mutate({ user_id: u.id, makeSuper })}
+                />
+              ))}
             </tbody>
           </table>
+        </div>
+      </Card>
+
+      <Card className="p-4 border-border bg-card/40">
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p><span className="text-gold">super_admin</span> — controle total da organização.</p>
+          <p><span className="text-primary">coach</span> — gerente da equipe à qual pertence.</p>
+          <p>player — edita estratégia, builds e presença. viewer — somente leitura.</p>
         </div>
       </Card>
     </div>
@@ -682,5 +681,220 @@ function CreateUserDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+const APP_ROLES_EDITABLE = ["coach", "player", "viewer"] as const;
+type UserAppRole = (typeof APP_ROLES_EDITABLE)[number];
+
+type MemberLite = { id: string; name: string; lane: string | null; role: string; team_id: string };
+type UserRowData = {
+  id: string;
+  email: string;
+  last_sign_in_at: string | null;
+  roles: string[];
+  profile: { display_name: string | null; member_id: string | null; user_id: string } | null;
+  teams: { team_id: string; team_role: string; name: string; slug: string; archived: boolean }[];
+};
+
+function UserRow({
+  u, allMembers, isSelf, isSuper, onRoleChange, onLinkChange, onDelete, onResetPw, onPromote,
+}: {
+  u: UserRowData;
+  allMembers: MemberLite[];
+  isSelf: boolean;
+  isSuper: boolean;
+  onRoleChange: (r: UserAppRole) => void;
+  onLinkChange: (memberId: string | null) => void;
+  onDelete: () => void;
+  onResetPw: (pw: string) => void;
+  onPromote: (makeSuper: boolean) => void;
+}) {
+  const editableRole = (u.roles.find((r) => r !== "super_admin") ?? "viewer") as UserAppRole;
+  const memberId: string | null = u.profile?.member_id ?? null;
+  const [pwOpen, setPwOpen] = useState(false);
+  const [newPw, setNewPw] = useState("");
+
+  const linkedMember = useMemo(
+    () => allMembers.find((m) => m.id === memberId) ?? null,
+    [allMembers, memberId],
+  );
+  // Members from the user's teams (preferred), fallback to all members if no team
+  const linkableMembers = useMemo(() => {
+    const teamIds = new Set(u.teams.map((t) => t.team_id));
+    if (teamIds.size === 0) return allMembers;
+    return allMembers.filter((m) => teamIds.has(m.team_id));
+  }, [allMembers, u.teams]);
+
+  return (
+    <tr className="border-t border-border/50 hover:bg-muted/20 align-top">
+      <td className="px-4 py-3 font-mono text-xs">
+        {u.email}
+        {isSelf && <span className="ml-2 text-[9px] uppercase text-gold">(você)</span>}
+      </td>
+      <td className="px-4 py-3">{u.profile?.display_name ?? "—"}</td>
+      <td className="px-4 py-3">
+        <div className="flex flex-col gap-1.5">
+          <Select value={editableRole} onValueChange={(v) => onRoleChange(v as UserAppRole)} disabled={isSelf}>
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {APP_ROLES_EDITABLE.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {isSuper && (
+            <span className="px-2 py-0.5 rounded border border-gold/40 text-gold text-[10px] uppercase tracking-wider w-fit inline-flex items-center">
+              <Crown className="h-3 w-3 mr-1" /> super_admin
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        {u.teams.length === 0 ? (
+          <span className="text-xs text-muted-foreground">— nenhuma —</span>
+        ) : (
+          <div className="flex flex-wrap gap-1 max-w-[260px]">
+            {u.teams.map((t) => (
+              <span
+                key={t.team_id}
+                className={`px-2 py-0.5 rounded border text-[10px] uppercase tracking-wider ${
+                  t.archived
+                    ? "border-border text-muted-foreground line-through"
+                    : t.team_role === "coach"
+                      ? "border-primary/40 text-primary"
+                      : "border-border text-foreground/80"
+                }`}
+                title={`${t.name} · ${t.team_role}`}
+              >
+                {t.name}
+                <span className="ml-1 opacity-60">· {t.team_role}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        <Select
+          value={memberId ?? "none"}
+          onValueChange={(v) => onLinkChange(v === "none" ? null : v)}
+        >
+          <SelectTrigger className="h-8 w-44">
+            <SelectValue placeholder="—">
+              <span className="flex items-center gap-1.5">
+                <LinkIcon className="h-3 w-3" />
+                {linkedMember?.name ?? "—"}
+              </span>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">— sem vínculo —</SelectItem>
+            {linkableMembers.map((m) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.name}{m.lane ? ` · ${m.lane}` : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </td>
+      <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+        {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR") : "nunca"}
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-1">
+          {isSuper ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost" disabled={isSelf} title="Remover super-admin">
+                  <Crown className="h-4 w-4 text-gold" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remover super-admin?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {u.email} perderá acesso global à organização.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onPromote(false)}
+                    className="bg-destructive text-destructive-foreground"
+                  >Remover</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onPromote(true)}
+              title="Promover a super-admin"
+            >
+              <Crown className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          )}
+
+          <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="ghost" title="Redefinir senha">
+                <KeyRound className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Redefinir senha — {u.email}</DialogTitle>
+                <DialogDescription>Defina uma nova senha temporária para este usuário.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <Label htmlFor={`newpw-${u.id}`}>Nova senha (mín. 6)</Label>
+                <Input
+                  id={`newpw-${u.id}`}
+                  type="text"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setPwOpen(false)}>Cancelar</Button>
+                <Button
+                  onClick={() => {
+                    if (newPw.length >= 6) {
+                      onResetPw(newPw);
+                      setPwOpen(false);
+                      setNewPw("");
+                    } else {
+                      toast.error("Mínimo 6 caracteres");
+                    }
+                  }}
+                >Redefinir</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="ghost" disabled={isSelf} title="Remover conta">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remover {u.email}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  A conta será excluída permanentemente. Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDelete}
+                  className="bg-destructive text-destructive-foreground"
+                >Remover</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </td>
+    </tr>
   );
 }
