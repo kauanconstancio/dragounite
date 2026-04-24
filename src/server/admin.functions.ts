@@ -49,16 +49,33 @@ export const listUsers = createServerFn({ method: "POST" })
         supabaseAdmin.from("teams").select("id, name, slug, archived"),
       ]);
 
+    const memberIds = (profiles ?? [])
+      .map((p) => p.member_id)
+      .filter((id): id is string => !!id);
+    const { data: memberRows } = memberIds.length
+      ? await supabaseAdmin
+          .from("members")
+          .select("id, role, lane")
+          .in("id", memberIds)
+      : { data: [] as { id: string; role: string; lane: string | null }[] };
+    const memberMap = new Map<string, { role: string; lane: string | null }>();
+    (memberRows ?? []).forEach((m) => memberMap.set(m.id, { role: m.role, lane: m.lane }));
+
     const teamMap = new Map<string, { id: string; name: string; slug: string; archived: boolean }>();
     (teams ?? []).forEach((t) => teamMap.set(t.id, t));
 
-    return usersList.users.map((u) => ({
+    return usersList.users.map((u) => {
+      const profile = (profiles ?? []).find((p) => p.user_id === u.id) ?? null;
+      const linked = profile?.member_id ? memberMap.get(profile.member_id) ?? null : null;
+      return {
       id: u.id,
       email: u.email ?? "",
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at ?? null,
       roles: (roles ?? []).filter((r) => r.user_id === u.id).map((r) => r.role as string),
-      profile: (profiles ?? []).find((p) => p.user_id === u.id) ?? null,
+      profile,
+      member_role: linked?.role ?? null,
+      member_lane: linked?.lane ?? null,
       teams: (memberships ?? [])
         .filter((m) => m.user_id === u.id)
         .map((m) => {
