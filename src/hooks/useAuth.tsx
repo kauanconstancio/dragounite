@@ -3,7 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "coach" | "player" | "viewer";
+export type AppRole = "coach" | "player" | "viewer" | "super_admin";
 
 type AuthCtx = {
   session: Session | null;
@@ -11,8 +11,9 @@ type AuthCtx = {
   loading: boolean;
   roles: AppRole[];
   hasRole: (r: AppRole) => boolean;
-  canEdit: boolean; // coach OR player
+  canEdit: boolean; // coach OR player OR super_admin
   isCoach: boolean;
+  isSuperAdmin: boolean;
   signOut: () => Promise<void>;
 };
 
@@ -48,14 +49,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const hasRole = (r: AppRole) => roles.includes(r);
+  const isSuperAdmin = hasRole("super_admin");
   const value: AuthCtx = {
     session,
     user: session?.user ?? null,
     loading,
     roles,
     hasRole,
-    canEdit: hasRole("coach") || hasRole("player"),
-    isCoach: hasRole("coach"),
+    canEdit: hasRole("coach") || hasRole("player") || isSuperAdmin,
+    isCoach: hasRole("coach") || isSuperAdmin,
+    isSuperAdmin,
     signOut: async () => { await supabase.auth.signOut(); },
   };
 
