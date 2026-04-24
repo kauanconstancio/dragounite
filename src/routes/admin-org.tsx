@@ -698,8 +698,8 @@ function CreateUserDialog({
 const APP_ROLES_EDITABLE = ["coach", "player", "viewer"] as const;
 type UserAppRole = (typeof APP_ROLES_EDITABLE)[number];
 
-const MEMBER_ROLE_OPTS = ["player", "substitute", "coach", "manager"] as const;
-type MemberRoleOpt = (typeof MEMBER_ROLE_OPTS)[number];
+const ROSTER_ROLE_OPTS = ["player", "substitute", "coach", "manager"] as const;
+type MemberRoleOpt = (typeof ROSTER_ROLE_OPTS)[number];
 const MEMBER_ROLE_LABEL: Record<MemberRoleOpt, string> = {
   player: "Titular",
   substitute: "Reserva",
