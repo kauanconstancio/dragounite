@@ -200,6 +200,29 @@ export const linkUserToMember = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const setMemberRoleSchema = z.object({
+  member_id: z.string().uuid(),
+  role: z.enum(MEMBER_ROLES).optional(),
+  lane: z.enum(LANES).nullable().optional(),
+});
+
+export const setMemberRoleAndLane = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => setMemberRoleSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+    const patch: { role?: string; lane?: string | null } = {};
+    if (data.role !== undefined) patch.role = data.role;
+    if (data.lane !== undefined) patch.lane = data.lane;
+    if (Object.keys(patch).length === 0) return { ok: true };
+    const { error } = await supabaseAdmin
+      .from("members")
+      .update(patch)
+      .eq("id", data.member_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 const deleteUserSchema = z.object({ user_id: z.string().uuid() });
 
 export const deleteUser = createServerFn({ method: "POST" })
