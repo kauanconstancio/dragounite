@@ -429,7 +429,7 @@ function NavGroup({
 }
 
 function AuthButton() {
-  const { user, roles, signOut, loading } = useAuth();
+  const { user, roles, signOut, loading, isSuperAdmin } = useAuth();
   if (loading) return null;
   if (!user) {
     return (
@@ -457,10 +457,22 @@ function AuthButton() {
             <UserCircle className="h-3.5 w-3.5 mr-2" /> Meu perfil
           </Link>
         </DropdownMenuItem>
-        {roles.includes("coach") && (
+        <DropdownMenuItem asChild>
+          <Link to="/equipes" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+            <Shield className="h-3.5 w-3.5 mr-2" /> Minhas equipes
+          </Link>
+        </DropdownMenuItem>
+        {(roles.includes("coach") || isSuperAdmin) && (
           <DropdownMenuItem asChild>
             <Link to="/admin" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
-              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin equipe
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {isSuperAdmin && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin-org" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin organização
             </Link>
           </DropdownMenuItem>
         )}
