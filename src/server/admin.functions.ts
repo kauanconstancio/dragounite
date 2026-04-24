@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { DEFAULT_TEAM_ID } from "@/lib/default-team";
 
 const APP_ROLES = ["coach", "player", "viewer"] as const;
 type AppRole = (typeof APP_ROLES)[number];
@@ -83,6 +84,7 @@ export const createUser = createServerFn({ method: "POST" })
         name: data.display_name,
         role: data.member_role,
         lane: data.lane ?? null,
+        team_id: DEFAULT_TEAM_ID,
       })
       .select("id")
       .single();
