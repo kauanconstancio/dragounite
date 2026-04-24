@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, UserPlus, Trash2, KeyRound, Link as LinkIcon } from "lucide-react";
+import { ShieldCheck, Trash2, KeyRound, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 import { TeamSettingsManager } from "@/components/admin/TeamSettingsManager";
