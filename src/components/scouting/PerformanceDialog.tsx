@@ -199,7 +199,7 @@ export function PerformanceDialog({
       const valid = allies.filter((r) => r.member_id);
       if (!valid.length) return;
       const payload = valid.map((r) => ({
-        ...r, scrim_id: scrimId, pokemon: r.pokemon || null,
+        ...r, scrim_id: scrimId, pokemon: r.pokemon || null, team_id: DEFAULT_TEAM_ID,
       }));
       const { error } = await supabase.from("match_performances").upsert(payload, {
         onConflict: "scrim_id,member_id,game_number",
