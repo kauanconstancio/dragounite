@@ -26,6 +26,7 @@ import { motion } from "framer-motion";
 import { VodEmbed } from "@/components/scouting/VodEmbed";
 import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
 import { RequireRole } from "@/components/auth/RequireRole";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
@@ -64,36 +65,43 @@ const RESULT_LABEL: Record<string, string> = { win: "Vitória", loss: "Derrota",
 
 function ScrimsPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Scrim | null>(null);
 
   const { data: scrims = [], isLoading } = useQuery({
-    queryKey: ["scrims"],
+    queryKey: ["scrims", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("scrims").select("*").order("scheduled_at", { ascending: false });
+      if (!teamId) return [] as Scrim[];
+      const { data, error } = await supabase.from("scrims").select("*").eq("team_id", teamId).order("scheduled_at", { ascending: false });
       if (error) throw error;
       return data as Scrim[];
     },
+    enabled: !!teamId,
   });
 
   const { data: opponents = [] } = useQuery({
-    queryKey: ["opponents-min"],
+    queryKey: ["opponents-min", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("opponents").select("id, name, tag").order("name");
+      if (!teamId) return [] as Opponent[];
+      const { data, error } = await supabase.from("opponents").select("id, name, tag").eq("team_id", teamId).order("name");
       if (error) throw error;
       return data as Opponent[];
     },
+    enabled: !!teamId,
   });
 
   const opponentMap = new Map(opponents.map((o) => [o.id, o]));
 
   const save = useMutation({
     mutationFn: async (s: Partial<Scrim>) => {
+      if (!teamId) throw new Error("Selecione uma equipe");
       if (editing) {
         const { error } = await supabase.from("scrims").update(s).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("scrims").insert(s as any);
+        const { error } = await supabase.from("scrims").insert({ ...s, team_id: teamId } as any);
         if (error) throw error;
       }
     },

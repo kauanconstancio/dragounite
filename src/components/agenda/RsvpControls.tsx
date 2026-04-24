@@ -25,15 +25,18 @@ export function RsvpControls({ eventId, eventType }: Props) {
   const [acting, setActing] = useState<string>("");
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members-rsvp"],
+    queryKey: ["members-rsvp", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as Member[];
       const { data, error } = await supabase
         .from("members")
         .select("id, name, ign, avatar_url")
+        .eq("team_id", teamId)
         .order("name");
       if (error) throw error;
       return data as Member[];
     },
+    enabled: !!teamId,
   });
 
   const { data: attendance = [] } = useQuery({

@@ -33,6 +33,7 @@ import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { RsvpControls } from "@/components/agenda/RsvpControls";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/agenda")({
   head: () => ({
@@ -99,31 +100,39 @@ const RESULT_LABEL: Record<string, string> = {
 };
 
 function AgendaPage() {
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState<Date | null>(new Date());
 
   const { data: trainings = [] } = useQuery({
-    queryKey: ["trainings"],
+    queryKey: ["trainings", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as Training[];
       const { data, error } = await supabase
         .from("trainings")
         .select("*")
+        .eq("team_id", teamId)
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
       return data as Training[];
     },
+    enabled: !!teamId,
   });
 
   const { data: scrims = [] } = useQuery({
-    queryKey: ["scrims"],
+    queryKey: ["scrims", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as Scrim[];
       const { data, error } = await supabase
         .from("scrims")
         .select("*")
+        .eq("team_id", teamId)
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
       return data as Scrim[];
     },
+    enabled: !!teamId,
   });
 
   const events: AgendaEvent[] = useMemo(() => {

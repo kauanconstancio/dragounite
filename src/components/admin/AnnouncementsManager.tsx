@@ -21,6 +21,7 @@ import { Plus, Trash2, Pencil, Pin, Megaphone } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 type Announcement = {
   id: string;
@@ -32,24 +33,30 @@ type Announcement = {
 
 export function AnnouncementsManager() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Announcement | null>(null);
 
   const { data: posts = [] } = useQuery({
-    queryKey: ["announcements"],
+    queryKey: ["announcements", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as Announcement[];
       const { data, error } = await supabase
         .from("announcements")
         .select("*")
+        .eq("team_id", teamId)
         .order("pinned", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Announcement[];
     },
+    enabled: !!teamId,
   });
 
   const save = useMutation({
     mutationFn: async (a: Partial<Announcement>) => {
+      if (!teamId) throw new Error("Selecione uma equipe");
       const payload = {
         title: a.title?.trim(),
         body: a.body?.trim(),
@@ -59,7 +66,7 @@ export function AnnouncementsManager() {
         const { error } = await supabase.from("announcements").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("announcements").insert(payload as any);
+        const { error } = await supabase.from("announcements").insert({ ...payload, team_id: teamId } as any);
         if (error) throw error;
       }
     },

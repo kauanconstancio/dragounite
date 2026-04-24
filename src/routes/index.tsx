@@ -35,6 +35,7 @@ import {
 } from "@/lib/stats";
 import { PokemonImage } from "@/components/PokemonImage";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { toast } from "sonner";
 
 type LikeRow = { announcement_id: string; user_id: string };
@@ -51,78 +52,97 @@ export const Route = createFileRoute("/")({
 
 function DashboardPage() {
   const { user } = useAuth();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const qc = useQueryClient();
 
   const { data: scrims = [] } = useQuery({
-    queryKey: ["scrims"],
+    queryKey: ["scrims", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("scrims").select("*").order("scheduled_at");
+      if (!teamId) return [] as ScrimLite[];
+      const { data, error } = await supabase.from("scrims").select("*").eq("team_id", teamId).order("scheduled_at");
       if (error) throw error;
       return data as ScrimLite[];
     },
+    enabled: !!teamId,
   });
 
   const { data: trainings = [] } = useQuery({
-    queryKey: ["trainings"],
+    queryKey: ["trainings", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("trainings").select("*").order("scheduled_at");
+      if (!teamId) return [] as TrainingLite[];
+      const { data, error } = await supabase.from("trainings").select("*").eq("team_id", teamId).order("scheduled_at");
       if (error) throw error;
       return data as TrainingLite[];
     },
+    enabled: !!teamId,
   });
 
   const { data: matchPerfs = [] } = useQuery({
-    queryKey: ["match_performances", "radar"],
+    queryKey: ["match_performances", "radar", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as RadarPerfLite[];
       const { data, error } = await supabase
         .from("match_performances")
-        .select("scrim_id, game_number, result, kills, deaths, assists, damage_dealt, is_mvp");
+        .select("scrim_id, game_number, result, kills, deaths, assists, damage_dealt, is_mvp")
+        .eq("team_id", teamId);
       if (error) throw error;
       return data as RadarPerfLite[];
     },
+    enabled: !!teamId,
   });
 
   const { data: pokemonUsage = [] } = useQuery({
-    queryKey: ["match_performances", "pokemon_usage"],
+    queryKey: ["match_performances", "pokemon_usage", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as { pokemon: string | null; result: string; scrim_id: string; game_number: number }[];
       const { data, error } = await supabase
         .from("match_performances")
-        .select("pokemon, result, scrim_id, game_number");
+        .select("pokemon, result, scrim_id, game_number")
+        .eq("team_id", teamId);
       if (error) throw error;
       return data as { pokemon: string | null; result: string; scrim_id: string; game_number: number }[];
     },
+    enabled: !!teamId,
   });
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members"],
+    queryKey: ["members", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("members").select("id, name, role, lane, main_pokemon");
+      if (!teamId) return [] as any[];
+      const { data, error } = await supabase.from("members").select("id, name, role, lane, main_pokemon").eq("team_id", teamId);
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!teamId,
   });
 
   const { data: comps = [] } = useQuery({
-    queryKey: ["compositions"],
+    queryKey: ["compositions", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("compositions").select("*").order("created_at", { ascending: false });
+      if (!teamId) return [] as any[];
+      const { data, error } = await supabase.from("compositions").select("*").eq("team_id", teamId).order("created_at", { ascending: false });
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!teamId,
   });
 
   const { data: announcements = [] } = useQuery({
-    queryKey: ["announcements"],
+    queryKey: ["announcements", "dashboard", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as any[];
       const { data, error } = await supabase
         .from("announcements")
         .select("*")
+        .eq("team_id", teamId)
         .order("pinned", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(3);
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!teamId,
   });
 
   const { data: announcementLikes = [] } = useQuery({

@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/jogadas")({
   head: () => ({
@@ -47,13 +48,17 @@ const CAT_LABEL: Record<string, string> = {
 
 function PlaybooksPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const { data: items = [] } = useQuery({
-    queryKey: ["playbooks"],
+    queryKey: ["playbooks", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("playbooks").select("*").order("created_at", { ascending: false });
+      if (!teamId) return [] as Playbook[];
+      const { data, error } = await supabase.from("playbooks").select("*").eq("team_id", teamId).order("created_at", { ascending: false });
       if (error) throw error;
       return data as Playbook[];
     },
+    enabled: !!teamId,
   });
 
   const remove = useMutation({
