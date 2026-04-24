@@ -45,7 +45,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown, UserPlus } from "lucide-react";
+import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown, UserPlus, KeyRound, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-org")({
