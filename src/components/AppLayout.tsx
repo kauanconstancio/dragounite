@@ -44,7 +44,9 @@ import dragouniteLogo from "@/assets/dragounite-logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { ThemeApplier } from "@/components/ThemeApplier";
+import { TeamSwitcher } from "@/components/TeamSwitcher";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -77,22 +79,42 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { data: team } = useTeamSettings();
+  const { data: settings } = useTeamSettings();
+  const { team: activeTeam, teams: userTeams, loading: teamsLoading } = useCurrentTeam();
   const [notifEnabled, setNotifEnabled] = useState(false);
 
-  const teamName = team?.team_name ?? "DragoUnite Y";
-  const teamLogo = team?.logo_url ?? dragouniteLogo;
+  // Active team branding takes precedence; falls back to global settings.
+  const teamName = activeTeam?.name ?? settings?.team_name ?? "DragoUnite Y";
+  const teamLogo = activeTeam?.logo_url ?? settings?.logo_url ?? dragouniteLogo;
   const [teamHead, ...teamRest] = teamName.split(" ");
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
   const isProfileRoute = location.pathname === "/perfil";
+  const isTeamPickerRoute =
+    location.pathname === "/equipes" || location.pathname === "/admin-org";
 
   useEffect(() => {
     if (!loading && !user && !isAuthRoute) {
       navigate({ to: "/auth", replace: true });
     }
   }, [loading, user, isAuthRoute, navigate]);
+
+  // Redirect to team picker when authenticated user has no active team yet
+  // and is not already on a team-agnostic page.
+  useEffect(() => {
+    if (
+      !loading &&
+      user &&
+      !teamsLoading &&
+      !activeTeam &&
+      !isAuthRoute &&
+      !isProfileRoute &&
+      !isTeamPickerRoute
+    ) {
+      navigate({ to: "/equipes", replace: true });
+    }
+  }, [loading, user, teamsLoading, activeTeam, isAuthRoute, isProfileRoute, isTeamPickerRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
   const { data: profileCheck } = useQuery({
