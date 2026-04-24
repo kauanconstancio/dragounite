@@ -683,3 +683,218 @@ function CreateUserDialog({
     </Dialog>
   );
 }
+
+const APP_ROLES_EDITABLE = ["coach", "player", "viewer"] as const;
+type UserAppRole = (typeof APP_ROLES_EDITABLE)[number];
+
+type MemberLite = { id: string; name: string; lane: string | null; role: string; team_id: string };
+type UserRowData = {
+  id: string;
+  email: string;
+  last_sign_in_at: string | null;
+  roles: string[];
+  profile: { display_name: string | null; member_id: string | null; user_id: string } | null;
+  teams: { team_id: string; team_role: string; name: string; slug: string; archived: boolean }[];
+};
+
+function UserRow({
+  u, allMembers, isSelf, isSuper, onRoleChange, onLinkChange, onDelete, onResetPw, onPromote,
+}: {
+  u: UserRowData;
+  allMembers: MemberLite[];
+  isSelf: boolean;
+  isSuper: boolean;
+  onRoleChange: (r: UserAppRole) => void;
+  onLinkChange: (memberId: string | null) => void;
+  onDelete: () => void;
+  onResetPw: (pw: string) => void;
+  onPromote: (makeSuper: boolean) => void;
+}) {
+  const editableRole = (u.roles.find((r) => r !== "super_admin") ?? "viewer") as UserAppRole;
+  const memberId: string | null = u.profile?.member_id ?? null;
+  const [pwOpen, setPwOpen] = useState(false);
+  const [newPw, setNewPw] = useState("");
+
+  const linkedMember = useMemo(
+    () => allMembers.find((m) => m.id === memberId) ?? null,
+    [allMembers, memberId],
+  );
+  // Members from the user's teams (preferred), fallback to all members if no team
+  const linkableMembers = useMemo(() => {
+    const teamIds = new Set(u.teams.map((t) => t.team_id));
+    if (teamIds.size === 0) return allMembers;
+    return allMembers.filter((m) => teamIds.has(m.team_id));
+  }, [allMembers, u.teams]);
+
+  return (
+    <tr className="border-t border-border/50 hover:bg-muted/20 align-top">
+      <td className="px-4 py-3 font-mono text-xs">
+        {u.email}
+        {isSelf && <span className="ml-2 text-[9px] uppercase text-gold">(você)</span>}
+      </td>
+      <td className="px-4 py-3">{u.profile?.display_name ?? "—"}</td>
+      <td className="px-4 py-3">
+        <div className="flex flex-col gap-1.5">
+          <Select value={editableRole} onValueChange={(v) => onRoleChange(v as UserAppRole)} disabled={isSelf}>
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {APP_ROLES_EDITABLE.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {isSuper && (
+            <span className="px-2 py-0.5 rounded border border-gold/40 text-gold text-[10px] uppercase tracking-wider w-fit inline-flex items-center">
+              <Crown className="h-3 w-3 mr-1" /> super_admin
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        {u.teams.length === 0 ? (
+          <span className="text-xs text-muted-foreground">— nenhuma —</span>
+        ) : (
+          <div className="flex flex-wrap gap-1 max-w-[260px]">
+            {u.teams.map((t) => (
+              <span
+                key={t.team_id}
+                className={`px-2 py-0.5 rounded border text-[10px] uppercase tracking-wider ${
+                  t.archived
+                    ? "border-border text-muted-foreground line-through"
+                    : t.team_role === "coach"
+                      ? "border-primary/40 text-primary"
+                      : "border-border text-foreground/80"
+                }`}
+                title={`${t.name} · ${t.team_role}`}
+              >
+                {t.name}
+                <span className="ml-1 opacity-60">· {t.team_role}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        <Select
+          value={memberId ?? "none"}
+          onValueChange={(v) => onLinkChange(v === "none" ? null : v)}
+        >
+          <SelectTrigger className="h-8 w-44">
+            <SelectValue placeholder="—">
+              <span className="flex items-center gap-1.5">
+                <LinkIcon className="h-3 w-3" />
+                {linkedMember?.name ?? "—"}
+              </span>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">— sem vínculo —</SelectItem>
+            {linkableMembers.map((m) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.name}{m.lane ? ` · ${m.lane}` : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </td>
+      <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+        {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR") : "nunca"}
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center justify-end gap-1">
+          {isSuper ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost" disabled={isSelf} title="Remover super-admin">
+                  <Crown className="h-4 w-4 text-gold" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remover super-admin?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {u.email} perderá acesso global à organização.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onPromote(false)}
+                    className="bg-destructive text-destructive-foreground"
+                  >Remover</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onPromote(true)}
+              title="Promover a super-admin"
+            >
+              <Crown className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          )}
+
+          <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="ghost" title="Redefinir senha">
+                <KeyRound className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Redefinir senha — {u.email}</DialogTitle>
+                <DialogDescription>Defina uma nova senha temporária para este usuário.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <Label htmlFor={`newpw-${u.id}`}>Nova senha (mín. 6)</Label>
+                <Input
+                  id={`newpw-${u.id}`}
+                  type="text"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setPwOpen(false)}>Cancelar</Button>
+                <Button
+                  onClick={() => {
+                    if (newPw.length >= 6) {
+                      onResetPw(newPw);
+                      setPwOpen(false);
+                      setNewPw("");
+                    } else {
+                      toast.error("Mínimo 6 caracteres");
+                    }
+                  }}
+                >Redefinir</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="ghost" disabled={isSelf} title="Remover conta">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remover {u.email}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  A conta será excluída permanentemente. Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDelete}
+                  className="bg-destructive text-destructive-foreground"
+                >Remover</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </td>
+    </tr>
+  );
+}
