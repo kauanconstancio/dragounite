@@ -698,6 +698,15 @@ function CreateUserDialog({
 const APP_ROLES_EDITABLE = ["coach", "player", "viewer"] as const;
 type UserAppRole = (typeof APP_ROLES_EDITABLE)[number];
 
+const MEMBER_ROLE_OPTS = ["player", "substitute", "coach", "manager"] as const;
+type MemberRoleOpt = (typeof MEMBER_ROLE_OPTS)[number];
+const MEMBER_ROLE_LABEL: Record<MemberRoleOpt, string> = {
+  player: "Titular",
+  substitute: "Reserva",
+  coach: "Coach",
+  manager: "Gerente",
+};
+
 type MemberLite = { id: string; name: string; lane: string | null; role: string; team_id: string };
 type UserRowData = {
   id: string;
@@ -705,11 +714,13 @@ type UserRowData = {
   last_sign_in_at: string | null;
   roles: string[];
   profile: { display_name: string | null; member_id: string | null; user_id: string } | null;
+  member_role: string | null;
+  member_lane: string | null;
   teams: { team_id: string; team_role: string; name: string; slug: string; archived: boolean }[];
 };
 
 function UserRow({
-  u, allMembers, isSelf, isSuper, onRoleChange, onLinkChange, onDelete, onResetPw, onPromote,
+  u, allMembers, isSelf, isSuper, onRoleChange, onLinkChange, onDelete, onResetPw, onPromote, onMemberRoleChange,
 }: {
   u: UserRowData;
   allMembers: MemberLite[];
@@ -720,6 +731,7 @@ function UserRow({
   onDelete: () => void;
   onResetPw: (pw: string) => void;
   onPromote: (makeSuper: boolean) => void;
+  onMemberRoleChange: (memberId: string, role: MemberRoleOpt) => void;
 }) {
   const editableRole = (u.roles.find((r) => r !== "super_admin") ?? "viewer") as UserAppRole;
   const memberId: string | null = u.profile?.member_id ?? null;
