@@ -1,14 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
+import { createUser } from "@/server/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +38,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown } from "lucide-react";
+import { Plus, Archive, ArchiveRestore, ShieldCheck, Trash2, Crown, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-org")({
@@ -153,6 +162,16 @@ function AdminOrgPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const createUserFn = useServerFn(createUser);
+  const createUserMut = useMutation({
+    mutationFn: (input: any) => createUserFn({ data: input }),
+    onSuccess: () => {
+      toast.success("Usuário criado e vinculado à equipe");
+      qc.invalidateQueries({ queryKey: ["org-users-roles"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Falha ao criar usuário"),
+  });
+
   if (authLoading) return null;
   if (!user) return null;
   if (!isSuperAdmin) {
@@ -187,7 +206,14 @@ function AdminOrgPage() {
             Crie e arquive equipes, promova super-administradores.
           </p>
         </div>
-        <CreateTeamDialog onSubmit={(d) => createMut.mutate(d)} loading={createMut.isPending} />
+        <div className="flex items-center gap-2">
+          <CreateUserDialog
+            teams={teams.filter((t) => !t.archived)}
+            onSubmit={(d) => createUserMut.mutate(d)}
+            loading={createUserMut.isPending}
+          />
+          <CreateTeamDialog onSubmit={(d) => createMut.mutate(d)} loading={createMut.isPending} />
+        </div>
       </header>
 
       <Card className="overflow-hidden border-border">
@@ -494,6 +520,163 @@ function CreateTeamDialog({
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button type="submit" disabled={loading || uploading} className="bg-gradient-primary">
               {loading ? "Criando..." : "Criar equipe"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const APP_ROLE_OPTS = ["coach", "player", "viewer"] as const;
+const TEAM_ROLE_OPTS = ["coach", "player", "viewer"] as const;
+const MEMBER_ROLE_OPTS = ["player", "substitute", "coach", "manager"] as const;
+const LANE_OPTS = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
+
+type CreateUserInput = {
+  email: string;
+  password: string;
+  display_name: string;
+  role: (typeof APP_ROLE_OPTS)[number];
+  team_id: string;
+  team_role: (typeof TEAM_ROLE_OPTS)[number];
+  member_role: (typeof MEMBER_ROLE_OPTS)[number];
+  lane: (typeof LANE_OPTS)[number];
+};
+
+function CreateUserDialog({
+  teams, onSubmit, loading,
+}: {
+  teams: TeamRow[];
+  onSubmit: (d: CreateUserInput) => void;
+  loading: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<(typeof APP_ROLE_OPTS)[number]>("player");
+  const [teamId, setTeamId] = useState<string>("");
+  const [teamRole, setTeamRole] = useState<(typeof TEAM_ROLE_OPTS)[number]>("player");
+  const [memberRole, setMemberRole] = useState<(typeof MEMBER_ROLE_OPTS)[number]>("player");
+  const [lane, setLane] = useState<(typeof LANE_OPTS)[number]>("flex");
+
+  function reset() {
+    setEmail(""); setPassword(""); setDisplayName("");
+    setRole("player"); setTeamId("");
+    setTeamRole("player"); setMemberRole("player"); setLane("flex");
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!teamId) {
+      toast.error("Selecione uma equipe");
+      return;
+    }
+    onSubmit({
+      email: email.trim(),
+      password,
+      display_name: (displayName.trim() || email.split("@")[0]).slice(0, 80),
+      role,
+      team_id: teamId,
+      team_role: teamRole,
+      member_role: memberRole,
+      lane,
+    });
+    setOpen(false);
+    reset();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="uppercase tracking-wider text-xs">
+          <UserPlus className="h-4 w-4 mr-2" /> Novo usuário
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Criar usuário e vincular a uma equipe</DialogTitle>
+          <DialogDescription>
+            Cria a conta, adiciona ao roster e à lista de membros da equipe escolhida.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="nu-email">Email *</Label>
+              <Input id="nu-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="nu-pass">Senha (mín. 6) *</Label>
+              <Input id="nu-pass" type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="nu-name">Nome de exibição</Label>
+            <Input id="nu-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="(opcional — usa o email)" />
+          </div>
+          <div>
+            <Label>Equipe *</Label>
+            <Select value={teamId} onValueChange={setTeamId}>
+              <SelectTrigger><SelectValue placeholder="Selecione uma equipe" /></SelectTrigger>
+              <SelectContent>
+                {teams.length === 0 && (
+                  <div className="px-2 py-3 text-xs text-muted-foreground">Nenhuma equipe ativa</div>
+                )}
+                {teams.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Permissão global</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {APP_ROLE_OPTS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Papel na equipe</Label>
+              <Select value={teamRole} onValueChange={(v) => setTeamRole(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TEAM_ROLE_OPTS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Função no roster</Label>
+              <Select value={memberRole} onValueChange={(v) => setMemberRole(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">Titular</SelectItem>
+                  <SelectItem value="substitute">Reserva</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="manager">Gerente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Rota</Label>
+              <Select value={lane} onValueChange={(v) => setLane(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LANE_OPTS.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button type="submit" disabled={loading} className="bg-gradient-primary">
+              {loading ? "Criando..." : "Criar usuário"}
             </Button>
           </DialogFooter>
         </form>

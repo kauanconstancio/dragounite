@@ -6,7 +6,6 @@ import { useAuth, type AppRole } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listUsers,
-  createUser,
   setUserRole,
   linkUserToMember,
   deleteUser,
@@ -43,7 +42,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, UserPlus, Trash2, KeyRound, Link as LinkIcon } from "lucide-react";
+import { ShieldCheck, Trash2, KeyRound, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 import { TeamSettingsManager } from "@/components/admin/TeamSettingsManager";
@@ -69,7 +68,6 @@ function AdminPage() {
   }, [loading, user, navigate]);
 
   const listFn = useServerFn(listUsers);
-  const createFn = useServerFn(createUser);
   const setRoleFn = useServerFn(setUserRole);
   const linkFn = useServerFn(linkUserToMember);
   const delFn = useServerFn(deleteUser);
@@ -94,11 +92,6 @@ function AdminPage() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-users"] });
 
-  const createMut = useMutation({
-    mutationFn: (input: any) => createFn({ data: input }),
-    onSuccess: () => { toast.success("Conta criada"); invalidate(); },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao criar"),
-  });
   const roleMut = useMutation({
     mutationFn: (input: any) => setRoleFn({ data: input }),
     onSuccess: () => { toast.success("Permissão atualizada"); invalidate(); },
@@ -150,11 +143,6 @@ function AdminPage() {
             Gerencie contas, permissões e vínculos com o roster.
           </p>
         </div>
-        <CreateUserDialog
-          members={members}
-          onSubmit={(d) => createMut.mutate(d)}
-          loading={createMut.isPending}
-        />
       </header>
 
       <Card className="overflow-hidden border-border">
@@ -316,98 +304,3 @@ function UserRow({
   );
 }
 
-const MEMBER_ROLES = ["player", "substitute", "coach", "manager"] as const;
-const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
-
-function CreateUserDialog({
-  members: _members, onSubmit, loading,
-}: { members: any[]; onSubmit: (d: any) => void; loading: boolean }) {
-  const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<AppRole>("player");
-  const [memberRole, setMemberRole] = useState<(typeof MEMBER_ROLES)[number]>("player");
-  const [lane, setLane] = useState<(typeof LANES)[number]>("flex");
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    onSubmit({
-      email,
-      password,
-      display_name: email.split("@")[0],
-      role,
-      member_role: memberRole,
-      lane,
-    });
-    setOpen(false);
-    setEmail(""); setPassword("");
-    setRole("player"); setMemberRole("player"); setLane("flex");
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
-          <UserPlus className="h-4 w-4 mr-2" /> Nova conta
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Criar conta + entrada no Roster</DialogTitle>
-          <DialogDescription>Cadastre o jogador com email, senha e papel inicial.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <Label htmlFor="ne-email">Email (login)</Label>
-            <Input id="ne-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="ne-pass">Senha (mín. 6)</Label>
-            <Input id="ne-pass" type="text" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <Label>Permissão</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Função no time</Label>
-              <Select value={memberRole} onValueChange={(v) => setMemberRole(v as any)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="player">Titular</SelectItem>
-                  <SelectItem value="substitute">Reserva</SelectItem>
-                  <SelectItem value="coach">Coach</SelectItem>
-                  <SelectItem value="manager">Gerente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Rota</Label>
-              <Select value={lane} onValueChange={(v) => setLane(v as any)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {LANES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <p className="text-[11px] text-muted-foreground">
-            O jogador definirá nome de exibição, IGN, Discord, Pokémon Main e notas na sua página de Perfil.
-          </p>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button type="submit" disabled={loading} className="bg-gradient-primary">
-              {loading ? "Criando..." : "Criar conta"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}

@@ -2,10 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { DEFAULT_TEAM_ID } from "@/lib/default-team";
 
 const APP_ROLES = ["coach", "player", "viewer"] as const;
 type AppRole = (typeof APP_ROLES)[number];
+const TEAM_ROLES = ["coach", "player", "viewer"] as const;
 
 async function assertManager(userId: string) {
   const { data, error } = await supabaseAdmin
@@ -13,9 +13,21 @@ async function assertManager(userId: string) {
     .select("role")
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
-  const roles = (data ?? []).map((r) => r.role as AppRole);
-  if (!roles.includes("coach")) {
+  const roles = (data ?? []).map((r) => r.role as AppRole | "super_admin");
+  if (!roles.includes("coach") && !roles.includes("super_admin")) {
     throw new Error("Apenas coaches/gerentes podem executar esta ação.");
+  }
+}
+
+async function assertSuperAdmin(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  const roles = (data ?? []).map((r) => r.role as string);
+  if (!roles.includes("super_admin")) {
+    throw new Error("Apenas super-administradores podem executar esta ação.");
   }
 }
 
@@ -54,13 +66,24 @@ const createUserSchema = z.object({
   role: z.enum(APP_ROLES),
   member_role: z.enum(MEMBER_ROLES).default("player"),
   lane: z.enum(LANES).nullable().optional(),
+  team_id: z.string().uuid(),
+  team_role: z.enum(TEAM_ROLES).default("player"),
 });
 
 export const createUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => createUserSchema.parse(input))
   .handler(async ({ context, data }) => {
-    await assertManager(context.userId);
+    await assertSuperAdmin(context.userId);
+
+    // Verify the team exists
+    const { data: team, error: tErr } = await supabaseAdmin
+      .from("teams")
+      .select("id")
+      .eq("id", data.team_id)
+      .maybeSingle();
+    if (tErr) throw new Error(tErr.message);
+    if (!team) throw new Error("Equipe não encontrada.");
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
@@ -77,14 +100,14 @@ export const createUser = createServerFn({ method: "POST" })
       await supabaseAdmin.from("user_roles").insert({ user_id: newId, role: data.role });
     }
 
-    // Auto-create a roster member for this account
+    // Create roster member inside the chosen team
     const { data: newMember, error: mErr } = await supabaseAdmin
       .from("members")
       .insert({
         name: data.display_name,
         role: data.member_role,
         lane: data.lane ?? null,
-        team_id: DEFAULT_TEAM_ID,
+        team_id: data.team_id,
       })
       .select("id")
       .single();
@@ -96,7 +119,13 @@ export const createUser = createServerFn({ method: "POST" })
       .update({ member_id: newMember.id, display_name: data.display_name })
       .eq("user_id", newId);
 
-    return { id: newId, member_id: newMember.id };
+    // Add the user as a member of the chosen team
+    const { error: tmErr } = await supabaseAdmin
+      .from("team_memberships")
+      .insert({ user_id: newId, team_id: data.team_id, team_role: data.team_role });
+    if (tmErr) throw new Error(tmErr.message);
+
+    return { id: newId, member_id: newMember.id, team_id: data.team_id };
   });
 
 const setRoleSchema = z.object({
