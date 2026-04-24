@@ -17,6 +17,7 @@ import { PresentationToggle } from "@/components/shared/PresentationMode";
 import { ExportPdfButton } from "@/components/shared/ExportPdfButton";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/composicoes")({
   head: () => ({
@@ -61,38 +62,45 @@ const LANES: { key: keyof Comp; label: string }[] = [
 
 function CompsPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Comp | null>(null);
   const [presenting, setPresenting] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   const { data: comps = [], isLoading } = useQuery({
-    queryKey: ["compositions"],
+    queryKey: ["compositions", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("compositions").select("*").order("created_at", { ascending: false });
+      if (!teamId) return [] as Comp[];
+      const { data, error } = await supabase.from("compositions").select("*").eq("team_id", teamId).order("created_at", { ascending: false });
       if (error) throw error;
       return data as Comp[];
     },
+    enabled: !!teamId,
   });
 
   const { data: opponents = [] } = useQuery({
-    queryKey: ["opponents-min"],
+    queryKey: ["opponents-min", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("opponents").select("id, name, tag").order("name");
+      if (!teamId) return [] as Opponent[];
+      const { data, error } = await supabase.from("opponents").select("id, name, tag").eq("team_id", teamId).order("name");
       if (error) throw error;
       return data as Opponent[];
     },
+    enabled: !!teamId,
   });
 
   const opponentMap = new Map(opponents.map((o) => [o.id, o]));
 
   const save = useMutation({
     mutationFn: async (c: Partial<Comp>) => {
+      if (!teamId) throw new Error("Selecione uma equipe");
       if (editing) {
         const { error } = await supabase.from("compositions").update(c).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("compositions").insert(c as any);
+        const { error } = await supabase.from("compositions").insert({ ...c, team_id: teamId } as any);
         if (error) throw error;
       }
     },

@@ -23,6 +23,7 @@ import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/treinos")({
   head: () => ({
@@ -52,25 +53,30 @@ const STATUS_LABEL: Record<string, string> = {
 
 function TreinosPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Training | null>(null);
 
   const { data: trainings = [], isLoading } = useQuery({
-    queryKey: ["trainings"],
+    queryKey: ["trainings", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("trainings").select("*").order("scheduled_at", { ascending: false });
+      if (!teamId) return [] as Training[];
+      const { data, error } = await supabase.from("trainings").select("*").eq("team_id", teamId).order("scheduled_at", { ascending: false });
       if (error) throw error;
       return data as Training[];
     },
+    enabled: !!teamId,
   });
 
   const save = useMutation({
     mutationFn: async (t: Partial<Training>) => {
+      if (!teamId) throw new Error("Selecione uma equipe");
       if (editing) {
         const { error } = await supabase.from("trainings").update(t).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("trainings").insert(t as any);
+        const { error } = await supabase.from("trainings").insert({ ...t, team_id: teamId } as any);
         if (error) throw error;
       }
     },

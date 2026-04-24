@@ -21,6 +21,7 @@ import { PokemonPicker } from "@/components/PokemonPicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/tier-list")({
   head: () => ({
@@ -52,16 +53,20 @@ const TIERS: { key: TierEntry["tier"]; color: string }[] = [
 
 function TierListPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   const { data: entries = [] } = useQuery({
-    queryKey: ["tier_list"],
+    queryKey: ["tier_list", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tier_list").select("*").order("tier").order("position");
+      if (!teamId) return [] as TierEntry[];
+      const { data, error } = await supabase.from("tier_list").select("*").eq("team_id", teamId).order("tier").order("position");
       if (error) throw error;
       return data as TierEntry[];
     },
+    enabled: !!teamId,
   });
 
   const grouped = useMemo(() => {
@@ -72,7 +77,8 @@ function TierListPage() {
 
   const add = useMutation({
     mutationFn: async (e: Partial<TierEntry>) => {
-      const { error } = await supabase.from("tier_list").insert(e as any);
+      if (!teamId) throw new Error("Selecione uma equipe");
+      const { error } = await supabase.from("tier_list").insert({ ...e, team_id: teamId } as any);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["tier_list"] }); setOpen(false); toast.success("Adicionado"); },

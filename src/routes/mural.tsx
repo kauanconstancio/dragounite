@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mural")({
@@ -43,20 +44,25 @@ type ProfileRow = { user_id: string; display_name: string | null; avatar_url: st
 
 function MuralPage() {
   const { user } = useAuth();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const qc = useQueryClient();
   const [openLikesFor, setOpenLikesFor] = useState<string | null>(null);
 
   const { data: posts = [] } = useQuery({
-    queryKey: ["announcements"],
+    queryKey: ["announcements", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as Announcement[];
       const { data, error } = await supabase
         .from("announcements")
         .select("*")
+        .eq("team_id", teamId)
         .order("pinned", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Announcement[];
     },
+    enabled: !!teamId,
   });
 
   const { data: likes = [] } = useQuery({

@@ -22,6 +22,7 @@ import { PokemonImage } from "@/components/PokemonImage";
 import { PokemonPicker } from "@/components/PokemonPicker";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/builds")({
   head: () => ({
@@ -46,25 +47,30 @@ type Build = {
 
 function BuildsPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Build | null>(null);
 
   const { data: builds = [] } = useQuery({
-    queryKey: ["builds"],
+    queryKey: ["builds", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("builds").select("*").order("pokemon");
+      if (!teamId) return [] as Build[];
+      const { data, error } = await supabase.from("builds").select("*").eq("team_id", teamId).order("pokemon");
       if (error) throw error;
       return data as Build[];
     },
+    enabled: !!teamId,
   });
 
   const save = useMutation({
     mutationFn: async (b: Partial<Build>) => {
+      if (!teamId) throw new Error("Selecione uma equipe");
       if (editing) {
         const { error } = await supabase.from("builds").update(b as any).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("builds").insert(b as any);
+        const { error } = await supabase.from("builds").insert({ ...b, team_id: teamId } as any);
         if (error) throw error;
       }
     },

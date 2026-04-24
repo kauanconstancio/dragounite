@@ -20,6 +20,7 @@ import {
 import { Plus, Trash2, Pencil, Target, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/oponentes")({
   head: () => ({
@@ -54,29 +55,36 @@ type ScrimLite = {
 
 function OpponentsPage() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Opponent | null>(null);
 
   const { data: opponents = [] } = useQuery({
-    queryKey: ["opponents"],
+    queryKey: ["opponents", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("opponents").select("*").order("name");
+      if (!teamId) return [] as Opponent[];
+      const { data, error } = await supabase.from("opponents").select("*").eq("team_id", teamId).order("name");
       if (error) throw error;
       return data as Opponent[];
     },
+    enabled: !!teamId,
   });
 
   const { data: scrims = [] } = useQuery({
-    queryKey: ["scrims"],
+    queryKey: ["scrims", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("scrims").select("id, opponent, opponent_id, result, score_us, score_them, scheduled_at");
+      if (!teamId) return [] as ScrimLite[];
+      const { data, error } = await supabase.from("scrims").select("id, opponent, opponent_id, result, score_us, score_them, scheduled_at").eq("team_id", teamId);
       if (error) throw error;
       return data as ScrimLite[];
     },
+    enabled: !!teamId,
   });
 
   const save = useMutation({
     mutationFn: async (o: Partial<Opponent>) => {
+      if (!teamId) throw new Error("Selecione uma equipe");
       const payload: any = {
         name: o.name?.trim(),
         tag: o.tag?.trim() || null,
@@ -89,7 +97,7 @@ function OpponentsPage() {
         const { error } = await supabase.from("opponents").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("opponents").insert(payload);
+        const { error } = await supabase.from("opponents").insert({ ...payload, team_id: teamId });
         if (error) throw error;
       }
     },
