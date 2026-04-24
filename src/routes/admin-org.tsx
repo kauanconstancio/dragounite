@@ -325,16 +325,17 @@ function AdminOrgPage() {
                 <th className="text-left px-4 py-3">Permissão</th>
                 <th className="text-left px-4 py-3">Equipes</th>
                 <th className="text-left px-4 py-3">Vínculo (Roster)</th>
+                <th className="text-left px-4 py-3">Função</th>
                 <th className="text-left px-4 py-3">Último acesso</th>
                 <th className="text-right px-4 py-3">Ações</th>
               </tr>
             </thead>
             <tbody>
               {usersQ.isLoading && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
               )}
               {!usersQ.isLoading && users.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário.</td></tr>
               )}
               {users.map((u) => (
                 <UserRow
@@ -348,6 +349,9 @@ function AdminOrgPage() {
                   onDelete={() => delMut.mutate({ user_id: u.id })}
                   onResetPw={(password) => pwMut.mutate({ user_id: u.id, password })}
                   onPromote={(makeSuper) => promoteMut.mutate({ user_id: u.id, makeSuper })}
+                  onMemberRoleChange={(member_id, role) =>
+                    memberRoleMut.mutate({ member_id, role })
+                  }
                 />
               ))}
             </tbody>
