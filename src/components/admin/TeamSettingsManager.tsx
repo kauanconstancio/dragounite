@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,69 +19,15 @@ type ColorPreset = {
 };
 
 const COLOR_PRESETS: ColorPreset[] = [
-  {
-    id: "battle-arena",
-    name: "Battle Arena",
-    description: "Carmesim + dourado (padrão)",
-    primary: "#DC2626",
-    accent: "#FBBF24",
-  },
-  {
-    id: "royal-purple",
-    name: "Royal Purple",
-    description: "Roxo majestoso + âmbar",
-    primary: "#7C3AED",
-    accent: "#F59E0B",
-  },
-  {
-    id: "ocean-deep",
-    name: "Ocean Deep",
-    description: "Azul oceano + ciano",
-    primary: "#0EA5E9",
-    accent: "#22D3EE",
-  },
-  {
-    id: "forest-strike",
-    name: "Forest Strike",
-    description: "Verde mata + lima",
-    primary: "#16A34A",
-    accent: "#A3E635",
-  },
-  {
-    id: "sunset-blaze",
-    name: "Sunset Blaze",
-    description: "Laranja fogo + rosa",
-    primary: "#F97316",
-    accent: "#EC4899",
-  },
-  {
-    id: "neon-mint",
-    name: "Neon Mint",
-    description: "Verde neon + esmeralda",
-    primary: "#10B981",
-    accent: "#34D399",
-  },
-  {
-    id: "cyber-pink",
-    name: "Cyber Pink",
-    description: "Magenta + violeta elétrico",
-    primary: "#EC4899",
-    accent: "#8B5CF6",
-  },
-  {
-    id: "noir-gold",
-    name: "Noir Gold",
-    description: "Grafite + ouro luxo",
-    primary: "#3F3F46",
-    accent: "#EAB308",
-  },
-  {
-    id: "ice-storm",
-    name: "Ice Storm",
-    description: "Azul gelo + prata",
-    primary: "#3B82F6",
-    accent: "#94A3B8",
-  },
+  { id: "battle-arena", name: "Battle Arena", description: "Carmesim + dourado (padrão)", primary: "#DC2626", accent: "#FBBF24" },
+  { id: "royal-purple", name: "Royal Purple", description: "Roxo majestoso + âmbar", primary: "#7C3AED", accent: "#F59E0B" },
+  { id: "ocean-deep", name: "Ocean Deep", description: "Azul oceano + ciano", primary: "#0EA5E9", accent: "#22D3EE" },
+  { id: "forest-strike", name: "Forest Strike", description: "Verde mata + lima", primary: "#16A34A", accent: "#A3E635" },
+  { id: "sunset-blaze", name: "Sunset Blaze", description: "Laranja fogo + rosa", primary: "#F97316", accent: "#EC4899" },
+  { id: "neon-mint", name: "Neon Mint", description: "Verde neon + esmeralda", primary: "#10B981", accent: "#34D399" },
+  { id: "cyber-pink", name: "Cyber Pink", description: "Magenta + violeta elétrico", primary: "#EC4899", accent: "#8B5CF6" },
+  { id: "noir-gold", name: "Noir Gold", description: "Grafite + ouro luxo", primary: "#3F3F46", accent: "#EAB308" },
+  { id: "ice-storm", name: "Ice Storm", description: "Azul gelo + prata", primary: "#3B82F6", accent: "#94A3B8" },
 ];
 
 function normalizeHex(hex: string): string {
@@ -89,45 +35,46 @@ function normalizeHex(hex: string): string {
 }
 
 export function TeamSettingsManager() {
-  const { data, isLoading } = useTeamSettings();
+  const { team, refresh } = useCurrentTeam();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [teamName, setTeamName] = useState("");
   const [description, setDescription] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#7C3AED");
-  const [accentColor, setAccentColor] = useState("#F59E0B");
+  const [primaryColor, setPrimaryColor] = useState("#DC2626");
+  const [accentColor, setAccentColor] = useState("#FBBF24");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (data) {
-      setTeamName(data.team_name);
-      setDescription(data.description ?? "");
-      setPrimaryColor(data.primary_color);
-      setAccentColor(data.accent_color);
-      setLogoUrl(data.logo_url);
+    if (team) {
+      setTeamName(team.name);
+      setDescription(team.description ?? "");
+      setPrimaryColor(team.primary_color);
+      setAccentColor(team.accent_color);
+      setLogoUrl(team.logo_url);
     }
-  }, [data]);
+  }, [team]);
 
   const saveMut = useMutation({
     mutationFn: async () => {
-      if (!data) throw new Error("Configurações ainda não carregadas");
+      if (!team) throw new Error("Selecione uma equipe primeiro");
       const { error } = await supabase
-        .from("team_settings")
+        .from("teams")
         .update({
-          team_name: teamName.trim() || "Time",
+          name: teamName.trim() || team.name,
           description: description.trim() || null,
           primary_color: primaryColor,
           accent_color: accentColor,
           logo_url: logoUrl,
         })
-        .eq("id", data.id);
+        .eq("id", team.id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Configurações salvas");
-      qc.invalidateQueries({ queryKey: ["team-settings"] });
+    onSuccess: async () => {
+      toast.success("Configurações salvas para esta equipe");
+      await refresh();
+      qc.invalidateQueries({ queryKey: ["my-teams"] });
     },
     onError: (e: any) => toast.error(e.message ?? "Erro ao salvar"),
   });
@@ -141,10 +88,14 @@ export function TeamSettingsManager() {
       toast.error("Imagem muito grande (máx. 2MB)");
       return;
     }
+    if (!team) {
+      toast.error("Selecione uma equipe primeiro");
+      return;
+    }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? "png";
-      const path = `logo-${Date.now()}.${ext}`;
+      const path = `${team.id}/logo-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("team-assets")
         .upload(path, file, { upsert: true, cacheControl: "3600" });
@@ -159,10 +110,10 @@ export function TeamSettingsManager() {
     }
   }
 
-  if (isLoading) {
+  if (!team) {
     return (
       <Card className="p-6 border-border">
-        <div className="text-xs text-muted-foreground">Carregando configurações...</div>
+        <div className="text-xs text-muted-foreground">Selecione uma equipe para editar suas configurações.</div>
       </Card>
     );
   }
@@ -172,9 +123,9 @@ export function TeamSettingsManager() {
       <div className="flex items-center gap-3">
         <Settings2 className="h-5 w-5 text-primary" />
         <div>
-          <h2 className="font-display text-xl tracking-wider">CONFIGURAÇÕES DO TIME</h2>
+          <h2 className="font-display text-xl tracking-wider">CONFIGURAÇÕES DA EQUIPE</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Identidade visual exibida no header, na tela de login e em relatórios.
+            Identidade visual de <span className="text-foreground">{team.name}</span> — exibida no header e em relatórios desta equipe.
           </p>
         </div>
       </div>
@@ -185,7 +136,7 @@ export function TeamSettingsManager() {
           <Label className="text-[10px] uppercase tracking-[0.2em]">Logo</Label>
           <div className="aspect-square rounded-lg border border-border bg-muted/20 flex items-center justify-center overflow-hidden relative">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo do time" className="w-full h-full object-contain p-3" />
+              <img src={logoUrl} alt="Logo da equipe" className="w-full h-full object-contain p-3" />
             ) : (
               <ImageIcon className="h-10 w-10 text-muted-foreground/40" />
             )}
@@ -206,25 +157,12 @@ export function TeamSettingsManager() {
               e.target.value = "";
             }}
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-          >
+          <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => fileRef.current?.click()} disabled={uploading}>
             <Upload className="h-3.5 w-3.5 mr-1.5" />
             {logoUrl ? "Trocar logo" : "Enviar logo"}
           </Button>
           {logoUrl && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-full text-destructive hover:text-destructive"
-              onClick={() => setLogoUrl(null)}
-            >
+            <Button type="button" variant="ghost" size="sm" className="w-full text-destructive hover:text-destructive" onClick={() => setLogoUrl(null)}>
               Remover
             </Button>
           )}
@@ -233,36 +171,18 @@ export function TeamSettingsManager() {
         {/* Form */}
         <div className="space-y-4">
           <div>
-            <Label htmlFor="team-name">Nome do time</Label>
-            <Input
-              id="team-name"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              maxLength={60}
-              placeholder="Ex.: DragoUnite Y"
-            />
+            <Label htmlFor="team-name">Nome da equipe</Label>
+            <Input id="team-name" value={teamName} onChange={(e) => setTeamName(e.target.value)} maxLength={60} placeholder="Ex.: DragoUnite Y" />
           </div>
           <div>
             <Label htmlFor="team-desc">Descrição</Label>
-            <Textarea
-              id="team-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={240}
-              rows={3}
-              placeholder="Breve descrição do time (até 240 caracteres)"
-            />
-            <div className="text-[10px] text-muted-foreground mt-1 text-right">
-              {description.length}/240
-            </div>
+            <Textarea id="team-desc" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={240} rows={3} placeholder="Breve descrição da equipe (até 240 caracteres)" />
+            <div className="text-[10px] text-muted-foreground mt-1 text-right">{description.length}/240</div>
           </div>
-          {/* Presets de cores */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Palette className="h-3.5 w-3.5 text-muted-foreground" />
-              <Label className="text-[10px] uppercase tracking-[0.2em]">
-                Esquemas pré-definidos
-              </Label>
+              <Label className="text-[10px] uppercase tracking-[0.2em]">Esquemas pré-definidos</Label>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {COLOR_PRESETS.map((preset) => {
@@ -278,9 +198,7 @@ export function TeamSettingsManager() {
                       setAccentColor(preset.accent);
                     }}
                     className={`group relative flex flex-col gap-2 rounded-lg border p-3 text-left transition-all hover:border-primary/60 hover:bg-muted/30 ${
-                      isActive
-                        ? "border-primary bg-primary/5 shadow-[0_0_0_1px_var(--primary)]"
-                        : "border-border bg-muted/10"
+                      isActive ? "border-primary bg-primary/5 shadow-[0_0_0_1px_var(--primary)]" : "border-border bg-muted/10"
                     }`}
                     title={preset.description}
                   >
@@ -290,20 +208,12 @@ export function TeamSettingsManager() {
                       </span>
                     )}
                     <div className="flex gap-1">
-                      <span
-                        className="h-6 flex-1 rounded-md border border-border/50"
-                        style={{ background: preset.primary }}
-                      />
-                      <span
-                        className="h-6 w-6 rounded-md border border-border/50"
-                        style={{ background: preset.accent }}
-                      />
+                      <span className="h-6 flex-1 rounded-md border border-border/50" style={{ background: preset.primary }} />
+                      <span className="h-6 w-6 rounded-md border border-border/50" style={{ background: preset.accent }} />
                     </div>
                     <div>
                       <div className="text-[11px] font-medium leading-tight">{preset.name}</div>
-                      <div className="text-[9px] text-muted-foreground leading-tight mt-0.5">
-                        {preset.description}
-                      </div>
+                      <div className="text-[9px] text-muted-foreground leading-tight mt-0.5">{preset.description}</div>
                     </div>
                   </button>
                 );
@@ -315,70 +225,34 @@ export function TeamSettingsManager() {
             <div>
               <Label htmlFor="primary-color">Cor primária (personalizar)</Label>
               <div className="flex items-center gap-2">
-                <input
-                  id="primary-color"
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer"
-                />
-                <Input
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  maxLength={9}
-                  className="font-mono text-xs"
-                />
+                <input id="primary-color" type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer" />
+                <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} maxLength={9} className="font-mono text-xs" />
               </div>
             </div>
             <div>
               <Label htmlFor="accent-color">Cor de destaque (personalizar)</Label>
               <div className="flex items-center gap-2">
-                <input
-                  id="accent-color"
-                  type="color"
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  className="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer"
-                />
-                <Input
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  maxLength={9}
-                  className="font-mono text-xs"
-                />
+                <input id="accent-color" type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="h-9 w-12 rounded-md border border-border bg-transparent cursor-pointer" />
+                <Input value={accentColor} onChange={(e) => setAccentColor(e.target.value)} maxLength={9} className="font-mono text-xs" />
               </div>
             </div>
           </div>
 
-          {/* Preview */}
           <div className="rounded-lg border border-border bg-muted/10 p-4">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
-              Pré-visualização
-            </div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">Pré-visualização</div>
             <div className="flex items-center gap-3">
               {logoUrl ? (
                 <img src={logoUrl} alt="" className="h-12 w-12 object-contain" />
               ) : (
-                <div
-                  className="h-12 w-12 rounded-md flex items-center justify-center font-display text-lg"
-                  style={{ background: primaryColor, color: "#fff" }}
-                >
+                <div className="h-12 w-12 rounded-md flex items-center justify-center font-display text-lg" style={{ background: primaryColor, color: "#fff" }}>
                   {teamName.slice(0, 1).toUpperCase() || "T"}
                 </div>
               )}
               <div>
-                <div className="font-display text-xl tracking-wider">
-                  {teamName || "Nome do time"}
-                </div>
-                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                  Pokémon Unite Team OPS
-                </div>
+                <div className="font-display text-xl tracking-wider">{teamName || "Nome da equipe"}</div>
+                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Pokémon Unite Team OPS</div>
               </div>
-              <span
-                className="ml-auto inline-block h-6 w-6 rounded-full border border-border"
-                style={{ background: accentColor }}
-                title="Cor de destaque"
-              />
+              <span className="ml-auto inline-block h-6 w-6 rounded-full border border-border" style={{ background: accentColor }} title="Cor de destaque" />
             </div>
           </div>
 
@@ -387,23 +261,18 @@ export function TeamSettingsManager() {
               type="button"
               variant="ghost"
               onClick={() => {
-                if (data) {
-                  setTeamName(data.team_name);
-                  setDescription(data.description ?? "");
-                  setPrimaryColor(data.primary_color);
-                  setAccentColor(data.accent_color);
-                  setLogoUrl(data.logo_url);
+                if (team) {
+                  setTeamName(team.name);
+                  setDescription(team.description ?? "");
+                  setPrimaryColor(team.primary_color);
+                  setAccentColor(team.accent_color);
+                  setLogoUrl(team.logo_url);
                 }
               }}
             >
               Descartar
             </Button>
-            <Button
-              type="button"
-              onClick={() => saveMut.mutate()}
-              disabled={saveMut.isPending || uploading}
-              className="bg-gradient-primary"
-            >
+            <Button type="button" onClick={() => saveMut.mutate()} disabled={saveMut.isPending || uploading} className="bg-gradient-primary">
               {saveMut.isPending ? "Salvando..." : "Salvar configurações"}
             </Button>
           </div>
