@@ -206,7 +206,14 @@ function AdminOrgPage() {
             Crie e arquive equipes, promova super-administradores.
           </p>
         </div>
-        <CreateTeamDialog onSubmit={(d) => createMut.mutate(d)} loading={createMut.isPending} />
+        <div className="flex items-center gap-2">
+          <CreateUserDialog
+            teams={teams.filter((t) => !t.archived)}
+            onSubmit={(d) => createUserMut.mutate(d)}
+            loading={createUserMut.isPending}
+          />
+          <CreateTeamDialog onSubmit={(d) => createMut.mutate(d)} loading={createMut.isPending} />
+        </div>
       </header>
 
       <Card className="overflow-hidden border-border">
