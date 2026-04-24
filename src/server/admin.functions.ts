@@ -57,7 +57,7 @@ export const listUsers = createServerFn({ method: "POST" })
       email: u.email ?? "",
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at ?? null,
-      roles: (roles ?? []).filter((r) => r.user_id === u.id).map((r) => r.role as AppRole),
+      roles: (roles ?? []).filter((r) => r.user_id === u.id).map((r) => r.role as string),
       profile: (profiles ?? []).find((p) => p.user_id === u.id) ?? null,
       teams: (memberships ?? [])
         .filter((m) => m.user_id === u.id)
