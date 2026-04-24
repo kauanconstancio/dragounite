@@ -146,7 +146,7 @@ export function RosterManager() {
 
   const createMut = useMutation({
     mutationFn: async (input: Omit<MemberRow, "id" | "archived">) => {
-      const { error } = await supabase.from("members").insert({ ...input, archived: false });
+      const { error } = await supabase.from("members").insert({ ...input, archived: false, team_id: DEFAULT_TEAM_ID });
       if (error) throw error;
     },
     onSuccess: () => {
