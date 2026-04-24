@@ -68,7 +68,6 @@ function AdminPage() {
   }, [loading, user, navigate]);
 
   const listFn = useServerFn(listUsers);
-  const createFn = useServerFn(createUser);
   const setRoleFn = useServerFn(setUserRole);
   const linkFn = useServerFn(linkUserToMember);
   const delFn = useServerFn(deleteUser);
