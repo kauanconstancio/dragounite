@@ -221,7 +221,7 @@ export function PerformanceDialog({
       const updates = valid.filter((r) => r.id);
       if (inserts.length) {
         const { error } = await supabase.from("opponent_performances").insert(
-          inserts.map(({ id: _id, ...r }) => ({ ...r, opponent_id: opponentId, scrim_id: scrimId, game_number: game })),
+          inserts.map(({ id: _id, ...r }) => ({ ...r, opponent_id: opponentId, scrim_id: scrimId, game_number: game, team_id: DEFAULT_TEAM_ID })),
         );
         if (error) throw error;
       }
