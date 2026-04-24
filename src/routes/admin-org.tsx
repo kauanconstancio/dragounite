@@ -97,23 +97,21 @@ function AdminOrgPage() {
     enabled: !!user && isSuperAdmin,
   });
 
+  const listUsersFn = useServerFn(listUsers);
   const usersQ = useQuery({
-    queryKey: ["org-users-roles"],
+    queryKey: ["org-users-full"],
+    queryFn: () => listUsersFn({ data: undefined }),
+    enabled: !!user && isSuperAdmin,
+  });
+
+  const allMembersQ = useQuery({
+    queryKey: ["org-all-members"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
+        .from("members")
+        .select("id, name, lane, role, team_id");
       if (error) throw error;
-      const profileRes = await supabase.from("profiles").select("user_id, display_name");
-      const profileMap = new Map<string, string>();
-      (profileRes.data ?? []).forEach((p) => profileMap.set(p.user_id, p.display_name ?? ""));
-      const byUser = new Map<string, { id: string; name: string; roles: string[] }>();
-      (data ?? []).forEach((r) => {
-        const entry = byUser.get(r.user_id) ?? { id: r.user_id, name: profileMap.get(r.user_id) ?? "", roles: [] };
-        entry.roles.push(r.role);
-        byUser.set(r.user_id, entry);
-      });
-      return [...byUser.values()].sort((a, b) => a.name.localeCompare(b.name));
+      return data ?? [];
     },
     enabled: !!user && isSuperAdmin,
   });
