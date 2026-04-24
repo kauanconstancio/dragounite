@@ -173,6 +173,7 @@ function AdminOrgPage() {
   const linkFn = useServerFn(linkUserToMember);
   const delFn = useServerFn(deleteUser);
   const pwFn = useServerFn(resetUserPassword);
+  const memberRoleFn = useServerFn(setMemberRoleAndLane);
 
   const invalidateUsers = () => qc.invalidateQueries({ queryKey: ["org-users-full"] });
 
