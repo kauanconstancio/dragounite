@@ -336,13 +336,47 @@ function AdminOrgPage() {
 
 function CreateTeamDialog({
   onSubmit, loading,
-}: { onSubmit: (d: { name: string; slug: string; description: string | null; primary_color: string; accent_color: string }) => void; loading: boolean }) {
+}: { onSubmit: (d: { name: string; slug: string; description: string | null; primary_color: string; accent_color: string; logo_url: string | null }) => void; loading: boolean }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [primary, setPrimary] = useState("#DC2626");
   const [accent, setAccent] = useState("#FBBF24");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  function reset() {
+    setName(""); setSlug(""); setDescription("");
+    setPrimary("#DC2626"); setAccent("#FBBF24");
+    setLogoUrl(null);
+  }
+
+  async function handleLogoFile(file: File) {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo deve ter no máximo 2MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const path = `team-logos/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("team-assets").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("team-assets").getPublicUrl(path);
+      setLogoUrl(data.publicUrl);
+      toast.success("Logo enviado");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha no upload");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -361,14 +395,14 @@ function CreateTeamDialog({
       description: description.trim() || null,
       primary_color: primary,
       accent_color: accent,
+      logo_url: logoUrl,
     });
     setOpen(false);
-    setName(""); setSlug(""); setDescription("");
-    setPrimary("#DC2626"); setAccent("#FBBF24");
+    reset();
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
       <DialogTrigger asChild>
         <Button className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
           <Plus className="h-4 w-4 mr-2" /> Nova equipe
@@ -402,6 +436,40 @@ function CreateTeamDialog({
             <Label htmlFor="t-desc">Descrição</Label>
             <Textarea id="t-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
+          <div>
+            <Label htmlFor="t-logo">Logo da equipe</Label>
+            <div className="flex items-center gap-3 mt-1">
+              <div className="h-14 w-14 rounded-md border border-border bg-background/40 flex items-center justify-center overflow-hidden shrink-0">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="logo" className="h-full w-full object-contain" />
+                ) : (
+                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground">sem logo</span>
+                )}
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <Input
+                  id="t-logo"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleLogoFile(f);
+                  }}
+                />
+                {uploading && <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Enviando...</p>}
+                {logoUrl && !uploading && (
+                  <button
+                    type="button"
+                    onClick={() => setLogoUrl(null)}
+                    className="text-[10px] uppercase tracking-wider text-muted-foreground hover:text-destructive"
+                  >
+                    Remover logo
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Cor primária</Label>
@@ -424,7 +492,7 @@ function CreateTeamDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button type="submit" disabled={loading} className="bg-gradient-primary">
+            <Button type="submit" disabled={loading || uploading} className="bg-gradient-primary">
               {loading ? "Criando..." : "Criar equipe"}
             </Button>
           </DialogFooter>
