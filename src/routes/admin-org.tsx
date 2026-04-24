@@ -168,13 +168,40 @@ function AdminOrgPage() {
   });
 
   const createUserFn = useServerFn(createUser);
+  const setRoleFn = useServerFn(setUserRole);
+  const linkFn = useServerFn(linkUserToMember);
+  const delFn = useServerFn(deleteUser);
+  const pwFn = useServerFn(resetUserPassword);
+
+  const invalidateUsers = () => qc.invalidateQueries({ queryKey: ["org-users-full"] });
+
   const createUserMut = useMutation({
     mutationFn: (input: any) => createUserFn({ data: input }),
     onSuccess: () => {
       toast.success("Usuário criado e vinculado à equipe");
-      qc.invalidateQueries({ queryKey: ["org-users-roles"] });
+      invalidateUsers();
     },
     onError: (e: any) => toast.error(e.message ?? "Falha ao criar usuário"),
+  });
+  const roleMut = useMutation({
+    mutationFn: (input: any) => setRoleFn({ data: input }),
+    onSuccess: () => { toast.success("Permissão atualizada"); invalidateUsers(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const linkMut = useMutation({
+    mutationFn: (input: any) => linkFn({ data: input }),
+    onSuccess: () => { toast.success("Vínculo de roster atualizado"); invalidateUsers(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const delMut = useMutation({
+    mutationFn: (input: any) => delFn({ data: input }),
+    onSuccess: () => { toast.success("Conta removida"); invalidateUsers(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const pwMut = useMutation({
+    mutationFn: (input: any) => pwFn({ data: input }),
+    onSuccess: () => toast.success("Senha redefinida"),
+    onError: (e: any) => toast.error(e.message),
   });
 
   if (authLoading) return null;
