@@ -17,12 +17,14 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OponentesRouteImport } from './routes/oponentes'
 import { Route as MuralRouteImport } from './routes/mural'
 import { Route as JogadasRouteImport } from './routes/jogadas'
+import { Route as EquipesRouteImport } from './routes/equipes'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JogadoresMemberIdRouteImport } from './routes/jogadores.$memberId'
@@ -67,6 +69,11 @@ const JogadasRoute = JogadasRouteImport.update({
   path: '/jogadas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EquipesRoute = EquipesRouteImport.update({
+  id: '/equipes',
+  path: '/equipes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DraftRoute = DraftRouteImport.update({
   id: '/draft',
   path: '/draft',
@@ -97,6 +104,11 @@ const AgendaRoute = AgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminOrgRoute = AdminOrgRouteImport.update({
+  id: '/admin-org',
+  path: '/admin-org',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -116,12 +128,14 @@ const JogadoresMemberIdRoute = JogadoresMemberIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/equipes': typeof EquipesRoute
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
@@ -135,12 +149,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/equipes': typeof EquipesRoute
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
@@ -155,12 +171,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
+  '/equipes': typeof EquipesRoute
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
@@ -176,12 +194,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin-org'
     | '/agenda'
     | '/amistosos'
     | '/auth'
     | '/builds'
     | '/composicoes'
     | '/draft'
+    | '/equipes'
     | '/jogadas'
     | '/mural'
     | '/oponentes'
@@ -195,12 +215,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/admin-org'
     | '/agenda'
     | '/amistosos'
     | '/auth'
     | '/builds'
     | '/composicoes'
     | '/draft'
+    | '/equipes'
     | '/jogadas'
     | '/mural'
     | '/oponentes'
@@ -214,12 +236,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin-org'
     | '/agenda'
     | '/amistosos'
     | '/auth'
     | '/builds'
     | '/composicoes'
     | '/draft'
+    | '/equipes'
     | '/jogadas'
     | '/mural'
     | '/oponentes'
@@ -234,12 +258,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AdminOrgRoute: typeof AdminOrgRoute
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   AuthRoute: typeof AuthRoute
   BuildsRoute: typeof BuildsRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
+  EquipesRoute: typeof EquipesRoute
   JogadasRoute: typeof JogadasRoute
   MuralRoute: typeof MuralRoute
   OponentesRoute: typeof OponentesRoute
@@ -309,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogadasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/equipes': {
+      id: '/equipes'
+      path: '/equipes'
+      fullPath: '/equipes'
+      preLoaderRoute: typeof EquipesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/draft': {
       id: '/draft'
       path: '/draft'
@@ -351,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin-org': {
+      id: '/admin-org'
+      path: '/admin-org'
+      fullPath: '/admin-org'
+      preLoaderRoute: typeof AdminOrgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -378,12 +418,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AdminOrgRoute: AdminOrgRoute,
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   AuthRoute: AuthRoute,
   BuildsRoute: BuildsRoute,
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
+  EquipesRoute: EquipesRoute,
   JogadasRoute: JogadasRoute,
   MuralRoute: MuralRoute,
   OponentesRoute: OponentesRoute,

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_TEAM_ID } from "@/lib/default-team";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +102,8 @@ export function PerformanceDialog({
   status?: "scheduled" | "completed" | "cancelled";
 }) {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id ?? DEFAULT_TEAM_ID;
   const [allies, setAllies] = useState<AllyForm[]>([]);
   const [opps, setOpps] = useState<OppForm[]>([]);
   const [game, setGame] = useState(1);
@@ -199,7 +202,7 @@ export function PerformanceDialog({
       const valid = allies.filter((r) => r.member_id);
       if (!valid.length) return;
       const payload = valid.map((r) => ({
-        ...r, scrim_id: scrimId, pokemon: r.pokemon || null, team_id: DEFAULT_TEAM_ID,
+        ...r, scrim_id: scrimId, pokemon: r.pokemon || null, team_id: teamId,
       }));
       const { error } = await supabase.from("match_performances").upsert(payload, {
         onConflict: "scrim_id,member_id,game_number",
@@ -221,7 +224,7 @@ export function PerformanceDialog({
       const updates = valid.filter((r) => r.id);
       if (inserts.length) {
         const { error } = await supabase.from("opponent_performances").insert(
-          inserts.map(({ id: _id, ...r }) => ({ ...r, opponent_id: opponentId, scrim_id: scrimId, game_number: game, team_id: DEFAULT_TEAM_ID })),
+          inserts.map(({ id: _id, ...r }) => ({ ...r, opponent_id: opponentId, scrim_id: scrimId, game_number: game, team_id: teamId })),
         );
         if (error) throw error;
       }

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_TEAM_ID } from "@/lib/default-team";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,8 @@ type ProfileLink = { user_id: string; member_id: string | null };
 
 export function RosterManager() {
   const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id ?? DEFAULT_TEAM_ID;
   const [showArchived, setShowArchived] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<MemberRow>>({});
@@ -147,7 +150,7 @@ export function RosterManager() {
 
   const createMut = useMutation({
     mutationFn: async (input: Omit<MemberRow, "id" | "archived">) => {
-      const { error } = await supabase.from("members").insert({ ...input, archived: false, team_id: DEFAULT_TEAM_ID });
+      const { error } = await supabase.from("members").insert({ ...input, archived: false, team_id: teamId });
       if (error) throw error;
     },
     onSuccess: () => {

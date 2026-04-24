@@ -44,7 +44,9 @@ import dragouniteLogo from "@/assets/dragounite-logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { ThemeApplier } from "@/components/ThemeApplier";
+import { TeamSwitcher } from "@/components/TeamSwitcher";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -77,22 +79,42 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { data: team } = useTeamSettings();
+  const { data: settings } = useTeamSettings();
+  const { team: activeTeam, teams: userTeams, loading: teamsLoading } = useCurrentTeam();
   const [notifEnabled, setNotifEnabled] = useState(false);
 
-  const teamName = team?.team_name ?? "DragoUnite Y";
-  const teamLogo = team?.logo_url ?? dragouniteLogo;
+  // Active team branding takes precedence; falls back to global settings.
+  const teamName = activeTeam?.name ?? settings?.team_name ?? "DragoUnite Y";
+  const teamLogo = activeTeam?.logo_url ?? settings?.logo_url ?? dragouniteLogo;
   const [teamHead, ...teamRest] = teamName.split(" ");
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
   const isProfileRoute = location.pathname === "/perfil";
+  const isTeamPickerRoute =
+    location.pathname === "/equipes" || location.pathname === "/admin-org";
 
   useEffect(() => {
     if (!loading && !user && !isAuthRoute) {
       navigate({ to: "/auth", replace: true });
     }
   }, [loading, user, isAuthRoute, navigate]);
+
+  // Redirect to team picker when authenticated user has no active team yet
+  // and is not already on a team-agnostic page.
+  useEffect(() => {
+    if (
+      !loading &&
+      user &&
+      !teamsLoading &&
+      !activeTeam &&
+      !isAuthRoute &&
+      !isProfileRoute &&
+      !isTeamPickerRoute
+    ) {
+      navigate({ to: "/equipes", replace: true });
+    }
+  }, [loading, user, teamsLoading, activeTeam, isAuthRoute, isProfileRoute, isTeamPickerRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
   const { data: profileCheck } = useQuery({
@@ -259,6 +281,7 @@ export function AppLayout() {
               {notifEnabled ? <Bell className="h-3.5 w-3.5 text-gold" /> : <BellOff className="h-3.5 w-3.5" />}
             </button>
 
+            <TeamSwitcher />
             <AuthButton />
           </nav>
 
@@ -290,8 +313,9 @@ export function AppLayout() {
 }
 
 function MobileTeamTitle() {
-  const { data: team } = useTeamSettings();
-  const name = team?.team_name ?? "DragoUnite Y";
+  const { team } = useCurrentTeam();
+  const { data: settings } = useTeamSettings();
+  const name = team?.name ?? settings?.team_name ?? "DragoUnite Y";
   const [head, ...rest] = name.split(" ");
   const tail = rest.join(" ");
   return (
@@ -405,7 +429,7 @@ function NavGroup({
 }
 
 function AuthButton() {
-  const { user, roles, signOut, loading } = useAuth();
+  const { user, roles, signOut, loading, isSuperAdmin } = useAuth();
   if (loading) return null;
   if (!user) {
     return (
@@ -433,10 +457,22 @@ function AuthButton() {
             <UserCircle className="h-3.5 w-3.5 mr-2" /> Meu perfil
           </Link>
         </DropdownMenuItem>
-        {roles.includes("coach") && (
+        <DropdownMenuItem asChild>
+          <Link to="/equipes" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+            <Shield className="h-3.5 w-3.5 mr-2" /> Minhas equipes
+          </Link>
+        </DropdownMenuItem>
+        {(roles.includes("coach") || isSuperAdmin) && (
           <DropdownMenuItem asChild>
             <Link to="/admin" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
-              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin equipe
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {isSuperAdmin && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin-org" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Admin organização
             </Link>
           </DropdownMenuItem>
         )}
