@@ -66,16 +66,19 @@ export function RosterManager() {
   const [draft, setDraft] = useState<Partial<MemberRow>>({});
 
   const membersQ = useQuery({
-    queryKey: ["roster-members"],
+    queryKey: ["roster-members", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as MemberRow[];
       const { data, error } = await supabase
         .from("members")
         .select("id, name, ign, lane, role, main_pokemon, discord, archived")
+        .eq("team_id", teamId)
         .order("archived", { ascending: true })
         .order("name");
       if (error) throw error;
       return (data ?? []) as MemberRow[];
     },
+    enabled: !!teamId,
   });
 
   const linksQ = useQuery({
@@ -97,6 +100,7 @@ export function RosterManager() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["roster-members"] });
     qc.invalidateQueries({ queryKey: ["members-all"] });
+    qc.invalidateQueries({ queryKey: ["members"] });
   };
 
   const updateMut = useMutation({

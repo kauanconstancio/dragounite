@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { type PerfRow } from "@/lib/player-stats";
 import { PokemonImage } from "@/components/PokemonImage";
 import { Crown, Swords, HandHeart, Trophy, ThumbsUp, UserPlus, UserMinus, AlertCircle } from "lucide-react";
@@ -39,14 +40,18 @@ export function MatchResultsView({
 }) {
   const [game, setGame] = useState(1);
   const [tab, setTab] = useState<Tab>("details");
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members-min-results"],
+    queryKey: ["members-min-results", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("members").select("id, name, ign");
+      if (!teamId) return [] as Member[];
+      const { data, error } = await supabase.from("members").select("id, name, ign").eq("team_id", teamId);
       if (error) throw error;
       return data as Member[];
     },
+    enabled: !!teamId,
   });
 
   const { data: allies = [] } = useQuery({
