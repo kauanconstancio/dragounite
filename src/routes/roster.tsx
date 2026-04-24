@@ -7,6 +7,7 @@ import { Crown, Headphones, ClipboardList, Swords } from "lucide-react";
 import { ROLE_LABEL, ROLE_COLORS, LANE_LABEL } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { motion } from "framer-motion";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/roster")({
   head: () => ({
@@ -44,13 +45,17 @@ const SECTIONS: { key: Member["role"]; title: string; subtitle: string }[] = [
 ];
 
 function RosterPage() {
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const { data: members = [], isLoading } = useQuery({
-    queryKey: ["members"],
+    queryKey: ["members", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("members").select("*").order("created_at");
+      if (!teamId) return [] as Member[];
+      const { data, error } = await supabase.from("members").select("*").eq("team_id", teamId).order("created_at");
       if (error) throw error;
       return data as Member[];
     },
+    enabled: !!teamId,
   });
 
   return (

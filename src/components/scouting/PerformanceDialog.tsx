@@ -109,15 +109,17 @@ export function PerformanceDialog({
   const [game, setGame] = useState(1);
 
   const { data: members = [] } = useQuery({
-    queryKey: ["members-starters"],
+    queryKey: ["members-starters", teamId],
     queryFn: async () => {
+      if (!teamId) return [] as Member[];
       const { data, error } = await supabase
         .from("members").select("id, name, ign, role, lane, main_pokemon")
+        .eq("team_id", teamId)
         .eq("role", "player").order("name");
       if (error) throw error;
       return data as Member[];
     },
-    enabled: open,
+    enabled: open && !!teamId,
   });
 
   const { data: opponent } = useQuery({

@@ -48,6 +48,7 @@ import { toast } from "sonner";
 import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 import { TeamSettingsManager } from "@/components/admin/TeamSettingsManager";
 import { RosterManager } from "@/components/admin/RosterManager";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Battle Arena" }] }),
@@ -58,6 +59,8 @@ const ROLES: AppRole[] = ["coach", "player", "viewer"];
 
 function AdminPage() {
   const { user, isCoach, loading } = useAuth();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -79,13 +82,14 @@ function AdminPage() {
   });
 
   const membersQ = useQuery({
-    queryKey: ["members-all"],
+    queryKey: ["members-all", teamId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("members").select("id, name, lane, role");
+      if (!teamId) return [];
+      const { data, error } = await supabase.from("members").select("id, name, lane, role").eq("team_id", teamId);
       if (error) throw error;
       return data ?? [];
     },
-    enabled: !!user && isCoach,
+    enabled: !!user && isCoach && !!teamId,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-users"] });

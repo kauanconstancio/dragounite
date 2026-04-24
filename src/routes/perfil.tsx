@@ -83,8 +83,9 @@ function PerfilPage() {
   });
 
   const scrimsQ = useQuery({
-    queryKey: ["scrims-for-perfil"],
+    queryKey: ["scrims-for-perfil", memberId],
     queryFn: async () => {
+      if (!memberId) return [];
       const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result");
       if (error) throw error;
       return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending" }[];

@@ -153,20 +153,21 @@ export function AppLayout() {
     }
   }, [loading, user, isAuthRoute, isProfileRoute, profileCheck, navigate]);
 
-  // Polling for upcoming events (only when authenticated)
+  // Polling for upcoming events (only when authenticated, scoped to active team)
   const { data: upcoming } = useQuery({
-    queryKey: ["upcoming-notif"],
+    queryKey: ["upcoming-notif", activeTeam?.id],
     queryFn: async () => {
+      if (!activeTeam?.id) return { trainings: [], scrims: [] };
       const now = new Date();
       const future = new Date(now.getTime() + 60 * 60 * 1000); // 1h
       const [t, s] = await Promise.all([
-        supabase.from("trainings").select("id, title, scheduled_at").gte("scheduled_at", now.toISOString()).lte("scheduled_at", future.toISOString()),
-        supabase.from("scrims").select("id, opponent, scheduled_at").gte("scheduled_at", now.toISOString()).lte("scheduled_at", future.toISOString()),
+        supabase.from("trainings").select("id, title, scheduled_at").eq("team_id", activeTeam.id).gte("scheduled_at", now.toISOString()).lte("scheduled_at", future.toISOString()),
+        supabase.from("scrims").select("id, opponent, scheduled_at").eq("team_id", activeTeam.id).gte("scheduled_at", now.toISOString()).lte("scheduled_at", future.toISOString()),
       ]);
       return { trainings: t.data ?? [], scrims: s.data ?? [] };
     },
     refetchInterval: 5 * 60 * 1000,
-    enabled: !!user && !isAuthRoute,
+    enabled: !!user && !isAuthRoute && !!activeTeam?.id,
   });
 
   useEffect(() => {
