@@ -41,10 +41,16 @@ export const listUsers = createServerFn({ method: "POST" })
     if (uErr) throw new Error(uErr.message);
 
     const ids = usersList.users.map((u) => u.id);
-    const [{ data: roles }, { data: profiles }] = await Promise.all([
-      supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids),
-      supabaseAdmin.from("profiles").select("user_id, display_name, member_id").in("user_id", ids),
-    ]);
+    const [{ data: roles }, { data: profiles }, { data: memberships }, { data: teams }] =
+      await Promise.all([
+        supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids),
+        supabaseAdmin.from("profiles").select("user_id, display_name, member_id").in("user_id", ids),
+        supabaseAdmin.from("team_memberships").select("user_id, team_id, team_role").in("user_id", ids),
+        supabaseAdmin.from("teams").select("id, name, slug, archived"),
+      ]);
+
+    const teamMap = new Map<string, { id: string; name: string; slug: string; archived: boolean }>();
+    (teams ?? []).forEach((t) => teamMap.set(t.id, t));
 
     return usersList.users.map((u) => ({
       id: u.id,
@@ -53,6 +59,18 @@ export const listUsers = createServerFn({ method: "POST" })
       last_sign_in_at: u.last_sign_in_at ?? null,
       roles: (roles ?? []).filter((r) => r.user_id === u.id).map((r) => r.role as AppRole),
       profile: (profiles ?? []).find((p) => p.user_id === u.id) ?? null,
+      teams: (memberships ?? [])
+        .filter((m) => m.user_id === u.id)
+        .map((m) => {
+          const t = teamMap.get(m.team_id);
+          return {
+            team_id: m.team_id,
+            team_role: m.team_role as string,
+            name: t?.name ?? "—",
+            slug: t?.slug ?? "",
+            archived: t?.archived ?? false,
+          };
+        }),
     }));
   });
 
