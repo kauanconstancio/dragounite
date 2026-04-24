@@ -88,7 +88,8 @@ export const listUsers = createServerFn({ method: "POST" })
             archived: t?.archived ?? false,
           };
         }),
-    }));
+      };
+    });
   });
 
 const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
