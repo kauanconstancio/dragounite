@@ -12,6 +12,7 @@ import {
   linkUserToMember,
   deleteUser,
   resetUserPassword,
+  setMemberRoleAndLane,
 } from "@/server/admin.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -172,6 +173,7 @@ function AdminOrgPage() {
   const linkFn = useServerFn(linkUserToMember);
   const delFn = useServerFn(deleteUser);
   const pwFn = useServerFn(resetUserPassword);
+  const memberRoleFn = useServerFn(setMemberRoleAndLane);
 
   const invalidateUsers = () => qc.invalidateQueries({ queryKey: ["org-users-full"] });
 
@@ -201,6 +203,11 @@ function AdminOrgPage() {
   const pwMut = useMutation({
     mutationFn: (input: any) => pwFn({ data: input }),
     onSuccess: () => toast.success("Senha redefinida"),
+    onError: (e: any) => toast.error(e.message),
+  });
+  const memberRoleMut = useMutation({
+    mutationFn: (input: any) => memberRoleFn({ data: input }),
+    onSuccess: () => { toast.success("Função no roster atualizada"); invalidateUsers(); qc.invalidateQueries({ queryKey: ["org-all-members"] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -318,16 +325,17 @@ function AdminOrgPage() {
                 <th className="text-left px-4 py-3">Permissão</th>
                 <th className="text-left px-4 py-3">Equipes</th>
                 <th className="text-left px-4 py-3">Vínculo (Roster)</th>
+                <th className="text-left px-4 py-3">Função</th>
                 <th className="text-left px-4 py-3">Último acesso</th>
                 <th className="text-right px-4 py-3">Ações</th>
               </tr>
             </thead>
             <tbody>
               {usersQ.isLoading && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
               )}
               {!usersQ.isLoading && users.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário.</td></tr>
               )}
               {users.map((u) => (
                 <UserRow
@@ -341,6 +349,9 @@ function AdminOrgPage() {
                   onDelete={() => delMut.mutate({ user_id: u.id })}
                   onResetPw={(password) => pwMut.mutate({ user_id: u.id, password })}
                   onPromote={(makeSuper) => promoteMut.mutate({ user_id: u.id, makeSuper })}
+                  onMemberRoleChange={(member_id, role) =>
+                    memberRoleMut.mutate({ member_id, role })
+                  }
                 />
               ))}
             </tbody>
@@ -687,6 +698,15 @@ function CreateUserDialog({
 const APP_ROLES_EDITABLE = ["coach", "player", "viewer"] as const;
 type UserAppRole = (typeof APP_ROLES_EDITABLE)[number];
 
+const ROSTER_ROLE_OPTS = ["player", "substitute", "coach", "manager"] as const;
+type MemberRoleOpt = (typeof ROSTER_ROLE_OPTS)[number];
+const MEMBER_ROLE_LABEL: Record<MemberRoleOpt, string> = {
+  player: "Titular",
+  substitute: "Reserva",
+  coach: "Coach",
+  manager: "Gerente",
+};
+
 type MemberLite = { id: string; name: string; lane: string | null; role: string; team_id: string };
 type UserRowData = {
   id: string;
@@ -694,11 +714,13 @@ type UserRowData = {
   last_sign_in_at: string | null;
   roles: string[];
   profile: { display_name: string | null; member_id: string | null; user_id: string } | null;
+  member_role: string | null;
+  member_lane: string | null;
   teams: { team_id: string; team_role: string; name: string; slug: string; archived: boolean }[];
 };
 
 function UserRow({
-  u, allMembers, isSelf, isSuper, onRoleChange, onLinkChange, onDelete, onResetPw, onPromote,
+  u, allMembers, isSelf, isSuper, onRoleChange, onLinkChange, onDelete, onResetPw, onPromote, onMemberRoleChange,
 }: {
   u: UserRowData;
   allMembers: MemberLite[];
@@ -709,6 +731,7 @@ function UserRow({
   onDelete: () => void;
   onResetPw: (pw: string) => void;
   onPromote: (makeSuper: boolean) => void;
+  onMemberRoleChange: (memberId: string, role: MemberRoleOpt) => void;
 }) {
   const editableRole = (u.roles.find((r) => r !== "super_admin") ?? "viewer") as UserAppRole;
   const memberId: string | null = u.profile?.member_id ?? null;
@@ -794,6 +817,23 @@ function UserRow({
             ))}
           </SelectContent>
         </Select>
+      </td>
+      <td className="px-4 py-3">
+        {memberId ? (
+          <Select
+            value={(u.member_role as MemberRoleOpt) ?? "player"}
+            onValueChange={(v) => onMemberRoleChange(memberId, v as MemberRoleOpt)}
+          >
+            <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ROSTER_ROLE_OPTS.map((r) => (
+                <SelectItem key={r} value={r}>{MEMBER_ROLE_LABEL[r]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <span className="text-xs text-muted-foreground">— sem vínculo —</span>
+        )}
       </td>
       <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
         {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR") : "nunca"}

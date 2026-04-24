@@ -49,16 +49,33 @@ export const listUsers = createServerFn({ method: "POST" })
         supabaseAdmin.from("teams").select("id, name, slug, archived"),
       ]);
 
+    const memberIds = (profiles ?? [])
+      .map((p) => p.member_id)
+      .filter((id): id is string => !!id);
+    const { data: memberRows } = memberIds.length
+      ? await supabaseAdmin
+          .from("members")
+          .select("id, role, lane")
+          .in("id", memberIds)
+      : { data: [] as { id: string; role: string; lane: string | null }[] };
+    const memberMap = new Map<string, { role: string; lane: string | null }>();
+    (memberRows ?? []).forEach((m) => memberMap.set(m.id, { role: m.role, lane: m.lane }));
+
     const teamMap = new Map<string, { id: string; name: string; slug: string; archived: boolean }>();
     (teams ?? []).forEach((t) => teamMap.set(t.id, t));
 
-    return usersList.users.map((u) => ({
+    return usersList.users.map((u) => {
+      const profile = (profiles ?? []).find((p) => p.user_id === u.id) ?? null;
+      const linked = profile?.member_id ? memberMap.get(profile.member_id) ?? null : null;
+      return {
       id: u.id,
       email: u.email ?? "",
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at ?? null,
       roles: (roles ?? []).filter((r) => r.user_id === u.id).map((r) => r.role as string),
-      profile: (profiles ?? []).find((p) => p.user_id === u.id) ?? null,
+      profile,
+      member_role: linked?.role ?? null,
+      member_lane: linked?.lane ?? null,
       teams: (memberships ?? [])
         .filter((m) => m.user_id === u.id)
         .map((m) => {
@@ -71,7 +88,8 @@ export const listUsers = createServerFn({ method: "POST" })
             archived: t?.archived ?? false,
           };
         }),
-    }));
+      };
+    });
   });
 
 const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
@@ -178,6 +196,29 @@ export const linkUserToMember = createServerFn({ method: "POST" })
       .from("profiles")
       .update({ member_id: data.member_id })
       .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const setMemberRoleSchema = z.object({
+  member_id: z.string().uuid(),
+  role: z.enum(MEMBER_ROLES).optional(),
+  lane: z.enum(LANES).nullable().optional(),
+});
+
+export const setMemberRoleAndLane = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => setMemberRoleSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertManager(context.userId);
+    const patch: { role?: string; lane?: string | null } = {};
+    if (data.role !== undefined) patch.role = data.role;
+    if (data.lane !== undefined) patch.lane = data.lane;
+    if (Object.keys(patch).length === 0) return { ok: true };
+    const { error } = await supabaseAdmin
+      .from("members")
+      .update(patch as never)
+      .eq("id", data.member_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
