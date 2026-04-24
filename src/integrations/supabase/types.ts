@@ -50,6 +50,7 @@ export type Database = {
           created_at: string
           id: string
           pinned: boolean
+          team_id: string
           title: string
         }
         Insert: {
@@ -58,6 +59,7 @@ export type Database = {
           created_at?: string
           id?: string
           pinned?: boolean
+          team_id: string
           title: string
         }
         Update: {
@@ -66,6 +68,7 @@ export type Database = {
           created_at?: string
           id?: string
           pinned?: boolean
+          team_id?: string
           title?: string
         }
         Relationships: [
@@ -74,6 +77,13 @@ export type Database = {
             columns: ["author_member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -87,6 +97,7 @@ export type Database = {
           member_id: string
           note: string | null
           status: Database["public"]["Enums"]["attendance_status"]
+          team_id: string
         }
         Insert: {
           created_at?: string
@@ -96,6 +107,7 @@ export type Database = {
           member_id: string
           note?: string | null
           status?: Database["public"]["Enums"]["attendance_status"]
+          team_id: string
         }
         Update: {
           created_at?: string
@@ -105,6 +117,7 @@ export type Database = {
           member_id?: string
           note?: string | null
           status?: Database["public"]["Enums"]["attendance_status"]
+          team_id?: string
         }
         Relationships: [
           {
@@ -112,6 +125,13 @@ export type Database = {
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -128,6 +148,7 @@ export type Database = {
           name: string
           notes: string | null
           pokemon: string
+          team_id: string
         }
         Insert: {
           battle_item?: string | null
@@ -140,6 +161,7 @@ export type Database = {
           name: string
           notes?: string | null
           pokemon: string
+          team_id: string
         }
         Update: {
           battle_item?: string | null
@@ -152,8 +174,17 @@ export type Database = {
           name?: string
           notes?: string | null
           pokemon?: string
+          team_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "builds_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       compositions: {
         Row: {
@@ -167,6 +198,7 @@ export type Database = {
           notes: string | null
           strategy: string | null
           support_pokemon: string | null
+          team_id: string
           tier: string | null
           top_pokemon: string | null
         }
@@ -181,6 +213,7 @@ export type Database = {
           notes?: string | null
           strategy?: string | null
           support_pokemon?: string | null
+          team_id: string
           tier?: string | null
           top_pokemon?: string | null
         }
@@ -195,6 +228,7 @@ export type Database = {
           notes?: string | null
           strategy?: string | null
           support_pokemon?: string | null
+          team_id?: string
           tier?: string | null
           top_pokemon?: string | null
         }
@@ -204,6 +238,13 @@ export type Database = {
             columns: ["linked_opponent_id"]
             isOneToOne: false
             referencedRelation: "opponents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compositions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -226,6 +267,7 @@ export type Database = {
           result: Database["public"]["Enums"]["match_result"]
           score: number
           scrim_id: string
+          team_id: string
         }
         Insert: {
           assists?: number
@@ -244,6 +286,7 @@ export type Database = {
           result?: Database["public"]["Enums"]["match_result"]
           score?: number
           scrim_id: string
+          team_id: string
         }
         Update: {
           assists?: number
@@ -262,6 +305,7 @@ export type Database = {
           result?: Database["public"]["Enums"]["match_result"]
           score?: number
           scrim_id?: string
+          team_id?: string
         }
         Relationships: [
           {
@@ -276,6 +320,13 @@ export type Database = {
             columns: ["scrim_id"]
             isOneToOne: false
             referencedRelation: "scrims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_performances_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -293,6 +344,7 @@ export type Database = {
           name: string
           notes: string | null
           role: Database["public"]["Enums"]["member_role"]
+          team_id: string
           updated_at: string
         }
         Insert: {
@@ -307,6 +359,7 @@ export type Database = {
           name: string
           notes?: string | null
           role?: Database["public"]["Enums"]["member_role"]
+          team_id: string
           updated_at?: string
         }
         Update: {
@@ -321,9 +374,18 @@ export type Database = {
           name?: string
           notes?: string | null
           role?: Database["public"]["Enums"]["member_role"]
+          team_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       opponent_performances: {
         Row: {
@@ -342,6 +404,7 @@ export type Database = {
           rating: number | null
           score: number
           scrim_id: string
+          team_id: string
         }
         Insert: {
           assists?: number
@@ -359,6 +422,7 @@ export type Database = {
           rating?: number | null
           score?: number
           scrim_id: string
+          team_id: string
         }
         Update: {
           assists?: number
@@ -376,6 +440,7 @@ export type Database = {
           rating?: number | null
           score?: number
           scrim_id?: string
+          team_id?: string
         }
         Relationships: [
           {
@@ -392,6 +457,13 @@ export type Database = {
             referencedRelation: "scrims"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "opponent_performances_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
         ]
       }
       opponents: {
@@ -404,6 +476,7 @@ export type Database = {
           recurring_picks: string[] | null
           region: string | null
           tag: string | null
+          team_id: string
         }
         Insert: {
           created_at?: string
@@ -414,6 +487,7 @@ export type Database = {
           recurring_picks?: string[] | null
           region?: string | null
           tag?: string | null
+          team_id: string
         }
         Update: {
           created_at?: string
@@ -424,8 +498,17 @@ export type Database = {
           recurring_picks?: string[] | null
           region?: string | null
           tag?: string | null
+          team_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "opponents_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       playbooks: {
         Row: {
@@ -436,6 +519,7 @@ export type Database = {
           linked_comp_id: string | null
           map_data: Json | null
           name: string
+          team_id: string
         }
         Insert: {
           category?: Database["public"]["Enums"]["playbook_category"]
@@ -445,6 +529,7 @@ export type Database = {
           linked_comp_id?: string | null
           map_data?: Json | null
           name: string
+          team_id: string
         }
         Update: {
           category?: Database["public"]["Enums"]["playbook_category"]
@@ -454,6 +539,7 @@ export type Database = {
           linked_comp_id?: string | null
           map_data?: Json | null
           name?: string
+          team_id?: string
         }
         Relationships: [
           {
@@ -461,6 +547,13 @@ export type Database = {
             columns: ["linked_comp_id"]
             isOneToOne: false
             referencedRelation: "compositions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbooks_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -516,6 +609,7 @@ export type Database = {
           score_them: number
           score_us: number
           status: Database["public"]["Enums"]["event_status"]
+          team_id: string
           vod_notes: string | null
           vod_url: string | null
         }
@@ -531,6 +625,7 @@ export type Database = {
           score_them?: number
           score_us?: number
           status?: Database["public"]["Enums"]["event_status"]
+          team_id: string
           vod_notes?: string | null
           vod_url?: string | null
         }
@@ -546,6 +641,7 @@ export type Database = {
           score_them?: number
           score_us?: number
           status?: Database["public"]["Enums"]["event_status"]
+          team_id?: string
           vod_notes?: string | null
           vod_url?: string | null
         }
@@ -555,6 +651,45 @@ export type Database = {
             columns: ["opponent_id"]
             isOneToOne: false
             referencedRelation: "opponents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scrims_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          team_id: string
+          team_role: Database["public"]["Enums"]["team_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          team_id: string
+          team_role?: Database["public"]["Enums"]["team_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          team_id?: string
+          team_role?: Database["public"]["Enums"]["team_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_memberships_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -595,6 +730,45 @@ export type Database = {
         }
         Relationships: []
       }
+      teams: {
+        Row: {
+          accent_color: string
+          archived: boolean
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          primary_color: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          archived?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          primary_color?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          archived?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tier_list: {
         Row: {
           created_at: string
@@ -604,6 +778,7 @@ export type Database = {
           patch: string | null
           pokemon: string
           position: number
+          team_id: string
           tier: Database["public"]["Enums"]["tier_rank"]
         }
         Insert: {
@@ -614,6 +789,7 @@ export type Database = {
           patch?: string | null
           pokemon: string
           position?: number
+          team_id: string
           tier?: Database["public"]["Enums"]["tier_rank"]
         }
         Update: {
@@ -624,9 +800,18 @@ export type Database = {
           patch?: string | null
           pokemon?: string
           position?: number
+          team_id?: string
           tier?: Database["public"]["Enums"]["tier_rank"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tier_list_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trainings: {
         Row: {
@@ -637,6 +822,7 @@ export type Database = {
           notes: string | null
           scheduled_at: string
           status: Database["public"]["Enums"]["event_status"]
+          team_id: string
           title: string
         }
         Insert: {
@@ -647,6 +833,7 @@ export type Database = {
           notes?: string | null
           scheduled_at: string
           status?: Database["public"]["Enums"]["event_status"]
+          team_id: string
           title: string
         }
         Update: {
@@ -657,9 +844,18 @@ export type Database = {
           notes?: string | null
           scheduled_at?: string
           status?: Database["public"]["Enums"]["event_status"]
+          team_id?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trainings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -687,12 +883,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_edit_team: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_team_coach: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_team_member: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
+      team_role_of: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["team_role"]
       }
     }
     Enums: {
@@ -709,6 +922,7 @@ export type Database = {
         | "lategame"
         | "earlygame"
         | "other"
+      team_role: "coach" | "player" | "viewer"
       tier_rank: "S" | "A" | "B" | "C" | "D"
     }
     CompositeTypes: {
@@ -851,6 +1065,7 @@ export const Constants = {
         "earlygame",
         "other",
       ],
+      team_role: ["coach", "player", "viewer"],
       tier_rank: ["S", "A", "B", "C", "D"],
     },
   },
