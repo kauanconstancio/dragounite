@@ -304,89 +304,55 @@ function AdminOrgPage() {
 
       <Card className="overflow-hidden border-border">
         <div className="p-4 border-b border-border">
-          <h2 className="font-display tracking-wider text-lg">SUPER-ADMINISTRADORES</h2>
+          <h2 className="font-display tracking-wider text-lg">USUÁRIOS</h2>
           <p className="text-xs text-muted-foreground">
-            Super-admins têm acesso a todas as equipes e podem gerenciar a organização.
+            Todas as contas, suas permissões globais, equipes vinculadas e ações administrativas.
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               <tr>
-                <th className="text-left px-4 py-3">Usuário</th>
-                <th className="text-left px-4 py-3">Papéis</th>
+                <th className="text-left px-4 py-3">Email</th>
+                <th className="text-left px-4 py-3">Nome</th>
+                <th className="text-left px-4 py-3">Permissão</th>
+                <th className="text-left px-4 py-3">Equipes</th>
+                <th className="text-left px-4 py-3">Vínculo (Roster)</th>
+                <th className="text-left px-4 py-3">Último acesso</th>
                 <th className="text-right px-4 py-3">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => {
-                const isSuper = u.roles.includes("super_admin");
-                const isSelf = u.id === user.id;
-                return (
-                  <tr key={u.id} className="border-t border-border/50">
-                    <td className="px-4 py-3">
-                      <span className="font-medium">{u.name || u.id.slice(0, 8)}</span>
-                      {isSelf && <span className="ml-2 text-[9px] uppercase text-gold">(você)</span>}
-                    </td>
-                    <td className="px-4 py-3 text-xs flex flex-wrap gap-1">
-                      {u.roles.map((r) => (
-                        <span
-                          key={r}
-                          className={`px-2 py-0.5 rounded border text-[10px] uppercase tracking-wider ${
-                            r === "super_admin"
-                              ? "border-gold/40 text-gold"
-                              : r === "coach"
-                                ? "border-primary/40 text-primary"
-                                : "border-border text-muted-foreground"
-                          }`}
-                        >
-                          {r === "super_admin" && <Crown className="inline h-3 w-3 mr-1" />}
-                          {r}
-                        </span>
-                      ))}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end">
-                        {isSuper ? (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" disabled={isSelf}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Remover super-admin?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {u.name || u.id.slice(0, 8)} perderá acesso global à organização.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => promoteMut.mutate({ user_id: u.id, makeSuper: false })}
-                                  className="bg-destructive text-destructive-foreground"
-                                >Remover</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => promoteMut.mutate({ user_id: u.id, makeSuper: true })}
-                            className="text-xs uppercase tracking-wider"
-                          >
-                            <Crown className="h-3.5 w-3.5 mr-1.5 text-gold" /> Promover
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {usersQ.isLoading && (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
+              )}
+              {!usersQ.isLoading && users.length === 0 && (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário.</td></tr>
+              )}
+              {users.map((u) => (
+                <UserRow
+                  key={u.id}
+                  u={u}
+                  allMembers={allMembers}
+                  isSelf={u.id === user.id}
+                  isSuper={u.roles.includes("super_admin")}
+                  onRoleChange={(role) => roleMut.mutate({ user_id: u.id, role })}
+                  onLinkChange={(member_id) => linkMut.mutate({ user_id: u.id, member_id })}
+                  onDelete={() => delMut.mutate({ user_id: u.id })}
+                  onResetPw={(password) => pwMut.mutate({ user_id: u.id, password })}
+                  onPromote={(makeSuper) => promoteMut.mutate({ user_id: u.id, makeSuper })}
+                />
+              ))}
             </tbody>
           </table>
+        </div>
+      </Card>
+
+      <Card className="p-4 border-border bg-card/40">
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p><span className="text-gold">super_admin</span> — controle total da organização.</p>
+          <p><span className="text-primary">coach</span> — gerente da equipe à qual pertence.</p>
+          <p>player — edita estratégia, builds e presença. viewer — somente leitura.</p>
         </div>
       </Card>
     </div>
