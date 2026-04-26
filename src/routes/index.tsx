@@ -249,9 +249,20 @@ function DashboardPage() {
       .filter((e) => eventFilter === "all" || e.kind === eventFilter)
       .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    const todayEvents = all.filter(
+    const todayAll = all.filter(
       (e) => e.date.getTime() >= startOfToday.getTime() && e.date.getTime() <= endOfToday.getTime(),
     );
+    // Próximos primeiro (a partir de agora, ordem crescente), depois os que já passaram (mais recentes primeiro)
+    const upcomingToday = todayAll
+      .filter((e) => e.date.getTime() >= now)
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+    const pastToday = todayAll
+      .filter((e) => e.date.getTime() < now)
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+    const todayEvents = [
+      ...upcomingToday.map((e) => ({ ...e, past: false })),
+      ...pastToday.map((e) => ({ ...e, past: true })),
+    ];
     const next = all.filter((e) => e.date.getTime() > now).slice(0, 4);
     return { todayEvents, next };
   }, [trainings, scrims, eventFilter]);
