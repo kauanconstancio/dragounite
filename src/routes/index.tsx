@@ -54,7 +54,7 @@ export const Route = createFileRoute("/")({
 
 function DashboardPage() {
   const { user } = useAuth();
-  const { team } = useCurrentTeam();
+  const { team, isTeamCoach } = useCurrentTeam();
   const teamId = team?.id;
   const qc = useQueryClient();
 
