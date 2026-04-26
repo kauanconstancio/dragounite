@@ -210,6 +210,52 @@ function DashboardPage() {
 
   const [eventFilter, setEventFilter] = useState<"all" | "training" | "scrim">("all");
 
+  // Create event dialog state
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createKind, setCreateKind] = useState<"training" | "scrim">("training");
+  const [evTitle, setEvTitle] = useState("");
+  const [evDate, setEvDate] = useState("");
+  const [evTime, setEvTime] = useState("");
+
+  const resetCreateForm = () => {
+    setEvTitle("");
+    setEvDate("");
+    setEvTime("");
+    setCreateKind("training");
+  };
+
+  const createEvent = useMutation({
+    mutationFn: async () => {
+      if (!teamId) throw new Error("Time não selecionado");
+      if (!evTitle.trim()) throw new Error("Informe um título");
+      if (!evDate || !evTime) throw new Error("Informe data e horário");
+      const scheduled_at = new Date(`${evDate}T${evTime}`).toISOString();
+      if (createKind === "training") {
+        const { error } = await supabase.from("trainings").insert({
+          team_id: teamId,
+          title: evTitle.trim(),
+          scheduled_at,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("scrims").insert({
+          team_id: teamId,
+          opponent: evTitle.trim(),
+          scheduled_at,
+        });
+        if (error) throw error;
+      }
+      return createKind;
+    },
+    onSuccess: (kind) => {
+      qc.invalidateQueries({ queryKey: [kind === "training" ? "trainings" : "scrims", teamId] });
+      toast.success(kind === "training" ? "Treino criado" : "Amistoso criado");
+      setCreateOpen(false);
+      resetCreateForm();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const updateEventStatus = useMutation({
     mutationFn: async ({
       kind,
