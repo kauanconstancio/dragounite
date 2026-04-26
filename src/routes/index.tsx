@@ -470,7 +470,11 @@ function DashboardPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.04 }}
                         >
-                          <div className="flex items-center gap-2 rounded-md border border-gold/30 p-3 bg-gold/5 group">
+                          <div
+                            className={`flex items-center gap-2 rounded-md border p-3 group transition-opacity ${
+                              e.past ? "border-border bg-background/40 opacity-60" : "border-gold/30 bg-gold/5"
+                            }`}
+                          >
                             <Link to={e.href} className="flex items-center gap-3 flex-1 min-w-0">
                               <div
                                 className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
@@ -486,6 +490,7 @@ function DashboardPage() {
                                 <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                                   <Clock className="h-3 w-3" />
                                   {format(e.date, "HH:mm", { locale: ptBR })}
+                                  {e.past && <span className="text-[9px] uppercase tracking-widest">· passou</span>}
                                 </div>
                               </div>
                             </Link>
