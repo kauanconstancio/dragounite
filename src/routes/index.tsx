@@ -195,9 +195,14 @@ function DashboardPage() {
   const streak = useMemo(() => computeStreak(scrims), [scrims]);
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
 
-  const next = useMemo(() => {
+  const { todayEvents, next } = useMemo(() => {
     const now = Date.now();
-    const allEvents = [
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const all = [
       ...trainings.filter((t) => t.status === "scheduled").map((t: any) => ({
         kind: "training" as const,
         id: t.id,
@@ -214,11 +219,13 @@ function DashboardPage() {
           date: new Date(s.scheduled_at),
           href: "/amistosos",
         })),
-    ]
-      .filter((e) => e.date.getTime() > now)
-      .sort((a, b) => a.date.getTime() - b.date.getTime())
-      .slice(0, 4);
-    return allEvents;
+    ].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const todayEvents = all.filter(
+      (e) => e.date.getTime() >= startOfToday.getTime() && e.date.getTime() <= endOfToday.getTime(),
+    );
+    const next = all.filter((e) => e.date.getTime() > now).slice(0, 4);
+    return { todayEvents, next };
   }, [trainings, scrims]);
 
   const topPokemon = useMemo(() => {
