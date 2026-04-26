@@ -17,6 +17,8 @@ import {
   TrendingUp,
   Clock,
   Heart,
+  Check,
+  X,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -52,7 +54,7 @@ export const Route = createFileRoute("/")({
 
 function DashboardPage() {
   const { user } = useAuth();
-  const { team } = useCurrentTeam();
+  const { team, isTeamCoach } = useCurrentTeam();
   const teamId = team?.id;
   const qc = useQueryClient();
 
@@ -196,6 +198,28 @@ function DashboardPage() {
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
 
   const [eventFilter, setEventFilter] = useState<"all" | "training" | "scrim">("all");
+
+  const updateEventStatus = useMutation({
+    mutationFn: async ({
+      kind,
+      id,
+      status,
+    }: {
+      kind: "training" | "scrim";
+      id: string;
+      status: "completed" | "cancelled";
+    }) => {
+      const table = kind === "training" ? "trainings" : "scrims";
+      const { error } = await supabase.from(table).update({ status }).eq("id", id);
+      if (error) throw error;
+      return { kind, status };
+    },
+    onSuccess: ({ kind, status }) => {
+      qc.invalidateQueries({ queryKey: [kind === "training" ? "trainings" : "scrims", teamId] });
+      toast.success(status === "completed" ? "Evento concluído" : "Evento cancelado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const { todayEvents, next } = useMemo(() => {
     const now = Date.now();
@@ -435,27 +459,54 @@ function DashboardPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.04 }}
                         >
-                          <Link
-                            to={e.href}
-                            className="flex items-center gap-3 rounded-md border border-gold/30 p-3 hover:border-gold/60 transition-all bg-gold/5 group"
-                          >
-                            <div
-                              className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
-                                e.kind === "training"
-                                  ? "bg-primary/15 border-primary/40 text-primary"
-                                  : "bg-gold/15 border-gold/40 text-gold"
-                              }`}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-display text-sm tracking-wider truncate">{e.title}</div>
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                                <Clock className="h-3 w-3" />
-                                {format(e.date, "HH:mm", { locale: ptBR })}
+                          <div className="flex items-center gap-2 rounded-md border border-gold/30 p-3 bg-gold/5 group">
+                            <Link to={e.href} className="flex items-center gap-3 flex-1 min-w-0">
+                              <div
+                                className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
+                                  e.kind === "training"
+                                    ? "bg-primary/15 border-primary/40 text-primary"
+                                    : "bg-gold/15 border-gold/40 text-gold"
+                                }`}
+                              >
+                                <Icon className="h-4 w-4" />
                               </div>
-                            </div>
-                          </Link>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-display text-sm tracking-wider truncate">{e.title}</div>
+                                <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                                  <Clock className="h-3 w-3" />
+                                  {format(e.date, "HH:mm", { locale: ptBR })}
+                                </div>
+                              </div>
+                            </Link>
+                            {isTeamCoach && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updateEventStatus.isPending}
+                                  onClick={() =>
+                                    updateEventStatus.mutate({ kind: e.kind, id: e.id, status: "completed" })
+                                  }
+                                  className="h-8 w-8 p-0 hover:text-emerald-400 hover:border-emerald-400/40"
+                                  title="Marcar como concluído"
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updateEventStatus.isPending}
+                                  onClick={() =>
+                                    updateEventStatus.mutate({ kind: e.kind, id: e.id, status: "cancelled" })
+                                  }
+                                  className="h-8 w-8 p-0 hover:text-destructive hover:border-destructive/40"
+                                  title="Cancelar evento"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </motion.div>
                       );
                     })}
