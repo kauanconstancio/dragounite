@@ -5,6 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Trophy,
   Swords,
@@ -19,6 +29,7 @@ import {
   Heart,
   Check,
   X,
+  Plus,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -198,6 +209,52 @@ function DashboardPage() {
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
 
   const [eventFilter, setEventFilter] = useState<"all" | "training" | "scrim">("all");
+
+  // Create event dialog state
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createKind, setCreateKind] = useState<"training" | "scrim">("training");
+  const [evTitle, setEvTitle] = useState("");
+  const [evDate, setEvDate] = useState("");
+  const [evTime, setEvTime] = useState("");
+
+  const resetCreateForm = () => {
+    setEvTitle("");
+    setEvDate("");
+    setEvTime("");
+    setCreateKind("training");
+  };
+
+  const createEvent = useMutation({
+    mutationFn: async () => {
+      if (!teamId) throw new Error("Time não selecionado");
+      if (!evTitle.trim()) throw new Error("Informe um título");
+      if (!evDate || !evTime) throw new Error("Informe data e horário");
+      const scheduled_at = new Date(`${evDate}T${evTime}`).toISOString();
+      if (createKind === "training") {
+        const { error } = await supabase.from("trainings").insert({
+          team_id: teamId,
+          title: evTitle.trim(),
+          scheduled_at,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("scrims").insert({
+          team_id: teamId,
+          opponent: evTitle.trim(),
+          scheduled_at,
+        });
+        if (error) throw error;
+      }
+      return createKind;
+    },
+    onSuccess: (kind) => {
+      qc.invalidateQueries({ queryKey: [kind === "training" ? "trainings" : "scrims", teamId] });
+      toast.success(kind === "training" ? "Treino criado" : "Amistoso criado");
+      setCreateOpen(false);
+      resetCreateForm();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const updateEventStatus = useMutation({
     mutationFn: async ({
@@ -421,9 +478,109 @@ function DashboardPage() {
               <CalendarDays className="h-4 w-4 text-primary" />
               <h2 className="font-display text-xl tracking-wider">Próximos Eventos</h2>
             </div>
-            <Link to="/agenda" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-gold">
-              Agenda →
-            </Link>
+            <div className="flex items-center gap-2">
+              {isTeamCoach && (
+                <Dialog
+                  open={createOpen}
+                  onOpenChange={(o) => {
+                    setCreateOpen(o);
+                    if (!o) resetCreateForm();
+                  }}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 gap-1 text-[10px] uppercase tracking-widest hover:text-gold hover:border-gold/40"
+                      title="Criar novo evento"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Novo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="font-display tracking-wider">Novo Evento</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        {([
+                          { key: "training", label: "Treino", Icon: Dumbbell },
+                          { key: "scrim", label: "Amistoso", Icon: Swords },
+                        ] as const).map(({ key, label, Icon }) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setCreateKind(key)}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs uppercase tracking-widest font-display transition-all border ${
+                              createKind === key
+                                ? key === "training"
+                                  ? "bg-primary/20 text-primary border-primary/40"
+                                  : "bg-gold/20 text-gold border-gold/40"
+                                : "text-muted-foreground border-border hover:text-foreground"
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="ev-title">
+                          {createKind === "training" ? "Título do treino" : "Oponente"}
+                        </Label>
+                        <Input
+                          id="ev-title"
+                          value={evTitle}
+                          onChange={(e) => setEvTitle(e.target.value)}
+                          placeholder={createKind === "training" ? "Ex: Scrim block, VOD review..." : "Ex: Team Alpha"}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="ev-date">Data</Label>
+                          <Input
+                            id="ev-date"
+                            type="date"
+                            value={evDate}
+                            onChange={(e) => setEvDate(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="ev-time">Horário</Label>
+                          <Input
+                            id="ev-time"
+                            type="time"
+                            value={evTime}
+                            onChange={(e) => setEvTime(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCreateOpen(false);
+                          resetCreateForm();
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={() => createEvent.mutate()}
+                        disabled={createEvent.isPending}
+                      >
+                        {createEvent.isPending ? "Criando..." : "Criar"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+              <Link to="/agenda" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-gold">
+                Agenda →
+              </Link>
+            </div>
           </div>
           <div className="flex items-center gap-1 mb-4 p-1 rounded-md border border-border bg-background/40">
             {([
