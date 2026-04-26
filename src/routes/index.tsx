@@ -195,6 +195,8 @@ function DashboardPage() {
   const streak = useMemo(() => computeStreak(scrims), [scrims]);
   const activity = useMemo(() => recentActivity(scrims, 30), [scrims]);
 
+  const [eventFilter, setEventFilter] = useState<"all" | "training" | "scrim">("all");
+
   const { todayEvents, next } = useMemo(() => {
     const now = Date.now();
     const startOfToday = new Date();
@@ -219,14 +221,16 @@ function DashboardPage() {
           date: new Date(s.scheduled_at),
           href: "/amistosos",
         })),
-    ].sort((a, b) => a.date.getTime() - b.date.getTime());
+    ]
+      .filter((e) => eventFilter === "all" || e.kind === eventFilter)
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const todayEvents = all.filter(
       (e) => e.date.getTime() >= startOfToday.getTime() && e.date.getTime() <= endOfToday.getTime(),
     );
     const next = all.filter((e) => e.date.getTime() > now).slice(0, 4);
     return { todayEvents, next };
-  }, [trainings, scrims]);
+  }, [trainings, scrims, eventFilter]);
 
   const topPokemon = useMemo(() => {
     // Dedup por scrim+game+pokemon: cada game de cada pokemon conta 1x (result vem do game)
