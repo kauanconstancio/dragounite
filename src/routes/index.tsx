@@ -386,43 +386,98 @@ function DashboardPage() {
               Agenda →
             </Link>
           </div>
-          {next.length === 0 ? (
+          {todayEvents.length === 0 && next.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nada agendado.</p>
           ) : (
-            <div className="space-y-2">
-              {next.map((e, i) => {
-                const Icon = e.kind === "training" ? Dumbbell : Swords;
-                return (
-                  <motion.div
-                    key={e.id}
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                  >
-                    <Link
-                      to={e.href}
-                      className="flex items-center gap-3 rounded-md border border-border p-3 hover:border-primary/50 transition-all bg-background/40 group"
-                    >
-                      <div
-                        className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
-                          e.kind === "training"
-                            ? "bg-primary/15 border-primary/40 text-primary"
-                            : "bg-gold/15 border-gold/40 text-gold"
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-sm tracking-wider truncate">{e.title}</div>
-                        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                          <Clock className="h-3 w-3" />
-                          {format(e.date, "EEE, dd MMM · HH:mm", { locale: ptBR })}
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+            <div className="space-y-4">
+              {todayEvents.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] uppercase tracking-widest text-gold font-display">Hoje</span>
+                    <span className="h-px flex-1 bg-gold/20" />
+                    <span className="text-[10px] text-muted-foreground">{todayEvents.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {todayEvents.map((e, i) => {
+                      const Icon = e.kind === "training" ? Dumbbell : Swords;
+                      return (
+                        <motion.div
+                          key={e.id}
+                          initial={{ opacity: 0, x: -6 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.04 }}
+                        >
+                          <Link
+                            to={e.href}
+                            className="flex items-center gap-3 rounded-md border border-gold/30 p-3 hover:border-gold/60 transition-all bg-gold/5 group"
+                          >
+                            <div
+                              className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
+                                e.kind === "training"
+                                  ? "bg-primary/15 border-primary/40 text-primary"
+                                  : "bg-gold/15 border-gold/40 text-gold"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-display text-sm tracking-wider truncate">{e.title}</div>
+                              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                                <Clock className="h-3 w-3" />
+                                {format(e.date, "HH:mm", { locale: ptBR })}
+                              </div>
+                            </div>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {next.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">Próximos</span>
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
+                  <div className="space-y-2">
+                    {next.map((e, i) => {
+                      const Icon = e.kind === "training" ? Dumbbell : Swords;
+                      return (
+                        <motion.div
+                          key={e.id}
+                          initial={{ opacity: 0, x: -6 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.04 }}
+                        >
+                          <Link
+                            to={e.href}
+                            className="flex items-center gap-3 rounded-md border border-border p-3 hover:border-primary/50 transition-all bg-background/40 group"
+                          >
+                            <div
+                              className={`shrink-0 h-10 w-10 rounded-md flex items-center justify-center border ${
+                                e.kind === "training"
+                                  ? "bg-primary/15 border-primary/40 text-primary"
+                                  : "bg-gold/15 border-gold/40 text-gold"
+                              }`}
+                            >
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-display text-sm tracking-wider truncate">{e.title}</div>
+                              <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                                <Clock className="h-3 w-3" />
+                                {format(e.date, "EEE, dd MMM · HH:mm", { locale: ptBR })}
+                              </div>
+                            </div>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Card>
