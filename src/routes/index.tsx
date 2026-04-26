@@ -199,6 +199,28 @@ function DashboardPage() {
 
   const [eventFilter, setEventFilter] = useState<"all" | "training" | "scrim">("all");
 
+  const updateEventStatus = useMutation({
+    mutationFn: async ({
+      kind,
+      id,
+      status,
+    }: {
+      kind: "training" | "scrim";
+      id: string;
+      status: "completed" | "cancelled";
+    }) => {
+      const table = kind === "training" ? "trainings" : "scrims";
+      const { error } = await supabase.from(table).update({ status }).eq("id", id);
+      if (error) throw error;
+      return { kind, status };
+    },
+    onSuccess: ({ kind, status }) => {
+      qc.invalidateQueries({ queryKey: [kind === "training" ? "trainings" : "scrims", teamId] });
+      toast.success(status === "completed" ? "Evento concluído" : "Evento cancelado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const { todayEvents, next } = useMemo(() => {
     const now = Date.now();
     const startOfToday = new Date();
