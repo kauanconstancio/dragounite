@@ -381,7 +381,7 @@ function DashboardPage() {
         </Card>
 
         <Card className="p-5 border-border shadow-card bg-card/70">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-primary" />
               <h2 className="font-display text-xl tracking-wider">Próximos Eventos</h2>
@@ -389,6 +389,30 @@ function DashboardPage() {
             <Link to="/agenda" className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-gold">
               Agenda →
             </Link>
+          </div>
+          <div className="flex items-center gap-1 mb-4 p-1 rounded-md border border-border bg-background/40">
+            {([
+              { key: "all", label: "Todos", Icon: CalendarDays },
+              { key: "training", label: "Treinos", Icon: Dumbbell },
+              { key: "scrim", label: "Amistosos", Icon: Swords },
+            ] as const).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                onClick={() => setEventFilter(key)}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-[10px] uppercase tracking-widest font-display transition-all ${
+                  eventFilter === key
+                    ? key === "training"
+                      ? "bg-primary/20 text-primary border border-primary/40"
+                      : key === "scrim"
+                        ? "bg-gold/20 text-gold border border-gold/40"
+                        : "bg-foreground/10 text-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground border border-transparent"
+                }`}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </button>
+            ))}
           </div>
           {todayEvents.length === 0 && next.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nada agendado.</p>
