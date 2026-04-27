@@ -122,65 +122,69 @@ function StaffLayout() {
   }
 
   return (
-    <div className="grid lg:grid-cols-[240px_1fr] gap-8">
-      {/* Sidebar interna */}
-      <aside className="lg:sticky lg:top-4 lg:self-start space-y-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto pr-2">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-gold mb-3">
-            <Crown className="h-3 w-3" /> Staff Console
-          </div>
-          <h1 className="font-display text-2xl tracking-wider leading-tight">
-            CONTROL <span className="text-gold">CENTER</span>
-          </h1>
-          {primaryRole && (
-            <Badge variant="outline" className="mt-2 text-[10px] uppercase tracking-widest">
-              {ROLE_LABELS[primaryRole]}
-            </Badge>
-          )}
-        </div>
-
-        <nav className="space-y-5">
-          {groups.map((g) => {
-            const visibleItems = g.items.filter(
-              (it) => !it.requires || isOwner || hasStaffRole(it.requires),
-            );
-            if (visibleItems.length === 0) return null;
-            return (
-              <div key={g.label}>
-                <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2 px-2">
-                  {g.label}
-                </div>
-                <ul className="space-y-0.5">
-                  {visibleItems.map((it) => {
-                    const active = it.exact
-                      ? location.pathname === it.to
-                      : location.pathname.startsWith(it.to);
-                    const Icon = it.icon;
-                    return (
-                      <li key={it.to}>
-                        <Link
-                          to={it.to}
-                          className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider transition-colors ${
-                            active
-                              ? "bg-gold/10 text-gold"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                          }`}
-                        >
-                          <Icon className="h-3.5 w-3.5" /> {it.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div className="grid lg:grid-cols-[240px_1fr] gap-8">
+          {/* Sidebar interna */}
+          <aside className="lg:sticky lg:top-4 lg:self-start space-y-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto pr-2">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-gold mb-3">
+                <Crown className="h-3 w-3" /> Staff Console
               </div>
-            );
-          })}
-        </nav>
-      </aside>
+              <h1 className="font-display text-2xl tracking-wider leading-tight">
+                CONTROL <span className="text-gold">CENTER</span>
+              </h1>
+              {primaryRole && (
+                <Badge variant="outline" className="mt-2 text-[10px] uppercase tracking-widest">
+                  {ROLE_LABELS[primaryRole]}
+                </Badge>
+              )}
+            </div>
 
-      <main className="min-w-0">
-        <Outlet />
-      </main>
+            <nav className="space-y-5">
+              {groups.map((g) => {
+                const visibleItems = g.items.filter(
+                  (it) => !it.requires || isOwner || hasStaffRole(it.requires),
+                );
+                if (visibleItems.length === 0) return null;
+                return (
+                  <div key={g.label}>
+                    <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2 px-2">
+                      {g.label}
+                    </div>
+                    <ul className="space-y-0.5">
+                      {visibleItems.map((it) => {
+                        const active = it.exact
+                          ? location.pathname === it.to
+                          : location.pathname.startsWith(it.to);
+                        const Icon = it.icon;
+                        return (
+                          <li key={it.to}>
+                            <Link
+                              to={it.to}
+                              className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider transition-colors ${
+                                active
+                                  ? "bg-gold/10 text-gold"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                              }`}
+                            >
+                              <Icon className="h-3.5 w-3.5" /> {it.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <main className="min-w-0">
+            <Outlet />
+          </main>
+        </div>
+      </div>
     </div>
   );
 }
