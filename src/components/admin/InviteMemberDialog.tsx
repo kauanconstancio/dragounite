@@ -270,11 +270,13 @@ export function InviteMemberDialog() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <Mail className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs truncate">{inv.email ?? "Link aberto"}</span>
+                        <span className="text-xs truncate">
+                          {inv.invitee_name ?? inv.email ?? "Link aberto"}
+                        </span>
                         {statusBadge(inv)}
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {inv.team_role} · expira {new Date(inv.expires_at).toLocaleDateString("pt-BR")}
+                        {MEMBER_ROLE_LABEL[inv.member_role] ?? inv.member_role} · {inv.team_role} · expira {new Date(inv.expires_at).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
