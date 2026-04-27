@@ -168,6 +168,27 @@ function CadastroPage() {
         <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-500/10 blur-[100px]" />
       </div>
 
+      {submitting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a1a]/85 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-5 rounded-2xl border border-indigo-500/30 bg-[#141432]/90 px-10 py-8 shadow-[0_20px_60px_-20px_rgba(79,70,229,0.6)]">
+            <div className="relative">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.7)]">
+                <Zap className="h-7 w-7 text-white animate-pulse" strokeWidth={2.5} />
+              </div>
+              <Loader2 className="absolute -inset-2 h-[72px] w-[72px] text-indigo-400/60 animate-spin" />
+            </div>
+            <div className="text-center">
+              <p className="text-base font-semibold tracking-tight">
+                {check.phase === "login" ? "Entrando na sua conta..." : "Criando sua conta..."}
+              </p>
+              <p className="mt-1.5 text-xs text-slate-400 max-w-[260px]">
+                Estamos preparando seu acesso e sincronizando suas equipes. Não feche essa janela.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 h-16">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-[0_0_20px_rgba(79,70,229,0.5)]">
