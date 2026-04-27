@@ -1,3 +1,5 @@
+import { getPokemonRole, UNITE_ROLE_LABEL, type UniteRole } from "@/lib/pokemon";
+
 export type PerfRow = {
   id: string;
   scrim_id: string;
@@ -15,6 +17,12 @@ export type PerfRow = {
   notes: string | null;
   created_at: string;
   result?: "win" | "loss" | "draw" | "pending";
+};
+
+export type ScrimMeta = {
+  scheduled_at: string;
+  result: "win" | "loss" | "draw" | "pending";
+  opponent: string;
 };
 
 export function kdaRatio(k: number, d: number, a: number) {
@@ -94,7 +102,6 @@ export function kdaTimeline(perfs: PerfRow[], scrimDateMap: Map<string, string>)
 
 /**
  * Win rate por jogo individual (cada partida de scrim conta separado).
- * Usa o campo `result` de match_performances.
  */
 export function playerWinRate(perfs: PerfRow[]) {
   let w = 0;
@@ -105,4 +112,96 @@ export function playerWinRate(perfs: PerfRow[]) {
   }
   const total = w + l;
   return { rate: total ? Math.round((w / total) * 100) : 0, wins: w, losses: l };
+}
+
+export function mvpRate(perfs: PerfRow[]) {
+  const games = perfs.length;
+  const mvps = perfs.filter((p) => p.is_mvp).length;
+  return { rate: games ? Math.round((mvps / games) * 100) : 0, mvps, games };
+}
+
+/**
+ * Win rate agrupado pelo papel Unite (attacker/defender/...) do pokémon jogado.
+ * É a melhor proxy para "lane" disponível, já que partidas não armazenam lane.
+ */
+export function winRateByRole(perfs: PerfRow[]) {
+  const map = new Map<UniteRole, { games: number; w: number; l: number }>();
+  for (const p of perfs) {
+    const role = getPokemonRole(p.pokemon);
+    if (!role) continue;
+    const cur = map.get(role) ?? { games: 0, w: 0, l: 0 };
+    cur.games++;
+    if (p.result === "win") cur.w++;
+    else if (p.result === "loss") cur.l++;
+    map.set(role, cur);
+  }
+  return [...map.entries()]
+    .map(([role, v]) => {
+      const decided = v.w + v.l;
+      return {
+        role,
+        label: UNITE_ROLE_LABEL[role],
+        games: v.games,
+        wins: v.w,
+        losses: v.l,
+        winrate: decided ? Math.round((v.w / decided) * 100) : 0,
+      };
+    })
+    .sort((a, b) => b.games - a.games);
+}
+
+/**
+ * Últimas N scrims do jogador, com contexto (oponente, resultado da scrim, KDA do jogo).
+ */
+export function recentScrimsBreakdown(
+  perfs: PerfRow[],
+  scrimMap: Map<string, ScrimMeta>,
+  limit = 10,
+) {
+  return [...perfs]
+    .map((p) => {
+      const meta = scrimMap.get(p.scrim_id);
+      return {
+        id: p.id,
+        scrim_id: p.scrim_id,
+        date: meta?.scheduled_at ?? p.created_at,
+        opponent: meta?.opponent ?? "—",
+        scrimResult: meta?.result ?? "pending",
+        gameResult: p.result ?? "pending",
+        gameNumber: p.game_number,
+        pokemon: p.pokemon,
+        kills: p.kills,
+        deaths: p.deaths,
+        assists: p.assists,
+        kda: kdaRatio(p.kills, p.deaths, p.assists),
+        score: p.score,
+        damage: p.damage_dealt,
+        isMvp: p.is_mvp,
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, limit);
+}
+
+/**
+ * Série temporal de score + dano, ordenada cronologicamente, com contexto da scrim.
+ */
+export function performanceTimeline(perfs: PerfRow[], scrimMap: Map<string, ScrimMeta>) {
+  return [...perfs]
+    .sort((a, b) => {
+      const da = scrimMap.get(a.scrim_id)?.scheduled_at ?? a.created_at;
+      const db = scrimMap.get(b.scrim_id)?.scheduled_at ?? b.created_at;
+      return new Date(da).getTime() - new Date(db).getTime();
+    })
+    .map((p, i) => {
+      const meta = scrimMap.get(p.scrim_id);
+      return {
+        label: `#${i + 1}`,
+        score: p.score,
+        damage: p.damage_dealt,
+        opponent: meta?.opponent ?? "—",
+        result: p.result ?? "pending",
+        pokemon: p.pokemon ?? "—",
+      };
+    });
 }
