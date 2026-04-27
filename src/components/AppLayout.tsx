@@ -90,7 +90,7 @@ export function AppLayout() {
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
-  const isLandingRoute = location.pathname === "/landing";
+  const isLandingRoute = location.pathname === "/landing" || location.pathname === "/";
   const isProfileRoute = location.pathname === "/perfil";
   const isTeamPickerRoute =
     location.pathname === "/equipes" || location.pathname === "/admin-org";
