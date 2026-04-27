@@ -12,7 +12,7 @@ export const Route = createFileRoute("/equipes")({
 });
 
 function EquipesPage() {
-  const { user, loading: authLoading, isSuperAdmin } = useAuth();
+  const { user, loading: authLoading, isSuperAdmin, isCoach } = useAuth();
   const { teams, team, loading, setActiveTeam } = useCurrentTeam();
   const navigate = useNavigate();
 
@@ -65,11 +65,13 @@ function EquipesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" className="uppercase tracking-wider text-xs">
-            <Link to="/onboarding">
-              <Plus className="h-4 w-4 mr-2" /> Nova equipe
-            </Link>
-          </Button>
+          {isCoach && (
+            <Button asChild variant="outline" className="uppercase tracking-wider text-xs">
+              <Link to="/onboarding">
+                <Plus className="h-4 w-4 mr-2" /> Nova equipe
+              </Link>
+            </Button>
+          )}
           {isSuperAdmin && (
             <Button asChild className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
               <Link to="/admin-org">
