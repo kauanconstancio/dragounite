@@ -90,7 +90,12 @@ function PlayerPage() {
   const timeline = kdaTimeline(perfs, dateMap);
   const perfTimeline = performanceTimeline(perfs, scrimMap);
   const byRole = winRateByRole(perfs);
-  const recent = recentScrimsBreakdown(perfs, scrimMap, 10);
+  const recent = recentScrimsBreakdown(perfs, scrimMap, perfs.length);
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(recent.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const pagedRecent = recent.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <div className="space-y-8">
