@@ -477,6 +477,13 @@ function AuthButton() {
             </Link>
           </DropdownMenuItem>
         )}
+        {isSuperAdmin && (
+          <DropdownMenuItem asChild>
+            <Link to="/dev" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Owner Console
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => signOut()} className="text-xs uppercase tracking-wider cursor-pointer">
           <LogOut className="h-3.5 w-3.5 mr-2" /> Sair
         </DropdownMenuItem>
