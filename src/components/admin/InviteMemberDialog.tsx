@@ -64,6 +64,8 @@ export function InviteMemberDialog() {
 
   const [open, setOpen] = useState(false);
   const [teamRole, setTeamRole] = useState<TeamRole>("player");
+  const [memberRole, setMemberRole] = useState<MemberRole>("player");
+  const [inviteeName, setInviteeName] = useState("");
   const [memberId, setMemberId] = useState<string>("none");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
 
