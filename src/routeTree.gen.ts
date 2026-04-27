@@ -20,6 +20,7 @@ import { Route as JogadasRouteImport } from './routes/jogadas'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EquipesRouteImport } from './routes/equipes'
 import { Route as DraftRouteImport } from './routes/draft'
+import { Route as DevRouteImport } from './routes/dev'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -28,7 +29,9 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DevIndexRouteImport } from './routes/dev.index'
 import { Route as JogadoresMemberIdRouteImport } from './routes/jogadores.$memberId'
+import { Route as DevFeedbackRouteImport } from './routes/dev.feedback'
 
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
@@ -85,6 +88,11 @@ const DraftRoute = DraftRouteImport.update({
   path: '/draft',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevRoute = DevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComposicoesRoute = ComposicoesRouteImport.update({
   id: '/composicoes',
   path: '/composicoes',
@@ -125,10 +133,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevIndexRoute = DevIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DevRoute,
+} as any)
 const JogadoresMemberIdRoute = JogadoresMemberIdRouteImport.update({
   id: '/jogadores/$memberId',
   path: '/jogadores/$memberId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DevFeedbackRoute = DevFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => DevRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -140,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
@@ -151,7 +170,9 @@ export interface FileRoutesByFullPath {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/dev/': typeof DevIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -173,7 +194,9 @@ export interface FileRoutesByTo {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/dev': typeof DevIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -185,6 +208,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
@@ -196,7 +220,9 @@ export interface FileRoutesById {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/dev/': typeof DevIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,6 +235,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dev'
     | '/draft'
     | '/equipes'
     | '/feedback'
@@ -220,7 +247,9 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/dev/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -242,7 +271,9 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/dev'
   id:
     | '__root__'
     | '/'
@@ -253,6 +284,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dev'
     | '/draft'
     | '/equipes'
     | '/feedback'
@@ -264,7 +296,9 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/dev/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -276,6 +310,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BuildsRoute: typeof BuildsRoute
   ComposicoesRoute: typeof ComposicoesRoute
+  DevRoute: typeof DevRouteWithChildren
   DraftRoute: typeof DraftRoute
   EquipesRoute: typeof EquipesRoute
   FeedbackRoute: typeof FeedbackRoute
@@ -369,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DraftRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/composicoes': {
       id: '/composicoes'
       path: '/composicoes'
@@ -425,6 +467,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/': {
+      id: '/dev/'
+      path: '/'
+      fullPath: '/dev/'
+      preLoaderRoute: typeof DevIndexRouteImport
+      parentRoute: typeof DevRoute
+    }
     '/jogadores/$memberId': {
       id: '/jogadores/$memberId'
       path: '/jogadores/$memberId'
@@ -432,8 +481,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogadoresMemberIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/feedback': {
+      id: '/dev/feedback'
+      path: '/feedback'
+      fullPath: '/dev/feedback'
+      preLoaderRoute: typeof DevFeedbackRouteImport
+      parentRoute: typeof DevRoute
+    }
   }
 }
+
+interface DevRouteChildren {
+  DevFeedbackRoute: typeof DevFeedbackRoute
+  DevIndexRoute: typeof DevIndexRoute
+}
+
+const DevRouteChildren: DevRouteChildren = {
+  DevFeedbackRoute: DevFeedbackRoute,
+  DevIndexRoute: DevIndexRoute,
+}
+
+const DevRouteWithChildren = DevRoute._addFileChildren(DevRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -444,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BuildsRoute: BuildsRoute,
   ComposicoesRoute: ComposicoesRoute,
+  DevRoute: DevRouteWithChildren,
   DraftRoute: DraftRoute,
   EquipesRoute: EquipesRoute,
   FeedbackRoute: FeedbackRoute,
