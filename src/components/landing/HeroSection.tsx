@@ -4,7 +4,6 @@ import uniteChar from "@/assets/games/char-unite.webp";
 import hokChar from "@/assets/games/char-hok.webp";
 import lolChar from "@/assets/games/char-lol.webp";
 import mlbbChar from "@/assets/games/char-mlbb.webp";
-import aovChar from "@/assets/games/char-aov.webp";
 
 export function HeroSection() {
   return (
