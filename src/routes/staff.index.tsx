@@ -106,9 +106,9 @@ function StaffOverview() {
   });
 
   const fbByType = [
-    { name: "Sugestões", value: stats.feedback.filter((f) => f.type === "suggestion").length, color: "hsl(var(--gold))" },
-    { name: "Bugs", value: stats.feedback.filter((f) => f.type === "bug").length, color: "hsl(var(--destructive))" },
-    { name: "Melhorias", value: stats.feedback.filter((f) => f.type === "improvement").length, color: "hsl(var(--primary))" },
+    { name: "Sugestões", value: stats.feedback.filter((f) => f.type === "suggestion").length, color: "var(--gold)" },
+    { name: "Bugs", value: stats.feedback.filter((f) => f.type === "bug").length, color: "var(--destructive)" },
+    { name: "Melhorias", value: stats.feedback.filter((f) => f.type === "improvement").length, color: "var(--primary)" },
   ];
 
   const completed30 = stats.recentScrims.filter((s) => s.result === "win" || s.result === "loss");
