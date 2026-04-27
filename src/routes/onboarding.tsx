@@ -273,7 +273,7 @@ function OnboardingPage() {
               {/* Logo */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-slate-300">
-                  Logo (PNG/SVG, até 2MB) <span className="text-rose-400">*</span>
+                  Logo (PNG/SVG, até 2MB) <span className="text-slate-500">(opcional)</span>
                 </Label>
                 <div className="flex items-center gap-4">
                   <div className="h-20 w-20 rounded-xl border border-indigo-500/20 bg-[#0a0a1a]/60 flex items-center justify-center overflow-hidden shrink-0">
@@ -308,11 +308,10 @@ function OnboardingPage() {
                     </div>
                   </label>
                 </div>
-                {!logoUrl && (
-                  <p className="text-[10px] text-rose-400/80">
-                    Envie a logo da equipe para continuar.
-                  </p>
-                )}
+                <p className="text-[10px] text-slate-500">
+                  Sem logo? Sem problema — usaremos a inicial do nome da equipe sobre a cor
+                  primária como avatar.
+                </p>
               </div>
 
               {/* Colors */}
