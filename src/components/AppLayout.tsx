@@ -75,6 +75,21 @@ function isActive(pathname: string, to: string) {
   return pathname.startsWith(to);
 }
 
+// Rotas públicas: não exigem autenticação nem seleção de equipe.
+// Inclui a landing (/, /landing) e fluxos de auth/recuperação.
+const PUBLIC_ROUTE_PREFIXES = ["/landing", "/auth", "/reset-password", "/forgot-password"];
+const PUBLIC_EXACT_ROUTES = ["/"];
+
+function isPublicRoute(pathname: string) {
+  if (PUBLIC_EXACT_ROUTES.includes(pathname)) return true;
+  return PUBLIC_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+// Rotas full-bleed (sem header/footer/chrome do app), mesmo se o usuário estiver logado.
+function isFullBleedRoute(pathname: string) {
+  return pathname === "/" || pathname.startsWith("/landing") || pathname.startsWith("/auth");
+}
+
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,32 +105,33 @@ export function AppLayout() {
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
-  const isLandingRoute = location.pathname === "/landing" || location.pathname === "/";
+  const isPublic = isPublicRoute(location.pathname);
+  const isFullBleed = isFullBleedRoute(location.pathname);
   const isProfileRoute = location.pathname === "/perfil";
   const isTeamPickerRoute =
     location.pathname === "/equipes" || location.pathname === "/admin-org";
 
   useEffect(() => {
-    if (!loading && !user && !isAuthRoute && !isLandingRoute) {
+    if (!loading && !user && !isPublic) {
       navigate({ to: "/auth", replace: true });
     }
-  }, [loading, user, isAuthRoute, isLandingRoute, navigate]);
+  }, [loading, user, isPublic, navigate]);
 
   // Redirect to team picker when authenticated user has no active team yet
-  // and is not already on a team-agnostic page.
+  // and is not already on a public/team-agnostic page.
   useEffect(() => {
     if (
       !loading &&
       user &&
       !teamsLoading &&
       !activeTeam &&
-      !isAuthRoute &&
+      !isPublic &&
       !isProfileRoute &&
       !isTeamPickerRoute
     ) {
       navigate({ to: "/equipes", replace: true });
     }
-  }, [loading, user, teamsLoading, activeTeam, isAuthRoute, isProfileRoute, isTeamPickerRoute, navigate]);
+  }, [loading, user, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
   const { data: profileCheck } = useQuery({
@@ -136,7 +152,7 @@ export function AppLayout() {
       const complete = !!(m?.ign && m?.lane && m?.main_pokemon);
       return { complete, hasMember: true };
     },
-    enabled: !!user && !isAuthRoute,
+    enabled: !!user && !isPublic,
     staleTime: 30_000,
   });
 
@@ -144,7 +160,7 @@ export function AppLayout() {
     if (
       !loading &&
       user &&
-      !isAuthRoute &&
+      !isPublic &&
       !isProfileRoute &&
       profileCheck &&
       profileCheck.hasMember &&
@@ -152,7 +168,7 @@ export function AppLayout() {
     ) {
       navigate({ to: "/perfil", replace: true });
     }
-  }, [loading, user, isAuthRoute, isProfileRoute, profileCheck, navigate]);
+  }, [loading, user, isPublic, isProfileRoute, profileCheck, navigate]);
 
   // Polling for upcoming events (only when authenticated, scoped to active team)
   const { data: upcoming } = useQuery({
@@ -194,8 +210,9 @@ export function AppLayout() {
     sessionStorage.setItem("notif-fired", JSON.stringify([...fired]));
   }, [notifEnabled, upcoming]);
 
-  // Auth/Landing screens: render full-bleed without app chrome
-  if (isAuthRoute || isLandingRoute) {
+  // Public/Full-bleed screens (landing, auth, recuperação): renderiza sem chrome
+  // do app e SEM exigir autenticação.
+  if (isFullBleed) {
     return (
       <div className="min-h-screen flex flex-col">
         <Outlet />
