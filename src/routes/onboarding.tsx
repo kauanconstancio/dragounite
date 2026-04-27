@@ -71,7 +71,7 @@ function OnboardingPage() {
     setUploadingLogo(true);
     try {
       const ext = file.name.split(".").pop() || "png";
-      const path = `onboarding/${user.id}-${Date.now()}.${ext}`;
+      const path = `${user.id}/onboarding-${Date.now()}.${ext}`;
       const { error } = await supabase.storage
         .from("team-assets")
         .upload(path, file, { upsert: true, contentType: file.type });
