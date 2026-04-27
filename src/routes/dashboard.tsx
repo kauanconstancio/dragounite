@@ -54,7 +54,7 @@ import { FeedbackHero } from "@/components/feedback/FeedbackHero";
 
 type LikeRow = { announcement_id: string; user_id: string };
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Battle Arena" },
