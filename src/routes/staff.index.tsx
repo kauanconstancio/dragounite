@@ -148,14 +148,41 @@ function StaffOverview() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={activityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-                <Legend />
-                <Bar dataKey="scrims" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="treinos" fill="hsl(var(--gold))" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="feedback" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                <defs>
+                  <linearGradient id="barPrimary" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.4} />
+                  </linearGradient>
+                  <linearGradient id="barGold" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--gold)" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="var(--gold)" stopOpacity={0.4} />
+                  </linearGradient>
+                  <linearGradient id="barDestructive" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0.4} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip
+                  cursor={{ fill: "var(--muted)", opacity: 0.15 }}
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    color: "var(--foreground)",
+                    fontSize: 12,
+                  }}
+                  labelStyle={{ color: "var(--muted-foreground)", textTransform: "uppercase", fontSize: 10, letterSpacing: 1 }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: "var(--muted-foreground)" }}
+                  iconType="circle"
+                />
+                <Bar dataKey="scrims" fill="url(#barPrimary)" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="treinos" fill="url(#barGold)" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="feedback" fill="url(#barDestructive)" radius={[6, 6, 0, 0]} maxBarSize={28} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -169,13 +196,33 @@ function StaffOverview() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={fbByType} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={3}>
+                <Pie
+                  data={fbByType}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={55}
+                  outerRadius={95}
+                  paddingAngle={3}
+                  stroke="var(--card)"
+                  strokeWidth={2}
+                >
                   {fbByType.map((entry, idx) => (
                     <Cell key={idx} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    color: "var(--foreground)",
+                    fontSize: 12,
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: "var(--muted-foreground)" }}
+                  iconType="circle"
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
