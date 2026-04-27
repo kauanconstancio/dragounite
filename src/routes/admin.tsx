@@ -52,8 +52,8 @@ function AdminPage() {
 
       <Card className="p-4 border-border bg-card/40">
         <p className="text-xs text-muted-foreground">
-          Para gerenciar contas de usuários, permissões globais e vínculos com equipes, acesse{" "}
-          <Link to="/admin-org" className="text-primary underline">Admin da Organização</Link>.
+          Para gerenciar contas de usuários, permissões globais e vínculos com equipes, acesse o{" "}
+          <Link to="/staff" className="text-primary underline">Staff Console</Link>.
         </p>
       </Card>
 

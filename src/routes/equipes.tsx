@@ -74,8 +74,8 @@ function EquipesPage() {
           )}
           {isSuperAdmin && (
             <Button asChild className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
-              <Link to="/admin-org">
-                <Plus className="h-4 w-4 mr-2" /> Nova equipe (admin)
+              <Link to="/staff/teams">
+                <Plus className="h-4 w-4 mr-2" /> Gerenciar equipes (staff)
               </Link>
             </Button>
           )}

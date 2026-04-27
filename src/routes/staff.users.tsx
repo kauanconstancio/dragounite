@@ -30,14 +30,13 @@ function UsersRedirectCard() {
 
       <Card className="p-6">
         <p className="text-sm text-muted-foreground mb-4">
-          A gestão completa de contas (criar, atribuir a equipe, mudar função, resetar senha) está
-          centralizada na página de Admin da Organização.
+          A gestão de equipes e vínculos está disponível no Staff Console.
         </p>
         <Link
-          to="/admin-org"
+          to="/staff/teams"
           className="inline-flex items-center gap-2 text-sm text-primary underline"
         >
-          Abrir Admin da Organização <ExternalLink className="h-3 w-3" />
+          Abrir gestão de equipes <ExternalLink className="h-3 w-3" />
         </Link>
       </Card>
     </div>
