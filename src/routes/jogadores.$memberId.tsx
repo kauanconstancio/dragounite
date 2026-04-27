@@ -227,7 +227,7 @@ function PlayerPage() {
                 </tr>
               </thead>
               <tbody>
-                {recent.map((r) => {
+                {pagedRecent.map((r) => {
                   const isWin = r.gameResult === "win";
                   const isLoss = r.gameResult === "loss";
                   return (
