@@ -4,13 +4,38 @@ import { lazy, Suspense, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trophy, Crosshair, Star, BarChart3 } from "lucide-react";
+import {
+  ArrowLeft,
+  Trophy,
+  Crosshair,
+  Star,
+  BarChart3,
+  Activity,
+  Zap,
+  Swords,
+} from "lucide-react";
 import { PokemonImage } from "@/components/PokemonImage";
 import { LANE_LABEL } from "@/lib/pokemon";
-import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
+import {
+  aggregatePlayer,
+  kdaTimeline,
+  mvpRate,
+  performanceTimeline,
+  playerWinRate,
+  recentScrimsBreakdown,
+  topPokemon,
+  winRateByRole,
+  type PerfRow,
+  type ScrimMeta,
+} from "@/lib/player-stats";
 
 const KdaChart = lazy(() => import("@/components/dashboard/KdaChart").then((m) => ({ default: m.KdaChart })));
+const PerformanceTimelineChart = lazy(() =>
+  import("@/components/dashboard/PerformanceTimelineChart").then((m) => ({ default: m.PerformanceTimelineChart })),
+);
+const LaneWinrateChart = lazy(() =>
+  import("@/components/dashboard/LaneWinrateChart").then((m) => ({ default: m.LaneWinrateChart })),
+);
 
 export const Route = createFileRoute("/jogadores/$memberId")({
   head: () => ({ meta: [{ title: "Perfil do jogador — Battle Arena" }] }),
@@ -47,13 +72,23 @@ function PlayerPage() {
     },
   });
 
+  const scrimMap = useMemo(
+    () =>
+      new Map<string, ScrimMeta>(
+        scrims.map((s) => [s.id, { scheduled_at: s.scheduled_at, result: s.result, opponent: s.opponent }]),
+      ),
+    [scrims],
+  );
   const dateMap = useMemo(() => new Map(scrims.map((s) => [s.id, s.scheduled_at])), [scrims]);
-  const resultMap = useMemo(() => new Map(scrims.map((s) => [s.id, s.result])), [scrims]);
 
   const agg = aggregatePlayer(perfs);
   const wr = playerWinRate(perfs);
+  const mvp = mvpRate(perfs);
   const top = topPokemon(perfs);
   const timeline = kdaTimeline(perfs, dateMap);
+  const perfTimeline = performanceTimeline(perfs, scrimMap);
+  const byRole = winRateByRole(perfs);
+  const recent = recentScrimsBreakdown(perfs, scrimMap, 10);
 
   return (
     <div className="space-y-8">
@@ -89,10 +124,12 @@ function PlayerPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="gold" />
         <Stat icon={Trophy} label="Assists/jogo" value={agg.a} accent="gold" />
+        <Stat icon={Activity} label="KDA médio" value={agg.kda} accent="primary" />
+        <Stat icon={Star} label="MVP rate" value={`${mvp.rate}%`} accent="gold" />
+        <Stat icon={BarChart3} label="Jogos" value={agg.games} accent="primary" />
         <Stat icon={Star} label="MVPs" value={agg.mvp} accent="gold" />
-        <Stat icon={BarChart3} label="Jogos" value={agg.games} accent="gold" />
-        <Stat icon={BarChart3} label="Score médio" value={agg.avgScore.toLocaleString()} accent="primary" />
-        <Stat icon={BarChart3} label="Dano médio" value={agg.dmg.toLocaleString()} accent="primary" />
+        <Stat icon={Zap} label="Score médio" value={agg.avgScore.toLocaleString()} accent="primary" />
+        <Stat icon={Swords} label="Dano médio" value={agg.dmg.toLocaleString()} accent="primary" />
       </div>
 
       <section className="grid lg:grid-cols-2 gap-5">
@@ -105,6 +142,27 @@ function PlayerPage() {
               <KdaChart data={timeline} />
             </Suspense>
           )}
+        </Card>
+
+        <Card className="p-5 border-border shadow-card">
+          <h2 className="font-display text-xl tracking-wider mb-4">SCORE & DANO POR PARTIDA</h2>
+          {perfTimeline.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-10 text-center">Sem partidas registradas.</div>
+          ) : (
+            <Suspense fallback={<div className="h-64" />}>
+              <PerformanceTimelineChart data={perfTimeline} />
+            </Suspense>
+          )}
+        </Card>
+      </section>
+
+      <section className="grid lg:grid-cols-2 gap-5">
+        <Card className="p-5 border-border shadow-card">
+          <h2 className="font-display text-xl tracking-wider mb-1">WIN RATE POR PAPEL</h2>
+          <p className="text-xs text-muted-foreground mb-4">Performance agrupada pelo papel Unite do pokémon jogado.</p>
+          <Suspense fallback={<div className="h-32" />}>
+            <LaneWinrateChart data={byRole} />
+          </Suspense>
         </Card>
 
         <Card className="p-5 border-border shadow-card">
@@ -133,6 +191,78 @@ function PlayerPage() {
           )}
         </Card>
       </section>
+
+      <Card className="p-5 border-border shadow-card">
+        <h2 className="font-display text-xl tracking-wider mb-4">ÚLTIMAS SCRIMS</h2>
+        {recent.length === 0 ? (
+          <div className="text-sm text-muted-foreground py-10 text-center">Nenhuma partida registrada ainda.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
+                  <th className="text-left font-normal py-2 pr-3">Data</th>
+                  <th className="text-left font-normal py-2 pr-3">Oponente</th>
+                  <th className="text-left font-normal py-2 pr-3">Pokémon</th>
+                  <th className="text-center font-normal py-2 pr-3">G</th>
+                  <th className="text-center font-normal py-2 pr-3">Resultado</th>
+                  <th className="text-center font-normal py-2 pr-3">K/D/A</th>
+                  <th className="text-center font-normal py-2 pr-3">KDA</th>
+                  <th className="text-right font-normal py-2 pr-3">Score</th>
+                  <th className="text-center font-normal py-2">MVP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.map((r) => {
+                  const isWin = r.gameResult === "win";
+                  const isLoss = r.gameResult === "loss";
+                  return (
+                    <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-2 pr-3 text-xs text-muted-foreground tabular-nums">
+                        {new Date(r.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                      </td>
+                      <td className="py-2 pr-3 truncate max-w-[140px]">{r.opponent}</td>
+                      <td className="py-2 pr-3">
+                        {r.pokemon ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 shrink-0"><PokemonImage name={r.pokemon} withRoleBg /></div>
+                            <span className="text-xs truncate">{r.pokemon}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs text-muted-foreground">{r.gameNumber}</td>
+                      <td className="py-2 pr-3 text-center">
+                        <Badge
+                          variant="outline"
+                          className={
+                            isWin
+                              ? "border-gold/40 text-gold"
+                              : isLoss
+                                ? "border-destructive/40 text-destructive"
+                                : "border-border text-muted-foreground"
+                          }
+                        >
+                          {isWin ? "V" : isLoss ? "D" : r.gameResult === "draw" ? "E" : "—"}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs tabular-nums">
+                        {r.kills}/{r.deaths}/{r.assists}
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs font-medium tabular-nums">{r.kda}</td>
+                      <td className="py-2 pr-3 text-right text-xs tabular-nums">{r.score.toLocaleString()}</td>
+                      <td className="py-2 text-center">
+                        {r.isMvp ? <Star className="h-4 w-4 text-gold inline-block fill-gold" /> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
