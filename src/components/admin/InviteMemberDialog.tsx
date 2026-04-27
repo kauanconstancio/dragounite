@@ -95,37 +95,21 @@ export function InviteMemberDialog() {
         .from("team_invites")
         .insert({
           team_id: teamId,
-          email: email.trim() || null,
+          email: null,
           team_role: teamRole,
           member_id: memberId === "none" ? null : memberId,
           invited_by: user.id,
         })
-        .select("token, email")
+        .select("token")
         .single();
       if (error) throw error;
-      return data as { token: string; email: string | null };
+      return data as { token: string };
     },
     onSuccess: async (data) => {
       const url = inviteUrl(data.token);
       setGeneratedLink(url);
       qc.invalidateQueries({ queryKey: ["team-invites"] });
-
-      if (sendEmail && data.email) {
-        // Best-effort: tenta enviar email pelo Supabase Auth (magic link com redirect)
-        try {
-          await supabase.auth.signInWithOtp({
-            email: data.email,
-            options: { emailRedirectTo: url },
-          });
-          toast.success("Convite criado e e-mail enviado");
-        } catch {
-          toast.success("Convite criado (envio de e-mail falhou — copie o link)");
-        }
-      } else {
-        toast.success("Convite criado — copie o link abaixo");
-      }
-
-      setEmail("");
+      toast.success("Convite criado — copie o link abaixo");
       setMemberId("none");
     },
     onError: (e: any) => toast.error(e.message ?? "Erro ao criar convite"),
