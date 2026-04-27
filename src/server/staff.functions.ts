@@ -234,3 +234,127 @@ export const listAudit = createServerFn({ method: "POST" })
       target_email: row.target_user_id ? emailMap.get(row.target_user_id) ?? "" : null,
     }));
   });
+
+// ------------------- All users (support) -------------------
+
+const listAllUsersSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  perPage: z.number().int().min(5).max(100).default(20),
+  search: z.string().trim().max(255).optional().default(""),
+});
+
+export const listAllUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => listAllUsersSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertStaff(context.userId, "support");
+
+    // Supabase admin listUsers does not support text search; we fetch the page
+    // and, when a search term is provided, scan up to 10 pages of 1000 to filter.
+    const search = data.search.toLowerCase();
+
+    type AdminUser = Awaited<
+      ReturnType<typeof supabaseAdmin.auth.admin.listUsers>
+    >["data"]["users"][number];
+
+    let allUsers: AdminUser[] = [];
+    let total = 0;
+
+    if (search) {
+      for (let p = 1; p <= 10; p++) {
+        const { data: chunk, error } = await supabaseAdmin.auth.admin.listUsers({
+          page: p,
+          perPage: 1000,
+        });
+        if (error) throw new Error(error.message);
+        allUsers.push(...chunk.users);
+        if (chunk.users.length < 1000) break;
+      }
+      allUsers = allUsers.filter((u) => {
+        const email = (u.email ?? "").toLowerCase();
+        const name = ((u.user_metadata?.display_name as string) ?? "").toLowerCase();
+        return email.includes(search) || name.includes(search);
+      });
+      total = allUsers.length;
+      const start = (data.page - 1) * data.perPage;
+      allUsers = allUsers.slice(start, start + data.perPage);
+    } else {
+      const { data: chunk, error } = await supabaseAdmin.auth.admin.listUsers({
+        page: data.page,
+        perPage: data.perPage,
+      });
+      if (error) throw new Error(error.message);
+      allUsers = chunk.users;
+      total = (chunk as unknown as { total?: number }).total ?? chunk.users.length;
+    }
+
+    const userIds = allUsers.map((u) => u.id);
+
+    // Fetch related role/staff/team membership counts for displayed users
+    const [rolesRes, staffRes, profilesRes, membershipsRes] = await Promise.all([
+      userIds.length
+        ? supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", userIds)
+        : Promise.resolve({ data: [] as { user_id: string; role: string }[] }),
+      userIds.length
+        ? supabaseAdmin.from("staff_members").select("user_id, role, active").in("user_id", userIds)
+        : Promise.resolve({ data: [] as { user_id: string; role: string; active: boolean }[] }),
+      userIds.length
+        ? supabaseAdmin.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds)
+        : Promise.resolve({ data: [] as { user_id: string; display_name: string | null; avatar_url: string | null }[] }),
+      userIds.length
+        ? supabaseAdmin.from("team_memberships").select("user_id, team_id").in("user_id", userIds)
+        : Promise.resolve({ data: [] as { user_id: string; team_id: string }[] }),
+    ]);
+
+    const rolesMap = new Map<string, string[]>();
+    (rolesRes.data ?? []).forEach((r) => {
+      const arr = rolesMap.get(r.user_id) ?? [];
+      arr.push(r.role);
+      rolesMap.set(r.user_id, arr);
+    });
+
+    const staffMap = new Map<string, { role: string; active: boolean }[]>();
+    (staffRes.data ?? []).forEach((s) => {
+      const arr = staffMap.get(s.user_id) ?? [];
+      arr.push({ role: s.role, active: s.active });
+      staffMap.set(s.user_id, arr);
+    });
+
+    const profilesMap = new Map<string, { display_name: string | null; avatar_url: string | null }>();
+    (profilesRes.data ?? []).forEach((p) =>
+      profilesMap.set(p.user_id, { display_name: p.display_name, avatar_url: p.avatar_url }),
+    );
+
+    const teamCountMap = new Map<string, number>();
+    (membershipsRes.data ?? []).forEach((m) =>
+      teamCountMap.set(m.user_id, (teamCountMap.get(m.user_id) ?? 0) + 1),
+    );
+
+    const users = allUsers.map((u) => {
+      const profile = profilesMap.get(u.id);
+      return {
+        id: u.id,
+        email: u.email ?? "",
+        display_name:
+          profile?.display_name ??
+          (u.user_metadata?.display_name as string | undefined) ??
+          null,
+        avatar_url: profile?.avatar_url ?? null,
+        created_at: u.created_at,
+        last_sign_in_at: u.last_sign_in_at,
+        email_confirmed_at: u.email_confirmed_at ?? null,
+        banned_until: (u as unknown as { banned_until?: string | null }).banned_until ?? null,
+        roles: rolesMap.get(u.id) ?? [],
+        staff: staffMap.get(u.id) ?? [],
+        team_count: teamCountMap.get(u.id) ?? 0,
+      };
+    });
+
+    return {
+      users,
+      total,
+      page: data.page,
+      perPage: data.perPage,
+      totalPages: Math.max(1, Math.ceil(total / data.perPage)),
+    };
+  });
