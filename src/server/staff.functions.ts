@@ -45,8 +45,8 @@ async function audit(opts: {
     action: opts.action,
     target_user_id: opts.targetUserId ?? null,
     target_team_id: opts.targetTeamId ?? null,
-    payload: opts.payload ?? {},
-  });
+    payload: (opts.payload ?? {}) as never,
+  } as never);
 }
 
 // ------------------- Staff CRUD -------------------
