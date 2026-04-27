@@ -210,8 +210,9 @@ export function AppLayout() {
     sessionStorage.setItem("notif-fired", JSON.stringify([...fired]));
   }, [notifEnabled, upcoming]);
 
-  // Auth/Landing screens: render full-bleed without app chrome
-  if (isAuthRoute || isLandingRoute) {
+  // Public/Full-bleed screens (landing, auth, recuperação): renderiza sem chrome
+  // do app e SEM exigir autenticação.
+  if (isFullBleed) {
     return (
       <div className="min-h-screen flex flex-col">
         <Outlet />
