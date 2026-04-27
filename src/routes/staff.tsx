@@ -44,7 +44,7 @@ const groups: NavGroup[] = [
     label: "Geral",
     items: [
       { to: "/staff", label: "Visão Geral", icon: BarChart3, exact: true },
-      { to: "/staff/feedback", label: "Feedbacks", icon: MessageSquare },
+      { to: "/dev/feedback", label: "Feedbacks", icon: MessageSquare },
     ],
   },
   {
