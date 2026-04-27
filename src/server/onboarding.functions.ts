@@ -30,6 +30,62 @@ export const checkWaitlistApproval = createServerFn({ method: "POST" })
   });
 
 /* -------------------------------------------------------------------------- */
+/*  1b. Staff toggles waitlist approval                                        */
+/* -------------------------------------------------------------------------- */
+
+const setApprovalSchema = z.object({
+  id: z.string().uuid(),
+  approved: z.boolean(),
+});
+
+async function callerIsStaff(userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("staff_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("active", true)
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return (data?.length ?? 0) > 0;
+}
+
+export const setWaitlistApproval = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => setApprovalSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    const ok = await callerIsStaff(context.userId);
+    if (!ok) throw new Error("Acesso restrito a funcionários.");
+
+    const { data: row, error: rErr } = await supabaseAdmin
+      .from("waitlist")
+      .select("id, claimed_at")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (rErr) throw new Error(rErr.message);
+    if (!row) throw new Error("Inscrição não encontrada.");
+    if (row.claimed_at) {
+      throw new Error("Esta inscrição já criou conta — não é possível alterar.");
+    }
+
+    const { error: uErr } = await supabaseAdmin
+      .from("waitlist")
+      .update({
+        approved: data.approved,
+        approved_at: data.approved ? new Date().toISOString() : null,
+      })
+      .eq("id", data.id);
+    if (uErr) throw new Error(uErr.message);
+
+    await supabaseAdmin.from("staff_audit_log").insert({
+      staff_user_id: context.userId,
+      action: data.approved ? "waitlist.approve" : "waitlist.unapprove",
+      payload: { waitlist_id: data.id } as never,
+    } as never);
+
+    return { ok: true };
+  });
+
+/* -------------------------------------------------------------------------- */
 /*  2. Sign up an approved waitlist user                                       */
 /* -------------------------------------------------------------------------- */
 
