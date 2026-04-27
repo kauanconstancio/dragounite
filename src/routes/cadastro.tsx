@@ -198,7 +198,66 @@ function CadastroPage() {
         </div>
 
         <div className="w-full rounded-2xl border border-indigo-500/20 bg-[#141432]/80 backdrop-blur-xl p-7 shadow-[0_20px_60px_-20px_rgba(79,70,229,0.4)]">
-          {check.phase !== "ok" ? (
+          {check.phase === "ok" ? null : check.phase === "login" ? (
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="flex items-start gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 p-3 text-xs text-indigo-100">
+                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  Este email já tem uma conta. Digite sua senha para entrar.
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-slate-300">Email</Label>
+                <Input
+                  value={email}
+                  disabled
+                  className="bg-[#0a0a1a]/60 border-indigo-500/10 text-slate-400 h-11"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="li-pass" className="text-xs font-medium text-slate-300">
+                  Senha
+                </Label>
+                <Input
+                  id="li-pass"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="bg-[#0a0a1a]/60 border-indigo-500/20 text-white placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30 h-11"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.7)] transition-all"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  "Entrar"
+                )}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPassword("");
+                  setCheck({ phase: "idle" });
+                }}
+                className="w-full text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                Usar outro email
+              </button>
+            </form>
+          ) : (
             <form onSubmit={handleCheck} className="space-y-5">
               <div className="space-y-1.5">
                 <Label htmlFor="ck-email" className="text-xs font-medium text-slate-300">
@@ -240,7 +299,9 @@ function CadastroPage() {
                 )}
               </Button>
             </form>
-          ) : (
+          )}
+
+          {check.phase === "ok" ? (
             <form onSubmit={handleSignup} className="space-y-5">
               <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-200">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
