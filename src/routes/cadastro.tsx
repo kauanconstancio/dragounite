@@ -365,7 +365,7 @@ function CadastroPage() {
                 )}
               </Button>
             </form>
-          )}
+          ) : null}
 
           <div className="mt-6 pt-5 border-t border-indigo-500/10">
             <p className="text-xs text-slate-400 text-center leading-relaxed">
