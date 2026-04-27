@@ -38,6 +38,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Archive, ArchiveRestore, Pencil, Trash2, UserPlus, Save, X, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
+import { InviteMemberDialog } from "./InviteMemberDialog";
 
 const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
 const MEMBER_ROLES = ["player", "substitute", "coach", "manager"] as const;
@@ -196,6 +197,7 @@ export function RosterManager() {
             Mostrar arquivados
           </label>
           <CreateMemberDialog onSubmit={(d) => createMut.mutate(d)} loading={createMut.isPending} />
+          <InviteMemberDialog />
         </div>
       </div>
 

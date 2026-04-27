@@ -767,6 +767,66 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invited_by: string
+          member_id: string | null
+          revoked_at: string | null
+          team_id: string
+          team_role: Database["public"]["Enums"]["team_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by: string
+          member_id?: string | null
+          revoked_at?: string | null
+          team_id: string
+          team_role?: Database["public"]["Enums"]["team_role"]
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          member_id?: string | null
+          revoked_at?: string | null
+          team_id?: string
+          team_role?: Database["public"]["Enums"]["team_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_memberships: {
         Row: {
           created_at: string
@@ -1024,6 +1084,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_team_invite: { Args: { _token: string }; Returns: Json }
       can_edit_team: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
