@@ -200,7 +200,14 @@ function PlayerPage() {
       </section>
 
       <Card className="p-5 border-border shadow-card">
-        <h2 className="font-display text-xl tracking-wider mb-4">ÚLTIMAS SCRIMS</h2>
+        <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+          <h2 className="font-display text-xl tracking-wider">ÚLTIMAS SCRIMS</h2>
+          {recent.length > 0 && (
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {recent.length} {recent.length === 1 ? "partida" : "partidas"}
+            </span>
+          )}
+        </div>
         {recent.length === 0 ? (
           <div className="text-sm text-muted-foreground py-10 text-center">Nenhuma partida registrada ainda.</div>
         ) : (
