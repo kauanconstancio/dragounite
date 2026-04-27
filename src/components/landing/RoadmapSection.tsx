@@ -2,9 +2,10 @@ import { Check, Clock } from "lucide-react";
 
 const games = [
   { name: "Pokémon Unite", status: "live", desc: "Disponível em early access" },
-  { name: "League of Legends", status: "soon", desc: "Em desenvolvimento" },
-  { name: "Valorant", status: "soon", desc: "Em planejamento" },
-  { name: "Rainbow Six", status: "soon", desc: "Em planejamento" },
+  { name: "Honor of Kings (HOK)", status: "soon", desc: "Em desenvolvimento" },
+  { name: "League of Legends (LOL)", status: "soon", desc: "Em desenvolvimento" },
+  { name: "Mobile Legends: Bang Bang (MLBB)", status: "soon", desc: "Em planejamento" },
+  { name: "Arena of Valor (AOV)", status: "soon", desc: "Em planejamento" },
 ];
 
 export function RoadmapSection() {
