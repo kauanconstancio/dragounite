@@ -27,12 +27,22 @@ import { Mail, Copy, Trash2, Send, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
 type TeamRole = "coach" | "player" | "viewer";
+type MemberRole = "player" | "substitute" | "coach" | "manager";
+
+const MEMBER_ROLE_LABEL: Record<MemberRole, string> = {
+  player: "Titular",
+  substitute: "Reserva",
+  coach: "Coach",
+  manager: "Gerente",
+};
 
 type InviteRow = {
   id: string;
   email: string | null;
   token: string;
   team_role: TeamRole;
+  member_role: MemberRole;
+  invitee_name: string | null;
   member_id: string | null;
   expires_at: string;
   accepted_at: string | null;
@@ -54,6 +64,8 @@ export function InviteMemberDialog() {
 
   const [open, setOpen] = useState(false);
   const [teamRole, setTeamRole] = useState<TeamRole>("player");
+  const [memberRole, setMemberRole] = useState<MemberRole>("player");
+  const [inviteeName, setInviteeName] = useState("");
   const [memberId, setMemberId] = useState<string>("none");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
 
@@ -63,7 +75,7 @@ export function InviteMemberDialog() {
       if (!teamId) return [] as InviteRow[];
       const { data, error } = await supabase
         .from("team_invites")
-        .select("id, email, token, team_role, member_id, expires_at, accepted_at, revoked_at, created_at")
+        .select("id, email, token, team_role, member_role, invitee_name, member_id, expires_at, accepted_at, revoked_at, created_at")
         .eq("team_id", teamId)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -91,12 +103,15 @@ export function InviteMemberDialog() {
   const createMut = useMutation({
     mutationFn: async () => {
       if (!teamId || !user) throw new Error("Sem equipe ou usuário");
+      const trimmedName = inviteeName.trim();
       const { data, error } = await supabase
         .from("team_invites")
         .insert({
           team_id: teamId,
           email: null,
           team_role: teamRole,
+          member_role: memberRole,
+          invitee_name: trimmedName || null,
           member_id: memberId === "none" ? null : memberId,
           invited_by: user.id,
         })
@@ -111,6 +126,7 @@ export function InviteMemberDialog() {
       qc.invalidateQueries({ queryKey: ["team-invites"] });
       toast.success("Convite criado — copie o link abaixo");
       setMemberId("none");
+      setInviteeName("");
     },
     onError: (e: any) => toast.error(e.message ?? "Erro ao criar convite"),
   });
@@ -159,30 +175,59 @@ export function InviteMemberDialog() {
 
         <div className="space-y-4">
           <div>
-            <Label>Papel na equipe</Label>
-            <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="player">Jogador</SelectItem>
-                <SelectItem value="coach">Coach</SelectItem>
-                <SelectItem value="viewer">Visualizador</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="invitee-name">Nome do convidado</Label>
+            <Input
+              id="invitee-name"
+              value={inviteeName}
+              onChange={(e) => setInviteeName(e.target.value)}
+              placeholder="Como ele aparecerá no roster"
+              maxLength={60}
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Usado para criar automaticamente o vínculo no roster ao aceitar.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Acesso na equipe</Label>
+              <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">Jogador</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="viewer">Visualizador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Posição no roster</Label>
+              <Select value={memberRole} onValueChange={(v) => setMemberRole(v as MemberRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">Titular</SelectItem>
+                  <SelectItem value="substitute">Reserva</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="manager">Gerente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>
-            <Label>Vincular a membro do roster (opcional)</Label>
+            <Label>Vincular a membro existente (opcional)</Label>
             <Select value={memberId} onValueChange={setMemberId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Não vincular —</SelectItem>
+                <SelectItem value="none">— Criar novo membro no roster —</SelectItem>
                 {(membersQ.data ?? []).map((m) => (
                   <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Se vincular, o convidado herdará o perfil de jogador existente.
+              Se vincular, o convidado herdará o perfil existente. Caso contrário, será criado um novo membro com o nome e posição acima.
             </p>
           </div>
 
@@ -225,11 +270,13 @@ export function InviteMemberDialog() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <Mail className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs truncate">{inv.email ?? "Link aberto"}</span>
+                        <span className="text-xs truncate">
+                          {inv.invitee_name ?? inv.email ?? "Link aberto"}
+                        </span>
                         {statusBadge(inv)}
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {inv.team_role} · expira {new Date(inv.expires_at).toLocaleDateString("pt-BR")}
+                        {MEMBER_ROLE_LABEL[inv.member_role] ?? inv.member_role} · {inv.team_role} · expira {new Date(inv.expires_at).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
