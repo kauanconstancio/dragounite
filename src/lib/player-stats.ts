@@ -78,10 +78,10 @@ export function topPokemon(perfs: PerfRow[], limit = 5) {
       };
     })
     .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
       const aWr = a.winrate ?? -1;
       const bWr = b.winrate ?? -1;
-      if (bWr !== aWr) return bWr - aWr;
-      return b.count - a.count;
+      return bWr - aWr;
     })
     .slice(0, limit);
 }
