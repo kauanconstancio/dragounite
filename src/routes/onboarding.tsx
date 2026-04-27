@@ -103,6 +103,11 @@ function OnboardingPage() {
       setStep(1);
       return;
     }
+    if (!logoUrl) {
+      toast.error("Envie a logo da equipe.");
+      setStep(2);
+      return;
+    }
     setSubmitting(true);
     try {
       const cleaned = roster
@@ -208,7 +213,7 @@ function OnboardingPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="ob-name" className="text-xs font-medium text-slate-300">
-                  Nome da equipe / organização
+                  Nome da equipe / organização <span className="text-rose-400">*</span>
                 </Label>
                 <Input
                   id="ob-name"
@@ -219,6 +224,7 @@ function OnboardingPage() {
                   placeholder="Ex: Dragon Esports"
                   className="bg-[#0a0a1a]/60 border-indigo-500/20 text-white placeholder:text-slate-500 focus-visible:border-indigo-500 focus-visible:ring-indigo-500/30 h-11"
                 />
+                <p className="text-[10px] text-slate-500">Obrigatório para criar a equipe.</p>
               </div>
 
               <div className="space-y-1.5">
@@ -266,7 +272,9 @@ function OnboardingPage() {
 
               {/* Logo */}
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-300">Logo (PNG/SVG, até 2MB)</Label>
+                <Label className="text-xs font-medium text-slate-300">
+                  Logo (PNG/SVG, até 2MB) <span className="text-rose-400">*</span>
+                </Label>
                 <div className="flex items-center gap-4">
                   <div className="h-20 w-20 rounded-xl border border-indigo-500/20 bg-[#0a0a1a]/60 flex items-center justify-center overflow-hidden shrink-0">
                     {logoUrl ? (
@@ -300,6 +308,11 @@ function OnboardingPage() {
                     </div>
                   </label>
                 </div>
+                {!logoUrl && (
+                  <p className="text-[10px] text-rose-400/80">
+                    Envie a logo da equipe para continuar.
+                  </p>
+                )}
               </div>
 
               {/* Colors */}
@@ -383,8 +396,15 @@ function OnboardingPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
                 </Button>
                 <Button
-                  onClick={() => setStep(3)}
-                  className="h-11 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)]"
+                  onClick={() => {
+                    if (!logoUrl) {
+                      toast.error("Envie a logo da equipe para continuar.");
+                      return;
+                    }
+                    setStep(3);
+                  }}
+                  disabled={!logoUrl}
+                  className="h-11 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continuar <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
