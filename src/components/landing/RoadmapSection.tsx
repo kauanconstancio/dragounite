@@ -1,38 +1,38 @@
 import { Check, Clock } from "lucide-react";
-import uniteSilhouette from "@/assets/games/silhouette-unite.png";
-import hokSilhouette from "@/assets/games/silhouette-hok.png";
-import lolSilhouette from "@/assets/games/silhouette-lol.png";
-import mlbbSilhouette from "@/assets/games/silhouette-mlbb.png";
-import aovSilhouette from "@/assets/games/silhouette-aov.png";
+import uniteChar from "@/assets/games/char-unite.png";
+import hokChar from "@/assets/games/char-hok.png";
+import lolChar from "@/assets/games/char-lol.png";
+import mlbbChar from "@/assets/games/char-mlbb.png";
+import aovChar from "@/assets/games/char-aov.png";
 
 const games = [
   {
     name: "Pokémon Unite",
-    img: uniteSilhouette,
+    img: uniteChar,
     status: "live" as const,
     desc: "Disponível em early access",
   },
   {
     name: "Honor of Kings (HOK)",
-    img: hokSilhouette,
+    img: hokChar,
     status: "soon" as const,
     desc: "Em desenvolvimento",
   },
   {
     name: "League of Legends (LOL)",
-    img: lolSilhouette,
+    img: lolChar,
     status: "soon" as const,
     desc: "Em desenvolvimento",
   },
   {
     name: "Mobile Legends: Bang Bang (MLBB)",
-    img: mlbbSilhouette,
+    img: mlbbChar,
     status: "soon" as const,
     desc: "Em planejamento",
   },
   {
     name: "Arena of Valor (AOV)",
-    img: aovSilhouette,
+    img: aovChar,
     status: "soon" as const,
     desc: "Em planejamento",
   },
@@ -63,15 +63,15 @@ export function RoadmapSection() {
                   : "border-slate-800 bg-slate-900/30"
               }`}
             >
-              {/* Game silhouette as decorative background */}
+              {/* Game character as decorative background */}
               <img
                 src={g.img}
                 alt=""
                 aria-hidden="true"
-                width={512}
-                height={512}
+                width={768}
+                height={1024}
                 loading="lazy"
-                className="absolute -right-6 -bottom-6 w-28 opacity-[0.10] select-none pointer-events-none"
+                className="absolute -right-8 -bottom-8 w-36 opacity-30 select-none pointer-events-none"
               />
 
               <div className="relative">
