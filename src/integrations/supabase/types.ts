@@ -985,6 +985,10 @@ export type Database = {
       }
       waitlist: {
         Row: {
+          approved: boolean
+          approved_at: string | null
+          claimed_at: string | null
+          claimed_user_id: string | null
           created_at: string
           email: string
           id: string
@@ -992,6 +996,10 @@ export type Database = {
           team_name: string | null
         }
         Insert: {
+          approved?: boolean
+          approved_at?: string | null
+          claimed_at?: string | null
+          claimed_user_id?: string | null
           created_at?: string
           email: string
           id?: string
@@ -999,6 +1007,10 @@ export type Database = {
           team_name?: string | null
         }
         Update: {
+          approved?: boolean
+          approved_at?: string | null
+          claimed_at?: string | null
+          claimed_user_id?: string | null
           created_at?: string
           email?: string
           id?: string
