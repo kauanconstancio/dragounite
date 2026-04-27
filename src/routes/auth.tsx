@@ -124,12 +124,17 @@ function AuthPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-indigo-500/10">
-            <p className="text-xs text-slate-400 text-center leading-relaxed">
-              Ainda não tem conta? As contas são criadas pelos coaches.
-              <br />
-              <Link to="/" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-                Entre na waitlist →
+          <div className="mt-6 pt-5 border-t border-indigo-500/10 space-y-2 text-center">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Já foi aprovado na waitlist?{" "}
+              <Link to="/cadastro" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+                Criar conta →
+              </Link>
+            </p>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Ainda não está na lista?{" "}
+              <Link to="/" className="text-indigo-400/80 hover:text-indigo-300 transition-colors">
+                Entre na waitlist
               </Link>
             </p>
           </div>
