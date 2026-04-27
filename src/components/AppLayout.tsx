@@ -114,6 +114,7 @@ export function AppLayout() {
   const isPublic = isPublicRoute(location.pathname);
   const isFullBleed = isFullBleedRoute(location.pathname);
   const isProfileRoute = location.pathname === "/perfil";
+  const isOnboardingRoute = location.pathname === "/onboarding";
   const isTeamPickerRoute =
     location.pathname === "/equipes" || location.pathname === "/admin-org";
 
