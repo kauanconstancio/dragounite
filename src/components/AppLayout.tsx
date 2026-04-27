@@ -229,7 +229,7 @@ export function AppLayout() {
       <ThemeApplier />
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl print:hidden presentation-hide">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2 sm:gap-4">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+          <Link to="/dashboard" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
             <img
               src={teamLogo}
               alt={teamName}
