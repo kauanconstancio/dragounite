@@ -31,6 +31,7 @@ import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
@@ -154,6 +155,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffIndexRoute = StaffIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -216,6 +222,7 @@ const StaffFinanceWaitlistRoute = StaffFinanceWaitlistRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/staff/finance/': typeof StaffFinanceIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
@@ -287,6 +295,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
@@ -325,6 +334,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/admin'
     | '/admin-org'
     | '/agenda'
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/staff/finance/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/admin'
     | '/admin-org'
     | '/agenda'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/staff/finance'
   id:
     | '__root__'
+    | '/'
     | '/admin'
     | '/admin-org'
     | '/agenda'
@@ -432,6 +444,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AdminOrgRoute: typeof AdminOrgRoute
   AgendaRoute: typeof AgendaRoute
@@ -613,6 +626,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/': {
       id: '/staff/'
       path: '/'
@@ -739,6 +759,7 @@ const StaffRouteChildren: StaffRouteChildren = {
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AdminOrgRoute: AdminOrgRoute,
   AgendaRoute: AgendaRoute,

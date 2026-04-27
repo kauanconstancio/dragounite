@@ -49,7 +49,7 @@ import { ThemeApplier } from "@/components/ThemeApplier";
 import { TeamSwitcher } from "@/components/TeamSwitcher";
 
 const main = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/roster", label: "Roster", icon: Users },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
 ];
