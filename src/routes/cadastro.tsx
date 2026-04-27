@@ -51,9 +51,8 @@ function CadastroPage() {
       }
       if (res.alreadyClaimed) {
         setCheck({
-          phase: "error",
-          message:
-            "Este email já criou uma conta. Vá para a página de login.",
+          phase: "login",
+          suggestedTeamName: res.suggestedTeamName ?? null,
         });
         return;
       }
