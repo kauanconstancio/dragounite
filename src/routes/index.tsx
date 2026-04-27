@@ -47,6 +47,7 @@ function LandingPage() {
       <LandingNav />
       <main>
         <HeroSection />
+        <GamesShowcaseSection />
         <FeaturesSection />
         <HowItWorksSection />
         <RoadmapSection />
