@@ -1,106 +1,179 @@
 
-# 🚀 Landing Page GymLy — SaaS para times de Pokémon Unite
+# Plano: Central de Administração Interna do GymLy SaaS
 
-## 🎨 Identidade visual
+Hoje você tem o `/dev` (Owner Console) restrito por email + `super_admin`. Isso funciona pra **você sozinho**, mas não escala pra um SaaS com **funcionários** (devs, financeiro, suporte, marketing). Vou propor uma estrutura profissional inspirada em painéis tipo Stripe/Linear/Vercel internos.
 
-- **Paleta Midnight Indigo**: `#0a0a1a` (bg), `#141432` (surface), `#1e1e5a` (accent), `#4f46e5` (primary/CTA)
-- **Tipografia**: Sora (headings, peso bold/extrabold) + Manrope (body)
-- **Vibe**: SaaS tech sofisticado, dark mode, com glow/gradient sutis em indigo
-- **Posicionamento**: "GymLy — A central de operações para times de Pokémon Unite" (com hint de expansão multi-esports)
+---
 
-## 📁 Arquitetura de rotas
+## 🎯 Conceito-chave: separar "staff" de "clientes"
 
-Vou criar uma rota dedicada `/landing` (separada do app principal em `/`) para não quebrar o sistema atual. A landing terá seu próprio layout independente do `AppLayout` (sem sidebar de operações).
+Hoje as roles do app (`coach`, `player`, `viewer`, `super_admin`) são todas **roles de cliente** (de quem usa o produto). Funcionários da empresa **não são clientes** — eles são staff interno e precisam de roles próprias.
 
-**Novos arquivos:**
-- `src/routes/landing.tsx` — rota da landing page com `head()` próprio para SEO
-- `src/components/landing/LandingNav.tsx` — nav superior (logo + CTA waitlist + login)
-- `src/components/landing/HeroSection.tsx` — hero com headline, subheadline, CTA waitlist e mockup visual
-- `src/components/landing/FeaturesSection.tsx` — grid de features (Roster, Scrims, Draft, Scouting, Dashboard, Tier List)
-- `src/components/landing/HowItWorksSection.tsx` — 3 passos: Cadastre seu time → Registre scrims → Evolua com dados
-- `src/components/landing/SocialProofSection.tsx` — stats (times usando, scrims registradas, etc.) + depoimentos placeholder
-- `src/components/landing/RoadmapSection.tsx` — "Em breve: League of Legends, Valorant, Rainbow Six"
-- `src/components/landing/WaitlistForm.tsx` — formulário de captura (email + nome do time)
-- `src/components/landing/FaqSection.tsx` — FAQ accordion (4-6 perguntas)
-- `src/components/landing/LandingFooter.tsx` — footer com links sociais
+### Nova estrutura de staff (separada de `user_roles`)
 
-**AppLayout**: ajustar para detectar a rota `/landing` e não renderizar a estrutura de app (sidebar/header de operações) — a landing roda standalone.
+Nova tabela `staff_members` + enum `staff_role`:
+- **`owner`** — você (acesso total, gerencia outros staff)
+- **`developer`** — devs (logs, edge functions, métricas técnicas, feature flags)
+- **`finance`** — financeiro (MRR, churn, planos, faturas, waitlist como pipeline)
+- **`support`** — suporte (feedbacks, contas de usuário, impersonate read-only)
+- **`marketing`** — marketing (waitlist, analytics de conversão, campanhas)
 
-## 🗄️ Backend (Lovable Cloud)
+Cada role vê **só as áreas relevantes**. Owner vê tudo.
 
-**Tabela nova `waitlist`** via migration:
 ```sql
-CREATE TABLE public.waitlist (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT NOT NULL UNIQUE,
-  team_name TEXT,
-  source TEXT DEFAULT 'landing',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+CREATE TYPE public.staff_role AS ENUM ('owner','developer','finance','support','marketing');
+
+CREATE TABLE public.staff_members (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role staff_role not null,
+  full_name text,
+  department text,
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique(user_id, role)
 );
+
+-- Função SECURITY DEFINER para checar staff (evita recursão de RLS)
+CREATE FUNCTION public.is_staff(_user_id uuid, _role staff_role default null)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.staff_members
+    WHERE user_id = _user_id AND active = true
+      AND (_role IS NULL OR role = _role OR role = 'owner')
+  )
+$$;
 ```
-- RLS habilitado
-- Policy: qualquer um pode `INSERT` (público, sem auth)
-- Policy: somente super_admin pode `SELECT/DELETE` (gestão via /dev)
 
-## 🧩 Conteúdo das seções
+RLS: só `owner` pode CRUD em `staff_members`. Todos staff podem ler.
 
-### 1. Hero
-- **Headline**: "Eleve seu time de Pokémon Unite ao próximo nível"
-- **Subheadline**: "GymLy é a plataforma all-in-one para gerenciar roster, scrims, drafts e evolução de jogadores. Decisões guiadas por dados, não por achismo."
-- **CTAs**: "Entrar na waitlist" (primário) + "Ver demo" (secundário, scroll para features)
-- **Visual**: mockup do dashboard atual com glow indigo
+---
 
-### 2. Features (6 cards)
-- 🎯 **Roster & Jogadores** — perfis individuais com KDA, win rate por lane, top pokémons
-- ⚔️ **Scrims & Amistosos** — registre partidas, performance individual, evolução temporal
-- 🧠 **Draft Tool** — simule picks/bans, planeje composições antes de cada partida
-- 🔍 **Scouting** — analise oponentes, VODs, padrões de jogo
-- 📊 **Dashboard de Performance** — gráficos de KDA, win rate, radar de time
-- 🏆 **Tier List & Composições** — meta atualizado, builds, estratégias
+## 🗂 Nova arquitetura de rotas
 
-### 3. Como funciona (3 passos)
-1. Crie sua organização e roster
-2. Registre treinos, scrims e performance
-3. Acompanhe a evolução com dashboards e tome decisões baseadas em dados
+Renomear conceito de `/dev` → `/staff` (mais profissional, escala pra time). `/dev` continua redirecionando.
 
-### 4. Social proof (placeholders honestos)
-- Stats animadas: "X times ativos", "Y scrims registradas", "Z partidas analisadas"
-- Frase: "Em fase de early access — junte-se aos times pioneiros"
+```
+/staff                       → Visão geral (KPIs do SaaS) — todos staff
+/staff/users                 → Gestão de usuários do produto — owner, support
+/staff/teams                 → Gestão de organizações/times — owner, support
+/staff/feedback              → Feedbacks (já existe) — todos staff
+/staff/finance               → MRR, planos, receita, churn — owner, finance
+/staff/finance/waitlist      → Pipeline de waitlist + conversão — owner, finance, marketing
+/staff/marketing             → Funil de conversão, sources — owner, marketing
+/staff/dev/logs              → Logs de auth/db/edge functions — owner, developer
+/staff/dev/health            → Status do sistema, latências, erros — owner, developer
+/staff/dev/feature-flags     → Toggles de features — owner, developer
+/staff/staff                 → Gestão de funcionários (CRUD staff) — owner
+/staff/audit                 → Audit log de ações de staff — owner
+```
 
-### 5. Roadmap multi-esports
-- Cards com: ✅ Pokémon Unite (disponível) · 🔜 League of Legends · 🔜 Valorant · 🔜 Rainbow Six
+Cada rota faz `beforeLoad` checando `is_staff(user.id, 'role-necessária')`. Se não tem permissão, redireciona pra `/staff` (ou mostra "sem acesso").
 
-### 6. Waitlist Form
-- Campos: email* + nome do time (opcional)
-- Validação Zod, mutation salvando em `waitlist`
-- Toast de sucesso + estado pós-submit ("Você está na lista!")
+---
 
-### 7. FAQ
-- "O que é GymLy?"
-- "Preciso pagar para usar?"
-- "Como meu time se cadastra?"
-- "Vocês vão suportar outros jogos?"
-- "Meus dados estão seguros?"
+## 📊 Conteúdo de cada área
 
-### 8. Footer
-- Logo + tagline
-- Links: Sobre, Contato, Login, Privacidade
-- Social (Discord/Twitter placeholders)
+### **1. Visão geral (`/staff`)**
+KPIs unificados (a maioria você já tem):
+- MRR / ARR (quando tiver billing)
+- Usuários ativos (DAU/WAU/MAU)
+- Times ativos vs arquivados
+- Crescimento da waitlist (últimos 7/30 dias)
+- Feedbacks abertos por prioridade
+- Saúde do sistema (uptime, erros)
 
-## 🔗 Integração com app existente
+### **2. Financeiro (`/staff/finance`)**
+- MRR por plano (placeholder até integrar Stripe)
+- Receita mensal (gráfico de barras)
+- Churn rate
+- LTV médio
+- Top 10 organizações por receita
+- Lista de faturas pendentes/pagas
+- **Sub-aba Waitlist como pipeline**: quantos por mês, taxa de conversão pra cliente pagante, exportar CSV
 
-- Link "Login" no nav da landing → `/auth`
-- Link "Já uso o GymLy" → `/`
-- Em `/dev/index`, adicionar **KPI de waitlist** (total de inscritos) e link para uma futura `/dev/waitlist` (não nesta etapa)
-- Manter `<title>` e branding atual do app (Dragounite) intacto — landing usa **GymLy** apenas para teste de novo nome
+### **3. Marketing (`/staff/marketing`)**
+- Funil: visitas landing → waitlist → ativação → cliente pago
+- Sources de waitlist (`source` column)
+- Conversão de waitlist → conta criada
+- Campanhas (futuro)
 
-## 🎯 SEO/Meta
+### **4. Suporte (`/staff/users`, `/staff/teams`, `/staff/feedback`)**
+- Lista de todos usuários com busca/filtro (já existe parcialmente em `/admin-org`)
+- Ver detalhe de um usuário: times, atividade, último login, feedbacks enviados
+- Resetar senha, desativar conta, reenviar email de confirmação
+- Lista de organizações: quantos membros, último treino, plano
+- **Impersonate read-only** (logar como se fosse o usuário, só pra debugar — registrado no audit log)
+- Feedbacks (já existe), agora com atribuição a staff member
 
-`head()` da rota `/landing`:
-- title: "GymLy — Gestão competitiva para times de Pokémon Unite"
-- description: "Plataforma all-in-one para roster, scrims, draft e scouting. Eleve seu time com decisões guiadas por dados."
-- og:title, og:description, twitter:card
+### **5. Dev (`/staff/dev/*`)**
+- **Logs**: stream de auth/db/edge logs (Supabase analytics_query)
+- **Health**: latência média, taxa de erro, edge functions status
+- **Feature flags**: tabela `feature_flags` (key, enabled, rollout_pct, target_team_ids), toggles ao vivo
 
-## ✅ Resultado esperado
+### **6. Staff (`/staff/staff`) — só owner**
+- Lista de funcionários: nome, email, role, departamento, ativo
+- Adicionar staff: convida por email, atribui role (owner pode ver/editar tudo)
+- Desativar staff sem deletar conta (soft delete)
+- Mudar role
 
-Acessando `/landing`, você verá uma landing page profissional, dark/indigo, com hero impactante, features bem apresentadas, formulário de waitlist funcional gravando no banco, e CTA claro para login no app existente. Pronta para validar o nome **GymLy** e começar a captar interessados antes de lançar como SaaS pago.
+### **7. Audit (`/staff/audit`) — só owner**
+Tabela `staff_audit_log` registrando toda ação destrutiva ou sensível:
+- Quem (staff_id), quando, o quê (`action`), em quem (`target_user_id`/`target_team_id`), payload JSON
+- Ações: `impersonate`, `reset_password`, `change_role`, `delete_team`, `feature_flag_toggle`, etc.
+- Filtros por staff/ação/data
+
+---
+
+## 🔐 Modelo de segurança
+
+1. **`staff_members` separada de `user_roles`** — funcionário é staff, não cliente. Pode ser staff E ter conta de cliente, mas as permissões são independentes.
+2. **Função `is_staff(user_id, role)`** SECURITY DEFINER pra usar em RLS sem recursão.
+3. **Email allowlist removido** — `DEV_OWNER_EMAILS` deixa de fazer sentido quando você tem time. Acesso passa a ser 100% via `staff_members`. Você (kauanconstancio13@gmail.com) é seedado como `owner` na migration.
+4. **Server functions** (`src/server/staff.functions.ts`) com middleware `requireStaff(role?)` validando antes de cada ação.
+5. **Audit log automático** via wrapper nas server functions sensíveis.
+6. **Rate limit** em ações destrutivas (deletar usuário, mudar role).
+
+---
+
+## 🎨 UX
+
+- **Sidebar interna do `/staff`** (separada da sidebar do app cliente) com seções colapsáveis por área (Geral, Suporte, Financeiro, Marketing, Dev, Sistema).
+- Visual mantém a estética "Owner Console" atual (gold accents, dark) pra deixar claro que é zona interna.
+- Badge no canto: "STAFF MODE — {role}" sempre visível pra evitar confusão.
+- Cada item da sidebar só aparece se o staff tem permissão.
+
+---
+
+## 📦 Implementação faseada
+
+### **Fase 1 — Fundação (essencial)**
+1. Migration: `staff_role` enum + `staff_members` + `is_staff()` + RLS + seed do owner
+2. Migration: `staff_audit_log` + RLS
+3. Hook `useStaff()` (substitui parcialmente `isDevOwner`)
+4. Renomear `/dev` → `/staff` com layout próprio (sidebar interna, badge de role)
+5. Página `/staff/staff` (gestão de funcionários) — só owner
+6. Migrar páginas existentes (`/dev/feedback`, `/dev/index`) pra `/staff/feedback`, `/staff/`
+
+### **Fase 2 — Áreas departamentais**
+7. `/staff/users` e `/staff/teams` (consolidar do que já existe em `/admin-org`)
+8. `/staff/finance` com KPIs placeholder + waitlist pipeline
+9. `/staff/marketing` com funil de waitlist
+10. Audit log automático nas ações sensíveis
+
+### **Fase 3 — Avançado (depois)**
+11. `/staff/dev/logs` (consumir Supabase analytics)
+12. `/staff/dev/feature-flags` (tabela + toggles)
+13. Impersonate read-only com audit
+14. Integração Stripe pra MRR real
+
+---
+
+## ❓ Antes de começar, preciso decidir 4 coisas
+
+1. **Escopo da Fase 1**: implemento só a fundação (staff_members + gestão de staff + migração das páginas atuais), ou já incluo Finance/Marketing com dados placeholder?
+2. **`/dev` antigo**: mantenho redirecionando pra `/staff` ou removo de vez?
+3. **Allowlist de email (`DEV_OWNER_EMAILS`)**: removo agora (acesso 100% via tabela `staff_members`) ou mantenho como fallback de segurança?
+4. **Billing/Stripe**: já quer integrar real (precisa enable Stripe no Cloud) ou só estrutura visual com mock data por enquanto?
+
+Me responde essas 4 e parto pra implementação. Recomendo: **Fase 1 completa + placeholders nas outras áreas + remover allowlist + Stripe depois**.

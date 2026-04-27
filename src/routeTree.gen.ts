@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
 import { Route as TierListRouteImport } from './routes/tier-list'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -30,9 +31,18 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
+import { Route as StaffUsersRouteImport } from './routes/staff.users'
+import { Route as StaffTeamsRouteImport } from './routes/staff.teams'
+import { Route as StaffStaffRouteImport } from './routes/staff.staff'
+import { Route as StaffMarketingRouteImport } from './routes/staff.marketing'
+import { Route as StaffDevRouteImport } from './routes/staff.dev'
+import { Route as StaffAuditRouteImport } from './routes/staff.audit'
 import { Route as JogadoresMemberIdRouteImport } from './routes/jogadores.$memberId'
 import { Route as DevFeedbackRouteImport } from './routes/dev.feedback'
+import { Route as StaffFinanceIndexRouteImport } from './routes/staff.finance.index'
+import { Route as StaffFinanceWaitlistRouteImport } from './routes/staff.finance.waitlist'
 
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
@@ -42,6 +52,11 @@ const TreinosRoute = TreinosRouteImport.update({
 const TierListRoute = TierListRouteImport.update({
   id: '/tier-list',
   path: '/tier-list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RosterRoute = RosterRouteImport.update({
@@ -139,10 +154,45 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
 const DevIndexRoute = DevIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DevRoute,
+} as any)
+const StaffUsersRoute = StaffUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffTeamsRoute = StaffTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffStaffRoute = StaffStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffMarketingRoute = StaffMarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffDevRoute = StaffDevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffAuditRoute = StaffAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => StaffRoute,
 } as any)
 const JogadoresMemberIdRoute = JogadoresMemberIdRouteImport.update({
   id: '/jogadores/$memberId',
@@ -153,6 +203,16 @@ const DevFeedbackRoute = DevFeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
   getParentRoute: () => DevRoute,
+} as any)
+const StaffFinanceIndexRoute = StaffFinanceIndexRouteImport.update({
+  id: '/finance/',
+  path: '/finance/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffFinanceWaitlistRoute = StaffFinanceWaitlistRouteImport.update({
+  id: '/finance/waitlist',
+  path: '/finance/waitlist',
+  getParentRoute: () => StaffRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -175,11 +235,21 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/dev': typeof StaffDevRoute
+  '/staff/marketing': typeof StaffMarketingRoute
+  '/staff/staff': typeof StaffStaffRoute
+  '/staff/teams': typeof StaffTeamsRoute
+  '/staff/users': typeof StaffUsersRoute
   '/dev/': typeof DevIndexRoute
+  '/staff/': typeof StaffIndexRoute
+  '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
+  '/staff/finance/': typeof StaffFinanceIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -204,7 +274,16 @@ export interface FileRoutesByTo {
   '/treinos': typeof TreinosRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/dev': typeof StaffDevRoute
+  '/staff/marketing': typeof StaffMarketingRoute
+  '/staff/staff': typeof StaffStaffRoute
+  '/staff/teams': typeof StaffTeamsRoute
+  '/staff/users': typeof StaffUsersRoute
   '/dev': typeof DevIndexRoute
+  '/staff': typeof StaffIndexRoute
+  '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
+  '/staff/finance': typeof StaffFinanceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -227,11 +306,21 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/dev': typeof StaffDevRoute
+  '/staff/marketing': typeof StaffMarketingRoute
+  '/staff/staff': typeof StaffStaffRoute
+  '/staff/teams': typeof StaffTeamsRoute
+  '/staff/users': typeof StaffUsersRoute
   '/dev/': typeof DevIndexRoute
+  '/staff/': typeof StaffIndexRoute
+  '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
+  '/staff/finance/': typeof StaffFinanceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -255,11 +344,21 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/roster'
+    | '/staff'
     | '/tier-list'
     | '/treinos'
     | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/staff/audit'
+    | '/staff/dev'
+    | '/staff/marketing'
+    | '/staff/staff'
+    | '/staff/teams'
+    | '/staff/users'
     | '/dev/'
+    | '/staff/'
+    | '/staff/finance/waitlist'
+    | '/staff/finance/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -284,7 +383,16 @@ export interface FileRouteTypes {
     | '/treinos'
     | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/staff/audit'
+    | '/staff/dev'
+    | '/staff/marketing'
+    | '/staff/staff'
+    | '/staff/teams'
+    | '/staff/users'
     | '/dev'
+    | '/staff'
+    | '/staff/finance/waitlist'
+    | '/staff/finance'
   id:
     | '__root__'
     | '/'
@@ -306,11 +414,21 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/roster'
+    | '/staff'
     | '/tier-list'
     | '/treinos'
     | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/staff/audit'
+    | '/staff/dev'
+    | '/staff/marketing'
+    | '/staff/staff'
+    | '/staff/teams'
+    | '/staff/users'
     | '/dev/'
+    | '/staff/'
+    | '/staff/finance/waitlist'
+    | '/staff/finance/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -333,6 +451,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
   RosterRoute: typeof RosterRoute
+  StaffRoute: typeof StaffRouteWithChildren
   TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
   JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
@@ -352,6 +471,13 @@ declare module '@tanstack/react-router' {
       path: '/tier-list'
       fullPath: '/tier-list'
       preLoaderRoute: typeof TierListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roster': {
@@ -487,12 +613,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/': {
+      id: '/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/dev/': {
       id: '/dev/'
       path: '/'
       fullPath: '/dev/'
       preLoaderRoute: typeof DevIndexRouteImport
       parentRoute: typeof DevRoute
+    }
+    '/staff/users': {
+      id: '/staff/users'
+      path: '/users'
+      fullPath: '/staff/users'
+      preLoaderRoute: typeof StaffUsersRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/teams': {
+      id: '/staff/teams'
+      path: '/teams'
+      fullPath: '/staff/teams'
+      preLoaderRoute: typeof StaffTeamsRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/staff': {
+      id: '/staff/staff'
+      path: '/staff'
+      fullPath: '/staff/staff'
+      preLoaderRoute: typeof StaffStaffRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/marketing': {
+      id: '/staff/marketing'
+      path: '/marketing'
+      fullPath: '/staff/marketing'
+      preLoaderRoute: typeof StaffMarketingRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/dev': {
+      id: '/staff/dev'
+      path: '/dev'
+      fullPath: '/staff/dev'
+      preLoaderRoute: typeof StaffDevRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/audit': {
+      id: '/staff/audit'
+      path: '/audit'
+      fullPath: '/staff/audit'
+      preLoaderRoute: typeof StaffAuditRouteImport
+      parentRoute: typeof StaffRoute
     }
     '/jogadores/$memberId': {
       id: '/jogadores/$memberId'
@@ -508,6 +683,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevFeedbackRouteImport
       parentRoute: typeof DevRoute
     }
+    '/staff/finance/': {
+      id: '/staff/finance/'
+      path: '/finance'
+      fullPath: '/staff/finance/'
+      preLoaderRoute: typeof StaffFinanceIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/finance/waitlist': {
+      id: '/staff/finance/waitlist'
+      path: '/finance/waitlist'
+      fullPath: '/staff/finance/waitlist'
+      preLoaderRoute: typeof StaffFinanceWaitlistRouteImport
+      parentRoute: typeof StaffRoute
+    }
   }
 }
 
@@ -522,6 +711,32 @@ const DevRouteChildren: DevRouteChildren = {
 }
 
 const DevRouteWithChildren = DevRoute._addFileChildren(DevRouteChildren)
+
+interface StaffRouteChildren {
+  StaffAuditRoute: typeof StaffAuditRoute
+  StaffDevRoute: typeof StaffDevRoute
+  StaffMarketingRoute: typeof StaffMarketingRoute
+  StaffStaffRoute: typeof StaffStaffRoute
+  StaffTeamsRoute: typeof StaffTeamsRoute
+  StaffUsersRoute: typeof StaffUsersRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+  StaffFinanceWaitlistRoute: typeof StaffFinanceWaitlistRoute
+  StaffFinanceIndexRoute: typeof StaffFinanceIndexRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffAuditRoute: StaffAuditRoute,
+  StaffDevRoute: StaffDevRoute,
+  StaffMarketingRoute: StaffMarketingRoute,
+  StaffStaffRoute: StaffStaffRoute,
+  StaffTeamsRoute: StaffTeamsRoute,
+  StaffUsersRoute: StaffUsersRoute,
+  StaffIndexRoute: StaffIndexRoute,
+  StaffFinanceWaitlistRoute: StaffFinanceWaitlistRoute,
+  StaffFinanceIndexRoute: StaffFinanceIndexRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -543,6 +758,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,
   RosterRoute: RosterRoute,
+  StaffRoute: StaffRouteWithChildren,
   TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
   JogadoresMemberIdRoute: JogadoresMemberIdRoute,
