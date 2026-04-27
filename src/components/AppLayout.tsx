@@ -121,11 +121,21 @@ export function AppLayout() {
   const isOnboardingRoute = location.pathname === "/onboarding";
   const isTeamPickerRoute = location.pathname === "/equipes";
 
+  const isStaffEmail = user?.email?.toLowerCase() === STAFF_EMAIL;
+  const isStaffRoute = location.pathname === "/staff" || location.pathname.startsWith("/staff/");
+
   useEffect(() => {
     if (!loading && !user && !isPublic) {
       navigate({ to: "/auth", replace: true });
     }
   }, [loading, user, isPublic, navigate]);
+
+  // Force staff to the staff console whenever they land on team-scoped pages.
+  useEffect(() => {
+    if (!loading && user && isStaffEmail && !isStaffRoute && !isPublic && !isProfileRoute) {
+      navigate({ to: "/staff", replace: true });
+    }
+  }, [loading, user, isStaffEmail, isStaffRoute, isPublic, isProfileRoute, navigate]);
 
   // Redirect to team picker when authenticated user has no active team yet
   // and is not already on a public/team-agnostic page.
@@ -133,6 +143,7 @@ export function AppLayout() {
     if (
       !loading &&
       user &&
+      !isStaffEmail &&
       !teamsLoading &&
       !activeTeam &&
       !isPublic &&
@@ -142,7 +153,7 @@ export function AppLayout() {
     ) {
       navigate({ to: "/equipes", replace: true });
     }
-  }, [loading, user, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, isOnboardingRoute, navigate]);
+  }, [loading, user, isStaffEmail, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, isOnboardingRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
   const { data: profileCheck } = useQuery({
