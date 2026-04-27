@@ -36,6 +36,7 @@ function AcceptInvitePage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const signupFn = useServerFn(signupInvitedUser);
+  const previewFn = useServerFn(getInvitePreview);
 
   const [invite, setInvite] = useState<InvitePreview | null>(null);
   const [error, setError] = useState<string | null>(null);
