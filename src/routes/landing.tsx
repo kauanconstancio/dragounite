@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { RoadmapSection } from "@/components/landing/RoadmapSection";
+import { GamesShowcaseSection } from "@/components/landing/GamesShowcaseSection";
 import { WaitlistSection } from "@/components/landing/WaitlistSection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
@@ -46,6 +47,7 @@ function LandingPage() {
       <LandingNav />
       <main>
         <HeroSection />
+        <GamesShowcaseSection />
         <FeaturesSection />
         <HowItWorksSection />
         <RoadmapSection />

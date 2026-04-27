@@ -1,5 +1,10 @@
 import { ArrowRight, Sparkles, KeyRound } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import uniteSilhouette from "@/assets/games/silhouette-unite.png";
+import hokSilhouette from "@/assets/games/silhouette-hok.png";
+import lolSilhouette from "@/assets/games/silhouette-lol.png";
+import mlbbSilhouette from "@/assets/games/silhouette-mlbb.png";
+import aovSilhouette from "@/assets/games/silhouette-aov.png";
 
 export function HeroSection() {
   return (
@@ -15,6 +20,48 @@ export function HeroSection() {
               "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
+        />
+
+        {/* Floating game silhouettes */}
+        <img
+          src={uniteSilhouette}
+          alt=""
+          aria-hidden="true"
+          width={512}
+          height={512}
+          className="hidden md:block absolute top-32 left-[4%] w-32 lg:w-40 opacity-[0.07] -rotate-12 select-none pointer-events-none"
+        />
+        <img
+          src={hokSilhouette}
+          alt=""
+          aria-hidden="true"
+          width={512}
+          height={512}
+          className="hidden md:block absolute top-20 right-[6%] w-36 lg:w-44 opacity-[0.06] rotate-6 select-none pointer-events-none"
+        />
+        <img
+          src={lolSilhouette}
+          alt=""
+          aria-hidden="true"
+          width={512}
+          height={512}
+          className="hidden lg:block absolute top-[55%] left-[2%] w-28 opacity-[0.05] rotate-3 select-none pointer-events-none"
+        />
+        <img
+          src={mlbbSilhouette}
+          alt=""
+          aria-hidden="true"
+          width={512}
+          height={512}
+          className="hidden lg:block absolute top-[60%] right-[3%] w-32 opacity-[0.05] -rotate-6 select-none pointer-events-none"
+        />
+        <img
+          src={aovSilhouette}
+          alt=""
+          aria-hidden="true"
+          width={512}
+          height={512}
+          className="hidden xl:block absolute bottom-10 left-[42%] w-24 opacity-[0.04] select-none pointer-events-none"
         />
       </div>
 
