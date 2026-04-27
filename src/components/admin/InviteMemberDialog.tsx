@@ -153,7 +153,7 @@ export function InviteMemberDialog() {
         <DialogHeader>
           <DialogTitle>Convidar novo membro</DialogTitle>
           <DialogDescription>
-            Gere um link de convite ou envie por e-mail. O membro cria a própria conta ao aceitar.
+            Gere um link de convite para compartilhar. O membro cria a própria conta ao aceitar.
           </DialogDescription>
         </DialogHeader>
 
