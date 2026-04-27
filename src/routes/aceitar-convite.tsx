@@ -56,28 +56,26 @@ function AcceptInvitePage() {
       return;
     }
     (async () => {
-      const { data, error: e } = await supabase
-        .from("team_invites")
-        .select(
-          "team_id, team_role, email, expires_at, accepted_at, revoked_at, teams(name)",
-        )
-        .eq("token", token)
-        .maybeSingle();
-      if (e || !data) {
-        setError("Convite não encontrado");
-        return;
+      try {
+        const res = await previewFn({ data: { token } });
+        if (!res.found) {
+          setError("Convite não encontrado");
+          return;
+        }
+        const preview: InvitePreview = {
+          team_id: res.team_id,
+          team_role: res.team_role,
+          email: res.email,
+          expires_at: res.expires_at,
+          accepted_at: res.accepted_at,
+          revoked_at: res.revoked_at,
+          team_name: res.team_name ?? undefined,
+        };
+        setInvite(preview);
+        if (preview.email) setEmail(preview.email);
+      } catch (err: any) {
+        setError(err?.message ?? "Erro ao carregar convite");
       }
-      const preview: InvitePreview = {
-        team_id: data.team_id,
-        team_role: data.team_role,
-        email: data.email,
-        expires_at: data.expires_at,
-        accepted_at: data.accepted_at,
-        revoked_at: data.revoked_at,
-        team_name: (data as any).teams?.name,
-      };
-      setInvite(preview);
-      if (preview.email) setEmail(preview.email);
     })();
   }, [token]);
 
