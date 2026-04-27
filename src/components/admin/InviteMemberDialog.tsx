@@ -75,7 +75,7 @@ export function InviteMemberDialog() {
       if (!teamId) return [] as InviteRow[];
       const { data, error } = await supabase
         .from("team_invites")
-        .select("id, email, token, team_role, member_id, expires_at, accepted_at, revoked_at, created_at")
+        .select("id, email, token, team_role, member_role, invitee_name, member_id, expires_at, accepted_at, revoked_at, created_at")
         .eq("team_id", teamId)
         .order("created_at", { ascending: false });
       if (error) throw error;
