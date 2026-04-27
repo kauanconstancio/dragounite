@@ -53,10 +53,8 @@ export function InviteMemberDialog() {
   const teamId = team?.id;
 
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
   const [teamRole, setTeamRole] = useState<TeamRole>("player");
   const [memberId, setMemberId] = useState<string>("none");
-  const [sendEmail, setSendEmail] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
 
   const invitesQ = useQuery({
@@ -97,37 +95,21 @@ export function InviteMemberDialog() {
         .from("team_invites")
         .insert({
           team_id: teamId,
-          email: email.trim() || null,
+          email: null,
           team_role: teamRole,
           member_id: memberId === "none" ? null : memberId,
           invited_by: user.id,
         })
-        .select("token, email")
+        .select("token")
         .single();
       if (error) throw error;
-      return data as { token: string; email: string | null };
+      return data as { token: string };
     },
     onSuccess: async (data) => {
       const url = inviteUrl(data.token);
       setGeneratedLink(url);
       qc.invalidateQueries({ queryKey: ["team-invites"] });
-
-      if (sendEmail && data.email) {
-        // Best-effort: tenta enviar email pelo Supabase Auth (magic link com redirect)
-        try {
-          await supabase.auth.signInWithOtp({
-            email: data.email,
-            options: { emailRedirectTo: url },
-          });
-          toast.success("Convite criado e e-mail enviado");
-        } catch {
-          toast.success("Convite criado (envio de e-mail falhou — copie o link)");
-        }
-      } else {
-        toast.success("Convite criado — copie o link abaixo");
-      }
-
-      setEmail("");
+      toast.success("Convite criado — copie o link abaixo");
       setMemberId("none");
     },
     onError: (e: any) => toast.error(e.message ?? "Erro ao criar convite"),
@@ -171,33 +153,21 @@ export function InviteMemberDialog() {
         <DialogHeader>
           <DialogTitle>Convidar novo membro</DialogTitle>
           <DialogDescription>
-            Gere um link de convite ou envie por e-mail. O membro cria a própria conta ao aceitar.
+            Gere um link de convite para compartilhar. O membro cria a própria conta ao aceitar.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="inv-email">E-mail (opcional)</Label>
-              <Input
-                id="inv-email"
-                type="email"
-                placeholder="jogador@exemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Papel na equipe</Label>
-              <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="player">Jogador</SelectItem>
-                  <SelectItem value="coach">Coach</SelectItem>
-                  <SelectItem value="viewer">Visualizador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>Papel na equipe</Label>
+            <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="player">Jogador</SelectItem>
+                <SelectItem value="coach">Coach</SelectItem>
+                <SelectItem value="viewer">Visualizador</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -215,17 +185,6 @@ export function InviteMemberDialog() {
               Se vincular, o convidado herdará o perfil de jogador existente.
             </p>
           </div>
-
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <input
-              type="checkbox"
-              checked={sendEmail}
-              onChange={(e) => setSendEmail(e.target.checked)}
-              disabled={!email.trim()}
-              className="accent-primary"
-            />
-            Enviar e-mail com magic link (requer e-mail preenchido)
-          </label>
 
           <Button
             onClick={() => createMut.mutate()}
