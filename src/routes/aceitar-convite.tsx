@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, XCircle, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { signupInvitedUser } from "@/server/onboarding.functions";
+import { signupInvitedUser, getInvitePreview } from "@/server/onboarding.functions";
 
 export const Route = createFileRoute("/aceitar-convite")({
   head: () => ({ meta: [{ title: "Aceitar convite — Battle Arena" }] }),
