@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 import { TeamSettingsManager } from "@/components/admin/TeamSettingsManager";
 import { RosterManager } from "@/components/admin/RosterManager";
+import { DeleteTeamZone } from "@/components/admin/DeleteTeamZone";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Battle Arena" }] }),
