@@ -1090,6 +1090,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _test_accept_invite_flow: { Args: never; Returns: string }
       accept_team_invite: { Args: { _token: string }; Returns: Json }
       can_edit_team: {
         Args: { _team_id: string; _user_id: string }
