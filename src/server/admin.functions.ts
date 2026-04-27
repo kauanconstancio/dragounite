@@ -266,3 +266,112 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+const deleteTeamSchema = z.object({
+  team_id: z.string().uuid(),
+  confirm_name: z.string().min(1).max(120),
+});
+
+export const deleteTeam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => deleteTeamSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    // Authorize: coach of this team OR super admin
+    const { data: rolesRows } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    const isSuper = (rolesRows ?? []).some(
+      (r) => (r.role as string) === "super_admin",
+    );
+
+    if (!isSuper) {
+      const { data: membership } = await supabaseAdmin
+        .from("team_memberships")
+        .select("team_role")
+        .eq("user_id", context.userId)
+        .eq("team_id", data.team_id)
+        .maybeSingle();
+      if (!membership || membership.team_role !== "coach") {
+        throw new Error("Apenas o coach desta equipe pode excluí-la.");
+      }
+    }
+
+    const { data: team, error: tErr } = await supabaseAdmin
+      .from("teams")
+      .select("id, name")
+      .eq("id", data.team_id)
+      .maybeSingle();
+    if (tErr) throw new Error(tErr.message);
+    if (!team) throw new Error("Equipe não encontrada.");
+
+    if (
+      team.name.trim().toLowerCase() !== data.confirm_name.trim().toLowerCase()
+    ) {
+      throw new Error(
+        "Nome de confirmação não confere com o nome da equipe.",
+      );
+    }
+
+    // Cascade delete all team-scoped data
+    const tables = [
+      "announcement_likes",
+      "announcements",
+      "attendance",
+      "match_performances",
+      "opponent_performances",
+      "playbooks",
+      "compositions",
+      "opponents",
+      "scrims",
+      "trainings",
+      "tier_list",
+      "builds",
+      "team_invites",
+      "team_memberships",
+    ] as const;
+
+    // announcement_likes references announcements (team-scoped via that table)
+    const { data: annIds } = await supabaseAdmin
+      .from("announcements")
+      .select("id")
+      .eq("team_id", data.team_id);
+    if (annIds && annIds.length > 0) {
+      await supabaseAdmin
+        .from("announcement_likes")
+        .delete()
+        .in(
+          "announcement_id",
+          annIds.map((a) => a.id),
+        );
+    }
+
+    for (const t of tables) {
+      if (t === "announcement_likes") continue; // already handled
+      await supabaseAdmin.from(t as any).delete().eq("team_id", data.team_id);
+    }
+
+    // Unlink profiles pointing to members of this team
+    const { data: memberIds } = await supabaseAdmin
+      .from("members")
+      .select("id")
+      .eq("team_id", data.team_id);
+    if (memberIds && memberIds.length > 0) {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ member_id: null })
+        .in(
+          "member_id",
+          memberIds.map((m) => m.id),
+        );
+    }
+    await supabaseAdmin.from("members").delete().eq("team_id", data.team_id);
+
+    const { error: delErr } = await supabaseAdmin
+      .from("teams")
+      .delete()
+      .eq("id", data.team_id);
+    if (delErr) throw new Error(delErr.message);
+
+    return { ok: true };
+  });
