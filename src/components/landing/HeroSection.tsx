@@ -1,10 +1,10 @@
 import { ArrowRight, Sparkles, KeyRound } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import uniteSilhouette from "@/assets/games/silhouette-unite.png";
-import hokSilhouette from "@/assets/games/silhouette-hok.png";
-import lolSilhouette from "@/assets/games/silhouette-lol.png";
-import mlbbSilhouette from "@/assets/games/silhouette-mlbb.png";
-import aovSilhouette from "@/assets/games/silhouette-aov.png";
+import uniteChar from "@/assets/games/char-unite.png";
+import hokChar from "@/assets/games/char-hok.png";
+import lolChar from "@/assets/games/char-lol.png";
+import mlbbChar from "@/assets/games/char-mlbb.png";
+import aovChar from "@/assets/games/char-aov.png";
 
 export function HeroSection() {
   return (
@@ -22,46 +22,46 @@ export function HeroSection() {
           }}
         />
 
-        {/* Floating game silhouettes */}
+        {/* Floating game character splash arts */}
         <img
-          src={uniteSilhouette}
+          src={uniteChar}
           alt=""
           aria-hidden="true"
-          width={512}
-          height={512}
-          className="hidden md:block absolute top-32 left-[4%] w-32 lg:w-40 opacity-[0.07] -rotate-12 select-none pointer-events-none"
+          width={768}
+          height={1024}
+          className="hidden md:block absolute top-32 left-[2%] w-40 lg:w-52 opacity-25 -rotate-12 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(250,204,21,0.3)]"
         />
         <img
-          src={hokSilhouette}
+          src={hokChar}
           alt=""
           aria-hidden="true"
-          width={512}
-          height={512}
-          className="hidden md:block absolute top-20 right-[6%] w-36 lg:w-44 opacity-[0.06] rotate-6 select-none pointer-events-none"
+          width={768}
+          height={1024}
+          className="hidden md:block absolute top-16 right-[3%] w-44 lg:w-56 opacity-20 rotate-6 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(234,179,8,0.3)]"
         />
         <img
-          src={lolSilhouette}
+          src={lolChar}
           alt=""
           aria-hidden="true"
-          width={512}
-          height={512}
-          className="hidden lg:block absolute top-[55%] left-[2%] w-28 opacity-[0.05] rotate-3 select-none pointer-events-none"
+          width={768}
+          height={1024}
+          className="hidden lg:block absolute top-[58%] left-[1%] w-36 opacity-20 rotate-3 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(79,70,229,0.4)]"
         />
         <img
-          src={mlbbSilhouette}
+          src={mlbbChar}
           alt=""
           aria-hidden="true"
-          width={512}
-          height={512}
-          className="hidden lg:block absolute top-[60%] right-[3%] w-32 opacity-[0.05] -rotate-6 select-none pointer-events-none"
+          width={768}
+          height={1024}
+          className="hidden lg:block absolute top-[62%] right-[1%] w-40 opacity-20 -rotate-6 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(192,38,211,0.4)]"
         />
         <img
-          src={aovSilhouette}
+          src={aovChar}
           alt=""
           aria-hidden="true"
-          width={512}
-          height={512}
-          className="hidden xl:block absolute bottom-10 left-[42%] w-24 opacity-[0.04] select-none pointer-events-none"
+          width={768}
+          height={1024}
+          className="hidden xl:block absolute bottom-4 left-[44%] w-28 opacity-15 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(56,189,248,0.4)]"
         />
       </div>
 

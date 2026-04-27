@@ -1,15 +1,15 @@
-import uniteSilhouette from "@/assets/games/silhouette-unite.png";
-import hokSilhouette from "@/assets/games/silhouette-hok.png";
-import lolSilhouette from "@/assets/games/silhouette-lol.png";
-import mlbbSilhouette from "@/assets/games/silhouette-mlbb.png";
-import aovSilhouette from "@/assets/games/silhouette-aov.png";
+import uniteChar from "@/assets/games/char-unite.png";
+import hokChar from "@/assets/games/char-hok.png";
+import lolChar from "@/assets/games/char-lol.png";
+import mlbbChar from "@/assets/games/char-mlbb.png";
+import aovChar from "@/assets/games/char-aov.png";
 
 const games = [
-  { name: "Pokémon Unite", short: "Unite", img: uniteSilhouette, status: "live" as const },
-  { name: "Honor of Kings", short: "HOK", img: hokSilhouette, status: "soon" as const },
-  { name: "League of Legends", short: "LOL", img: lolSilhouette, status: "soon" as const },
-  { name: "Mobile Legends", short: "MLBB", img: mlbbSilhouette, status: "soon" as const },
-  { name: "Arena of Valor", short: "AOV", img: aovSilhouette, status: "soon" as const },
+  { name: "Pokémon Unite", short: "Unite", img: uniteChar, status: "live" as const },
+  { name: "Honor of Kings", short: "HOK", img: hokChar, status: "soon" as const },
+  { name: "League of Legends", short: "LOL", img: lolChar, status: "soon" as const },
+  { name: "Mobile Legends", short: "MLBB", img: mlbbChar, status: "soon" as const },
+  { name: "Arena of Valor", short: "AOV", img: aovChar, status: "soon" as const },
 ];
 
 export function GamesShowcaseSection() {
@@ -54,14 +54,14 @@ export function GamesShowcaseSection() {
                 }}
               />
 
-              {/* Silhouette */}
+              {/* Character splash art */}
               <img
                 src={g.img}
                 alt={g.name}
-                width={512}
-                height={512}
+                width={768}
+                height={1024}
                 loading="lazy"
-                className="absolute inset-x-0 bottom-0 h-[80%] w-full object-contain object-bottom opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 drop-shadow-[0_0_30px_rgba(79,70,229,0.4)]"
+                className="absolute inset-x-0 bottom-0 h-[88%] w-full object-contain object-bottom group-hover:scale-105 transition-all duration-700 drop-shadow-[0_8px_30px_rgba(79,70,229,0.5)]"
               />
 
               {/* Top gradient label area */}
