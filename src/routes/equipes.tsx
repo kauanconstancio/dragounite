@@ -28,7 +28,7 @@ function EquipesPage() {
       const only = teams[0].team;
       if (!only.archived) {
         setActiveTeam(only.id);
-        navigate({ to: "/" });
+        navigate({ to: "/dashboard" });
       }
     }
   }, [loading, user, teams, team, setActiveTeam, navigate]);
@@ -140,7 +140,7 @@ function EquipesPage() {
                       size="sm"
                       onClick={() => {
                         setActiveTeam(t.id);
-                        navigate({ to: "/" });
+                        navigate({ to: "/dashboard" });
                       }}
                       disabled={t.archived}
                       className={active ? "bg-primary/80" : "bg-gradient-primary"}
