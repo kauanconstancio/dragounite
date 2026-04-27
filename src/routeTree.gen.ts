@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
 import { Route as TierListRouteImport } from './routes/tier-list'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -30,7 +31,10 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
+import { Route as StaffStaffRouteImport } from './routes/staff.staff'
+import { Route as StaffAuditRouteImport } from './routes/staff.audit'
 import { Route as JogadoresMemberIdRouteImport } from './routes/jogadores.$memberId'
 import { Route as DevFeedbackRouteImport } from './routes/dev.feedback'
 
@@ -42,6 +46,11 @@ const TreinosRoute = TreinosRouteImport.update({
 const TierListRoute = TierListRouteImport.update({
   id: '/tier-list',
   path: '/tier-list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RosterRoute = RosterRouteImport.update({
@@ -139,10 +148,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
 const DevIndexRoute = DevIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DevRoute,
+} as any)
+const StaffStaffRoute = StaffStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffAuditRoute = StaffAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => StaffRoute,
 } as any)
 const JogadoresMemberIdRoute = JogadoresMemberIdRouteImport.update({
   id: '/jogadores/$memberId',
@@ -175,11 +199,15 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/staff': typeof StaffStaffRoute
   '/dev/': typeof DevIndexRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -204,7 +232,10 @@ export interface FileRoutesByTo {
   '/treinos': typeof TreinosRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/staff': typeof StaffStaffRoute
   '/dev': typeof DevIndexRoute
+  '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -227,11 +258,15 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
+  '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/staff': typeof StaffStaffRoute
   '/dev/': typeof DevIndexRoute
+  '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -255,11 +290,15 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/roster'
+    | '/staff'
     | '/tier-list'
     | '/treinos'
     | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/staff/audit'
+    | '/staff/staff'
     | '/dev/'
+    | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -284,7 +323,10 @@ export interface FileRouteTypes {
     | '/treinos'
     | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/staff/audit'
+    | '/staff/staff'
     | '/dev'
+    | '/staff'
   id:
     | '__root__'
     | '/'
@@ -306,11 +348,15 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/roster'
+    | '/staff'
     | '/tier-list'
     | '/treinos'
     | '/dev/feedback'
     | '/jogadores/$memberId'
+    | '/staff/audit'
+    | '/staff/staff'
     | '/dev/'
+    | '/staff/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -333,6 +379,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
   RosterRoute: typeof RosterRoute
+  StaffRoute: typeof StaffRouteWithChildren
   TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
   JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
@@ -352,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/tier-list'
       fullPath: '/tier-list'
       preLoaderRoute: typeof TierListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roster': {
@@ -487,12 +541,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/': {
+      id: '/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/dev/': {
       id: '/dev/'
       path: '/'
       fullPath: '/dev/'
       preLoaderRoute: typeof DevIndexRouteImport
       parentRoute: typeof DevRoute
+    }
+    '/staff/staff': {
+      id: '/staff/staff'
+      path: '/staff'
+      fullPath: '/staff/staff'
+      preLoaderRoute: typeof StaffStaffRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/audit': {
+      id: '/staff/audit'
+      path: '/audit'
+      fullPath: '/staff/audit'
+      preLoaderRoute: typeof StaffAuditRouteImport
+      parentRoute: typeof StaffRoute
     }
     '/jogadores/$memberId': {
       id: '/jogadores/$memberId'
@@ -523,6 +598,20 @@ const DevRouteChildren: DevRouteChildren = {
 
 const DevRouteWithChildren = DevRoute._addFileChildren(DevRouteChildren)
 
+interface StaffRouteChildren {
+  StaffAuditRoute: typeof StaffAuditRoute
+  StaffStaffRoute: typeof StaffStaffRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffAuditRoute: StaffAuditRoute,
+  StaffStaffRoute: StaffStaffRoute,
+  StaffIndexRoute: StaffIndexRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -543,6 +632,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,
   RosterRoute: RosterRoute,
+  StaffRoute: StaffRouteWithChildren,
   TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
   JogadoresMemberIdRoute: JogadoresMemberIdRoute,
