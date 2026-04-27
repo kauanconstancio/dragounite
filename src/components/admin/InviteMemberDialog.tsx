@@ -103,12 +103,15 @@ export function InviteMemberDialog() {
   const createMut = useMutation({
     mutationFn: async () => {
       if (!teamId || !user) throw new Error("Sem equipe ou usuário");
+      const trimmedName = inviteeName.trim();
       const { data, error } = await supabase
         .from("team_invites")
         .insert({
           team_id: teamId,
           email: null,
           team_role: teamRole,
+          member_role: memberRole,
+          invitee_name: trimmedName || null,
           member_id: memberId === "none" ? null : memberId,
           invited_by: user.id,
         })
@@ -123,6 +126,7 @@ export function InviteMemberDialog() {
       qc.invalidateQueries({ queryKey: ["team-invites"] });
       toast.success("Convite criado — copie o link abaixo");
       setMemberId("none");
+      setInviteeName("");
     },
     onError: (e: any) => toast.error(e.message ?? "Erro ao criar convite"),
   });
