@@ -158,28 +158,16 @@ export function InviteMemberDialog() {
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="inv-email">E-mail (opcional)</Label>
-              <Input
-                id="inv-email"
-                type="email"
-                placeholder="jogador@exemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Papel na equipe</Label>
-              <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="player">Jogador</SelectItem>
-                  <SelectItem value="coach">Coach</SelectItem>
-                  <SelectItem value="viewer">Visualizador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>Papel na equipe</Label>
+            <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="player">Jogador</SelectItem>
+                <SelectItem value="coach">Coach</SelectItem>
+                <SelectItem value="viewer">Visualizador</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -197,17 +185,6 @@ export function InviteMemberDialog() {
               Se vincular, o convidado herdará o perfil de jogador existente.
             </p>
           </div>
-
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <input
-              type="checkbox"
-              checked={sendEmail}
-              onChange={(e) => setSendEmail(e.target.checked)}
-              disabled={!email.trim()}
-              className="accent-primary"
-            />
-            Enviar e-mail com magic link (requer e-mail preenchido)
-          </label>
 
           <Button
             onClick={() => createMut.mutate()}
