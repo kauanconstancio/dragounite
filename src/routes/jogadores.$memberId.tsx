@@ -124,7 +124,7 @@ function PlayerPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat icon={Crosshair} label="Kills/jogo" value={agg.k} accent="gold" />
         <Stat icon={Trophy} label="Assists/jogo" value={agg.a} accent="gold" />
-        <Stat icon={Activity} label="KDA médio" value={agg.kda} accent="primary" />
+        <Stat icon={Activity} label="KA médio" value={(agg.k + agg.a).toFixed(1)} accent="primary" />
         <Stat icon={Star} label="MVP rate" value={`${mvp.rate}%`} accent="gold" />
         <Stat icon={BarChart3} label="Jogos" value={agg.games} accent="primary" />
         <Stat icon={Star} label="MVPs" value={agg.mvp} accent="gold" />
