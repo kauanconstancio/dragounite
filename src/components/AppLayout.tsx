@@ -90,15 +90,16 @@ export function AppLayout() {
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
+  const isLandingRoute = location.pathname === "/landing";
   const isProfileRoute = location.pathname === "/perfil";
   const isTeamPickerRoute =
     location.pathname === "/equipes" || location.pathname === "/admin-org";
 
   useEffect(() => {
-    if (!loading && !user && !isAuthRoute) {
+    if (!loading && !user && !isAuthRoute && !isLandingRoute) {
       navigate({ to: "/auth", replace: true });
     }
-  }, [loading, user, isAuthRoute, navigate]);
+  }, [loading, user, isAuthRoute, isLandingRoute, navigate]);
 
   // Redirect to team picker when authenticated user has no active team yet
   // and is not already on a team-agnostic page.
