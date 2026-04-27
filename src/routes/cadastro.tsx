@@ -107,6 +107,49 @@ function CadastroPage() {
     }
   }
 
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (check.phase !== "login") return;
+    if (!password) {
+      toast.error("Digite sua senha.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data: signIn, error: loginErr } =
+        await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+      if (loginErr) throw loginErr;
+      const userId = signIn.user?.id;
+      // Check if user already has a team
+      let hasTeam = false;
+      if (userId) {
+        const { data: tm } = await supabase
+          .from("team_memberships")
+          .select("team_id")
+          .eq("user_id", userId)
+          .limit(1);
+        hasTeam = !!(tm && tm.length > 0);
+      }
+      try {
+        localStorage.removeItem("active-team-id");
+      } catch {}
+      if (hasTeam) {
+        toast.success("Bem-vindo de volta!");
+        navigate({ to: "/dashboard" });
+      } else {
+        toast.success("Login efetuado. Vamos configurar sua equipe.");
+        navigate({ to: "/onboarding" });
+      }
+    } catch (err: any) {
+      toast.error(err?.message ?? "Email ou senha inválidos.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div
       className="gymly-auth min-h-screen w-full bg-[#0a0a1a] text-white antialiased relative overflow-hidden"
