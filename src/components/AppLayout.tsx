@@ -194,14 +194,11 @@ export function AppLayout() {
     sessionStorage.setItem("notif-fired", JSON.stringify([...fired]));
   }, [notifEnabled, upcoming]);
 
-  // Auth screen: render full-bleed without app chrome
-  if (isAuthRoute) {
+  // Auth/Landing screens: render full-bleed without app chrome
+  if (isAuthRoute || isLandingRoute) {
     return (
       <div className="min-h-screen flex flex-col">
-        <ThemeApplier />
-        <main className="flex-1 flex items-center justify-center px-6 py-10">
-          <Outlet />
-        </main>
+        <Outlet />
       </div>
     );
   }
