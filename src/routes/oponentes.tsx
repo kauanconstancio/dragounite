@@ -178,6 +178,7 @@ function OpponentsPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
+                className="h-full"
               >
                 <Card className="p-5 border-border hover:border-primary/50 shadow-card group">
                   <div className="flex items-start justify-between gap-3">
