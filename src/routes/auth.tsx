@@ -18,21 +18,32 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const STAFF_EMAIL = "staff@gymli.com";
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/equipes" });
+      if (data.session) {
+        const isStaff = data.session.user.email?.toLowerCase() === STAFF_EMAIL;
+        navigate({ to: isStaff ? "/staff" : "/equipes" });
+      }
     });
   }, [navigate]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) return toast.error(error.message);
     try { localStorage.removeItem("active-team-id"); } catch {}
-    toast.success("Bem-vindo de volta! Escolha sua equipe para continuar.");
-    navigate({ to: "/equipes" });
+    const isStaff = data.user?.email?.toLowerCase() === STAFF_EMAIL;
+    if (isStaff) {
+      toast.success("Bem-vindo, Staff. Redirecionando para o console.");
+      navigate({ to: "/staff" });
+    } else {
+      toast.success("Bem-vindo de volta! Escolha sua equipe para continuar.");
+      navigate({ to: "/equipes" });
+    }
   }
 
   return (
