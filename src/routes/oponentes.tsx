@@ -169,7 +169,7 @@ function OpponentsPage() {
           <p className="text-muted-foreground">Nenhum oponente catalogado ainda.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 auto-rows-fr items-stretch">
           {opponents.map((o, i) => {
             const stats = statsFor(o);
             return (
