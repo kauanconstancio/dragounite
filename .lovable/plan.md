@@ -1,64 +1,106 @@
 
-## Contexto
+# 🚀 Landing Page GymLy — SaaS para times de Pokémon Unite
 
-A rota `src/routes/jogadores.$memberId.tsx` já existe com base sólida: header do jogador, KPIs (kills/assists/MVPs/jogos/score/dano), KDA timeline e top pokémon com win rate. Falta atender o pedido completo: **win rate por lane** e **gráficos das últimas scrims** (resultado + KDA por partida com contexto).
+## 🎨 Identidade visual
 
-Também vou aproveitar pra dar mais profundidade analítica e tornar a página realmente um "dashboard de jogador".
+- **Paleta Midnight Indigo**: `#0a0a1a` (bg), `#141432` (surface), `#1e1e5a` (accent), `#4f46e5` (primary/CTA)
+- **Tipografia**: Sora (headings, peso bold/extrabold) + Manrope (body)
+- **Vibe**: SaaS tech sofisticado, dark mode, com glow/gradient sutis em indigo
+- **Posicionamento**: "GymLy — A central de operações para times de Pokémon Unite" (com hint de expansão multi-esports)
 
-## Mudanças
+## 📁 Arquitetura de rotas
 
-### 1. `src/lib/player-stats.ts` — novas funções de agregação
+Vou criar uma rota dedicada `/landing` (separada do app principal em `/`) para não quebrar o sistema atual. A landing terá seu próprio layout independente do `AppLayout` (sem sidebar de operações).
 
-Adicionar funções utilitárias (sem refatorar as existentes):
+**Novos arquivos:**
+- `src/routes/landing.tsx` — rota da landing page com `head()` próprio para SEO
+- `src/components/landing/LandingNav.tsx` — nav superior (logo + CTA waitlist + login)
+- `src/components/landing/HeroSection.tsx` — hero com headline, subheadline, CTA waitlist e mockup visual
+- `src/components/landing/FeaturesSection.tsx` — grid de features (Roster, Scrims, Draft, Scouting, Dashboard, Tier List)
+- `src/components/landing/HowItWorksSection.tsx` — 3 passos: Cadastre seu time → Registre scrims → Evolua com dados
+- `src/components/landing/SocialProofSection.tsx` — stats (times usando, scrims registradas, etc.) + depoimentos placeholder
+- `src/components/landing/RoadmapSection.tsx` — "Em breve: League of Legends, Valorant, Rainbow Six"
+- `src/components/landing/WaitlistForm.tsx` — formulário de captura (email + nome do time)
+- `src/components/landing/FaqSection.tsx` — FAQ accordion (4-6 perguntas)
+- `src/components/landing/LandingFooter.tsx` — footer com links sociais
 
-- **`winRateByLane(perfs, laneByPokemon)`** — agrupa partidas por lane (inferida do pokémon via `LANE_LABEL`/mapa) e devolve `[{ lane, games, wins, losses, winrate }]`. Como `match_performances` não tem lane direta, vou inferir pelo pokémon usando o catálogo de `src/lib/pokemon.ts`.
-- **`recentScrimsBreakdown(perfs, scrimMap, limit = 10)`** — para as últimas N scrims do jogador, retorna `[{ date, opponent, result, kda, kills, deaths, assists, score, pokemon, isMvp }]` ordenado por data desc, pronto pra tabela + gráfico.
-- **`scoreAndDamageTimeline(perfs, dateMap)`** — série temporal `[{ label, score, damage }]` pra um segundo gráfico (área dupla normalizada ou eixos separados).
-- **`mvpRate(perfs)`** — `{ rate: %, mvps, games }`.
+**AppLayout**: ajustar para detectar a rota `/landing` e não renderizar a estrutura de app (sidebar/header de operações) — a landing roda standalone.
 
-### 2. `src/components/dashboard/PerformanceTimelineChart.tsx` — novo gráfico
+## 🗄️ Backend (Lovable Cloud)
 
-ComposedChart do recharts: barras de `score` + linha de `damage`, com tooltip mostrando oponente e resultado da scrim. Estilizado igual ao `KdaChart` (gradientes, cores de tema, `var(--primary)` / `var(--gold)`).
+**Tabela nova `waitlist`** via migration:
+```sql
+CREATE TABLE public.waitlist (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL UNIQUE,
+  team_name TEXT,
+  source TEXT DEFAULT 'landing',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+```
+- RLS habilitado
+- Policy: qualquer um pode `INSERT` (público, sem auth)
+- Policy: somente super_admin pode `SELECT/DELETE` (gestão via /dev)
 
-### 3. `src/components/dashboard/LaneWinrateChart.tsx` — novo gráfico
+## 🧩 Conteúdo das seções
 
-BarChart horizontal com win rate (%) por lane, cor condicional (gold ≥ 50%, destructive < 50%), label com `wins-losses` ao lado.
+### 1. Hero
+- **Headline**: "Eleve seu time de Pokémon Unite ao próximo nível"
+- **Subheadline**: "GymLy é a plataforma all-in-one para gerenciar roster, scrims, drafts e evolução de jogadores. Decisões guiadas por dados, não por achismo."
+- **CTAs**: "Entrar na waitlist" (primário) + "Ver demo" (secundário, scroll para features)
+- **Visual**: mockup do dashboard atual com glow indigo
 
-### 4. `src/routes/jogadores.$memberId.tsx` — expansão da página
+### 2. Features (6 cards)
+- 🎯 **Roster & Jogadores** — perfis individuais com KDA, win rate por lane, top pokémons
+- ⚔️ **Scrims & Amistosos** — registre partidas, performance individual, evolução temporal
+- 🧠 **Draft Tool** — simule picks/bans, planeje composições antes de cada partida
+- 🔍 **Scouting** — analise oponentes, VODs, padrões de jogo
+- 📊 **Dashboard de Performance** — gráficos de KDA, win rate, radar de time
+- 🏆 **Tier List & Composições** — meta atualizado, builds, estratégias
 
-Adicionar quatro seções (mantendo o que já existe):
+### 3. Como funciona (3 passos)
+1. Crie sua organização e roster
+2. Registre treinos, scrims e performance
+3. Acompanhe a evolução com dashboards e tome decisões baseadas em dados
 
-- **Win rate por lane** (card lado a lado com top pokémon, ou linha nova): renderiza `LaneWinrateChart`. Vazio mostra "sem dados suficientes".
-- **Performance ao longo do tempo** (card full-width): `PerformanceTimelineChart` com score+damage. Complementa o KDA timeline existente.
-- **Últimas scrims** (card full-width, novo bloco abaixo): tabela compacta com data, oponente, resultado (badge V/D), pokémon (com `PokemonImage`), K/D/A, KDA, score, MVP (ícone Star). Limita a 10. Cada linha clicável → `/amistosos` (ou apenas exibe; manter simples por enquanto).
-- **KPIs adicionais**: somar dois cards na grid existente — **MVP rate %** e **KDA médio**.
+### 4. Social proof (placeholders honestos)
+- Stats animadas: "X times ativos", "Y scrims registradas", "Z partidas analisadas"
+- Frase: "Em fase de early access — junte-se aos times pioneiros"
 
-Buscar `members` (todos da equipe) só é desnecessário; mantemos a query de `scrims` que já traz `result` e `opponent`. Construir `scrimMap` enriquecido `Map<scrim_id, { date, opponent, result }>` em vez de só date+result separados.
+### 5. Roadmap multi-esports
+- Cards com: ✅ Pokémon Unite (disponível) · 🔜 League of Legends · 🔜 Valorant · 🔜 Rainbow Six
 
-### 5. Link de entrada
+### 6. Waitlist Form
+- Campos: email* + nome do time (opcional)
+- Validação Zod, mutation salvando em `waitlist`
+- Toast de sucesso + estado pós-submit ("Você está na lista!")
 
-Verificar `src/routes/roster.tsx` — se cada card de membro já não linka pra `/jogadores/$memberId`, adicionar `<Link to="/jogadores/$memberId" params={{ memberId: m.id }}>` envolvendo o card. (Vou checar na implementação; se já existir, não toco.)
+### 7. FAQ
+- "O que é GymLy?"
+- "Preciso pagar para usar?"
+- "Como meu time se cadastra?"
+- "Vocês vão suportar outros jogos?"
+- "Meus dados estão seguros?"
 
-### 6. Inferência de lane
+### 8. Footer
+- Logo + tagline
+- Links: Sobre, Contato, Login, Privacidade
+- Social (Discord/Twitter placeholders)
 
-Como `members.lane` existe mas as partidas em si não têm lane, vou usar duas estratégias combinadas:
-- Se o pokémon jogado mapeia pra uma lane única no catálogo (`src/lib/pokemon.ts` tem `POKEMON_LANE` ou similar), usar essa.
-- Fallback: se o jogador tem `member.lane` definido, usar essa pra partidas sem mapeamento.
+## 🔗 Integração com app existente
 
-Vou inspecionar `src/lib/pokemon.ts` na implementação pra confirmar o helper exato disponível.
+- Link "Login" no nav da landing → `/auth`
+- Link "Já uso o GymLy" → `/`
+- Em `/dev/index`, adicionar **KPI de waitlist** (total de inscritos) e link para uma futura `/dev/waitlist` (não nesta etapa)
+- Manter `<title>` e branding atual do app (Dragounite) intacto — landing usa **GymLy** apenas para teste de novo nome
 
-## Arquivos afetados
+## 🎯 SEO/Meta
 
-- ✏️ `src/lib/player-stats.ts` (adicionar funções, sem quebrar existentes)
-- 🆕 `src/components/dashboard/PerformanceTimelineChart.tsx`
-- 🆕 `src/components/dashboard/LaneWinrateChart.tsx`
-- ✏️ `src/routes/jogadores.$memberId.tsx` (expandir layout)
-- ✏️ `src/routes/roster.tsx` (garantir link, se faltar)
+`head()` da rota `/landing`:
+- title: "GymLy — Gestão competitiva para times de Pokémon Unite"
+- description: "Plataforma all-in-one para roster, scrims, draft e scouting. Eleve seu time com decisões guiadas por dados."
+- og:title, og:description, twitter:card
 
-## Não vou fazer (fora de escopo)
+## ✅ Resultado esperado
 
-- Comparador entre jogadores (sugestão #2 da lista anterior — pede outra rota).
-- Filtros por período (últimas 7 / 30 / 90 dias) — posso adicionar depois se quiser.
-- Export PDF da página de jogador.
-
-Quer que eu inclua algum desses extras antes de começar?
+Acessando `/landing`, você verá uma landing page profissional, dark/indigo, com hero impactante, features bem apresentadas, formulário de waitlist funcional gravando no banco, e CTA claro para login no app existente. Pronta para validar o nome **GymLy** e começar a captar interessados antes de lançar como SaaS pago.
