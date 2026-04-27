@@ -105,32 +105,33 @@ export function AppLayout() {
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
-  const isLandingRoute = location.pathname === "/landing" || location.pathname === "/";
+  const isPublic = isPublicRoute(location.pathname);
+  const isFullBleed = isFullBleedRoute(location.pathname);
   const isProfileRoute = location.pathname === "/perfil";
   const isTeamPickerRoute =
     location.pathname === "/equipes" || location.pathname === "/admin-org";
 
   useEffect(() => {
-    if (!loading && !user && !isAuthRoute && !isLandingRoute) {
+    if (!loading && !user && !isPublic) {
       navigate({ to: "/auth", replace: true });
     }
-  }, [loading, user, isAuthRoute, isLandingRoute, navigate]);
+  }, [loading, user, isPublic, navigate]);
 
   // Redirect to team picker when authenticated user has no active team yet
-  // and is not already on a team-agnostic page.
+  // and is not already on a public/team-agnostic page.
   useEffect(() => {
     if (
       !loading &&
       user &&
       !teamsLoading &&
       !activeTeam &&
-      !isAuthRoute &&
+      !isPublic &&
       !isProfileRoute &&
       !isTeamPickerRoute
     ) {
       navigate({ to: "/equipes", replace: true });
     }
-  }, [loading, user, teamsLoading, activeTeam, isAuthRoute, isProfileRoute, isTeamPickerRoute, navigate]);
+  }, [loading, user, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
   const { data: profileCheck } = useQuery({
@@ -151,7 +152,7 @@ export function AppLayout() {
       const complete = !!(m?.ign && m?.lane && m?.main_pokemon);
       return { complete, hasMember: true };
     },
-    enabled: !!user && !isAuthRoute,
+    enabled: !!user && !isPublic,
     staleTime: 30_000,
   });
 
@@ -159,7 +160,7 @@ export function AppLayout() {
     if (
       !loading &&
       user &&
-      !isAuthRoute &&
+      !isPublic &&
       !isProfileRoute &&
       profileCheck &&
       profileCheck.hasMember &&
@@ -167,7 +168,7 @@ export function AppLayout() {
     ) {
       navigate({ to: "/perfil", replace: true });
     }
-  }, [loading, user, isAuthRoute, isProfileRoute, profileCheck, navigate]);
+  }, [loading, user, isPublic, isProfileRoute, profileCheck, navigate]);
 
   // Polling for upcoming events (only when authenticated, scoped to active team)
   const { data: upcoming } = useQuery({
