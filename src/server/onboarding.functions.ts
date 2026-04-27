@@ -147,6 +147,65 @@ export const signupApprovedUser = createServerFn({ method: "POST" })
   });
 
 /* -------------------------------------------------------------------------- */
+/*  2b. Sign up an invited user (bypasses waitlist, requires valid invite)    */
+/* -------------------------------------------------------------------------- */
+
+const inviteSignupSchema = z.object({
+  token: z.string().min(10).max(128),
+  email: z.string().trim().toLowerCase().email().max(255),
+  password: z.string().min(8).max(72),
+  display_name: z.string().trim().min(1).max(80),
+});
+
+export const signupInvitedUser = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => inviteSignupSchema.parse(input))
+  .handler(async ({ data }) => {
+    // 1. Validate the invite is still good
+    const { data: inv, error: iErr } = await supabaseAdmin
+      .from("team_invites")
+      .select("id, expires_at, accepted_at, revoked_at")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (iErr) throw new Error(iErr.message);
+    if (!inv) throw new Error("Convite não encontrado.");
+    if (inv.revoked_at) throw new Error("Convite foi revogado.");
+    if (inv.accepted_at) throw new Error("Convite já foi aceito.");
+    if (new Date(inv.expires_at) < new Date()) {
+      throw new Error("Convite expirou.");
+    }
+
+    // 2. Refuse if email already has an account
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .limit(1);
+    // Use admin API to check by email
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 200,
+    });
+    const found = list.users.find(
+      (u) => u.email?.toLowerCase() === data.email,
+    );
+    if (found) {
+      throw new Error("Este email já tem uma conta. Faça login.");
+    }
+    void existing;
+
+    // 3. Create user (email pre-confirmed)
+    const { data: created, error: cErr } =
+      await supabaseAdmin.auth.admin.createUser({
+        email: data.email,
+        password: data.password,
+        email_confirm: true,
+        user_metadata: { display_name: data.display_name },
+      });
+    if (cErr) throw new Error(cErr.message);
+
+    return { ok: true, user_id: created.user!.id };
+  });
+
+/* -------------------------------------------------------------------------- */
 /*  3. Onboarding — create the user's first team                              */
 /* -------------------------------------------------------------------------- */
 
