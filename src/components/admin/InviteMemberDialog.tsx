@@ -53,10 +53,8 @@ export function InviteMemberDialog() {
   const teamId = team?.id;
 
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
   const [teamRole, setTeamRole] = useState<TeamRole>("player");
   const [memberId, setMemberId] = useState<string>("none");
-  const [sendEmail, setSendEmail] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
 
   const invitesQ = useQuery({
