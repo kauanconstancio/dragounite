@@ -1,4 +1,5 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, KeyRound } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export function HeroSection() {
   return (
@@ -47,6 +48,13 @@ export function HeroSection() {
             Entrar na waitlist
             <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </a>
+          <Link
+            to="/cadastro"
+            className="group inline-flex items-center gap-2 rounded-xl border border-indigo-400/40 hover:border-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-7 py-4 text-base font-medium text-indigo-200 transition-colors"
+          >
+            <KeyRound className="h-4 w-4" />
+            Já fui aprovado · Acessar
+          </Link>
           <a
             href="#features"
             className="inline-flex items-center gap-2 rounded-xl border border-slate-700 hover:border-slate-500 bg-slate-900/40 px-7 py-4 text-base font-medium text-slate-200 transition-colors"

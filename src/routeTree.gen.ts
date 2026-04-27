@@ -16,6 +16,7 @@ import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OponentesRouteImport } from './routes/oponentes'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MuralRouteImport } from './routes/mural'
 import { Route as LandingRouteImport } from './routes/landing'
 import { Route as JogadasRouteImport } from './routes/jogadas'
@@ -25,6 +26,7 @@ import { Route as DraftRouteImport } from './routes/draft'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
@@ -80,6 +82,11 @@ const OponentesRoute = OponentesRouteImport.update({
   path: '/oponentes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MuralRoute = MuralRouteImport.update({
   id: '/mural',
   path: '/mural',
@@ -123,6 +130,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ComposicoesRoute = ComposicoesRouteImport.update({
   id: '/composicoes',
   path: '/composicoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BuildsRoute = BuildsRouteImport.update({
@@ -229,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
+  '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
   '/dev': typeof DevRouteWithChildren
@@ -238,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/jogadas': typeof JogadasRoute
   '/landing': typeof LandingRoute
   '/mural': typeof MuralRoute
+  '/onboarding': typeof OnboardingRoute
   '/oponentes': typeof OponentesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
@@ -266,6 +280,7 @@ export interface FileRoutesByTo {
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
+  '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
   '/draft': typeof DraftRoute
@@ -274,6 +289,7 @@ export interface FileRoutesByTo {
   '/jogadas': typeof JogadasRoute
   '/landing': typeof LandingRoute
   '/mural': typeof MuralRoute
+  '/onboarding': typeof OnboardingRoute
   '/oponentes': typeof OponentesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
@@ -302,6 +318,7 @@ export interface FileRoutesById {
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
+  '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
   '/dev': typeof DevRouteWithChildren
@@ -311,6 +328,7 @@ export interface FileRoutesById {
   '/jogadas': typeof JogadasRoute
   '/landing': typeof LandingRoute
   '/mural': typeof MuralRoute
+  '/onboarding': typeof OnboardingRoute
   '/oponentes': typeof OponentesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
@@ -341,6 +359,7 @@ export interface FileRouteTypes {
     | '/amistosos'
     | '/auth'
     | '/builds'
+    | '/cadastro'
     | '/composicoes'
     | '/dashboard'
     | '/dev'
@@ -350,6 +369,7 @@ export interface FileRouteTypes {
     | '/jogadas'
     | '/landing'
     | '/mural'
+    | '/onboarding'
     | '/oponentes'
     | '/perfil'
     | '/planner'
@@ -378,6 +398,7 @@ export interface FileRouteTypes {
     | '/amistosos'
     | '/auth'
     | '/builds'
+    | '/cadastro'
     | '/composicoes'
     | '/dashboard'
     | '/draft'
@@ -386,6 +407,7 @@ export interface FileRouteTypes {
     | '/jogadas'
     | '/landing'
     | '/mural'
+    | '/onboarding'
     | '/oponentes'
     | '/perfil'
     | '/planner'
@@ -413,6 +435,7 @@ export interface FileRouteTypes {
     | '/amistosos'
     | '/auth'
     | '/builds'
+    | '/cadastro'
     | '/composicoes'
     | '/dashboard'
     | '/dev'
@@ -422,6 +445,7 @@ export interface FileRouteTypes {
     | '/jogadas'
     | '/landing'
     | '/mural'
+    | '/onboarding'
     | '/oponentes'
     | '/perfil'
     | '/planner'
@@ -451,6 +475,7 @@ export interface RootRouteChildren {
   AmistososRoute: typeof AmistososRoute
   AuthRoute: typeof AuthRoute
   BuildsRoute: typeof BuildsRoute
+  CadastroRoute: typeof CadastroRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DashboardRoute: typeof DashboardRoute
   DevRoute: typeof DevRouteWithChildren
@@ -460,6 +485,7 @@ export interface RootRouteChildren {
   JogadasRoute: typeof JogadasRoute
   LandingRoute: typeof LandingRoute
   MuralRoute: typeof MuralRoute
+  OnboardingRoute: typeof OnboardingRoute
   OponentesRoute: typeof OponentesRoute
   PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
@@ -519,6 +545,13 @@ declare module '@tanstack/react-router' {
       path: '/oponentes'
       fullPath: '/oponentes'
       preLoaderRoute: typeof OponentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mural': {
@@ -582,6 +615,13 @@ declare module '@tanstack/react-router' {
       path: '/composicoes'
       fullPath: '/composicoes'
       preLoaderRoute: typeof ComposicoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/builds': {
@@ -766,6 +806,7 @@ const rootRouteChildren: RootRouteChildren = {
   AmistososRoute: AmistososRoute,
   AuthRoute: AuthRoute,
   BuildsRoute: BuildsRoute,
+  CadastroRoute: CadastroRoute,
   ComposicoesRoute: ComposicoesRoute,
   DashboardRoute: DashboardRoute,
   DevRoute: DevRouteWithChildren,
@@ -775,6 +816,7 @@ const rootRouteChildren: RootRouteChildren = {
   JogadasRoute: JogadasRoute,
   LandingRoute: LandingRoute,
   MuralRoute: MuralRoute,
+  OnboardingRoute: OnboardingRoute,
   OponentesRoute: OponentesRoute,
   PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,

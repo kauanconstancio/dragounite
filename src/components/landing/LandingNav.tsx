@@ -28,6 +28,12 @@ export function LandingNav() {
           >
             Entrar
           </Link>
+          <Link
+            to="/cadastro"
+            className="hidden md:inline-flex text-sm text-indigo-300 hover:text-indigo-200 transition-colors"
+          >
+            Já fui aprovado
+          </Link>
           <a
             href="#waitlist"
             className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-medium text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.7)] transition-all"
