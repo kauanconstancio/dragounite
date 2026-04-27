@@ -27,12 +27,22 @@ import { Mail, Copy, Trash2, Send, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
 type TeamRole = "coach" | "player" | "viewer";
+type MemberRole = "player" | "substitute" | "coach" | "manager";
+
+const MEMBER_ROLE_LABEL: Record<MemberRole, string> = {
+  player: "Titular",
+  substitute: "Reserva",
+  coach: "Coach",
+  manager: "Gerente",
+};
 
 type InviteRow = {
   id: string;
   email: string | null;
   token: string;
   team_role: TeamRole;
+  member_role: MemberRole;
+  invitee_name: string | null;
   member_id: string | null;
   expires_at: string;
   accepted_at: string | null;
