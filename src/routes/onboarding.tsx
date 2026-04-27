@@ -103,11 +103,6 @@ function OnboardingPage() {
       setStep(1);
       return;
     }
-    if (!logoUrl) {
-      toast.error("Envie a logo da equipe.");
-      setStep(2);
-      return;
-    }
     setSubmitting(true);
     try {
       const cleaned = roster
@@ -395,15 +390,8 @@ function OnboardingPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
                 </Button>
                 <Button
-                  onClick={() => {
-                    if (!logoUrl) {
-                      toast.error("Envie a logo da equipe para continuar.");
-                      return;
-                    }
-                    setStep(3);
-                  }}
-                  disabled={!logoUrl}
-                  className="h-11 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setStep(3)}
+                  className="h-11 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)]"
                 >
                   Continuar <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
