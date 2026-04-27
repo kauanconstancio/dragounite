@@ -75,6 +75,21 @@ function isActive(pathname: string, to: string) {
   return pathname.startsWith(to);
 }
 
+// Rotas públicas: não exigem autenticação nem seleção de equipe.
+// Inclui a landing (/, /landing) e fluxos de auth/recuperação.
+const PUBLIC_ROUTE_PREFIXES = ["/landing", "/auth", "/reset-password", "/forgot-password"];
+const PUBLIC_EXACT_ROUTES = ["/"];
+
+function isPublicRoute(pathname: string) {
+  if (PUBLIC_EXACT_ROUTES.includes(pathname)) return true;
+  return PUBLIC_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+// Rotas full-bleed (sem header/footer/chrome do app), mesmo se o usuário estiver logado.
+function isFullBleedRoute(pathname: string) {
+  return pathname === "/" || pathname.startsWith("/landing") || pathname.startsWith("/auth");
+}
+
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
