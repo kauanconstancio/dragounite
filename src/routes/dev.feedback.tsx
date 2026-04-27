@@ -118,9 +118,12 @@ function DevFeedbackPage() {
   }, [items, filterType, filterStatus, search]);
 
   const updateMutation = useMutation({
-    mutationFn: async (payload: { id: string; status?: string; priority?: string; admin_notes?: string }) => {
-      const { id, ...rest } = payload;
-      const { error } = await supabase.from("feedback").update(rest).eq("id", id);
+    mutationFn: async (payload: { id: string; status: string; priority: string; admin_notes: string }) => {
+      const { id, status, priority, admin_notes } = payload;
+      const { error } = await supabase
+        .from("feedback")
+        .update({ status: status as any, priority: priority as any, admin_notes })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
