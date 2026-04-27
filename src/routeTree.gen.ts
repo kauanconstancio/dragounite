@@ -16,6 +16,7 @@ import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OponentesRouteImport } from './routes/oponentes'
 import { Route as MuralRouteImport } from './routes/mural'
+import { Route as LandingRouteImport } from './routes/landing'
 import { Route as JogadasRouteImport } from './routes/jogadas'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EquipesRouteImport } from './routes/equipes'
@@ -66,6 +67,11 @@ const OponentesRoute = OponentesRouteImport.update({
 const MuralRoute = MuralRouteImport.update({
   id: '/mural',
   path: '/mural',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingRoute = LandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JogadasRoute = JogadasRouteImport.update({
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
   '/jogadas': typeof JogadasRoute
+  '/landing': typeof LandingRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
   '/perfil': typeof PerfilRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
   '/jogadas': typeof JogadasRoute
+  '/landing': typeof LandingRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
   '/perfil': typeof PerfilRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
   '/jogadas': typeof JogadasRoute
+  '/landing': typeof LandingRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
   '/perfil': typeof PerfilRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/equipes'
     | '/feedback'
     | '/jogadas'
+    | '/landing'
     | '/mural'
     | '/oponentes'
     | '/perfil'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/equipes'
     | '/feedback'
     | '/jogadas'
+    | '/landing'
     | '/mural'
     | '/oponentes'
     | '/perfil'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/equipes'
     | '/feedback'
     | '/jogadas'
+    | '/landing'
     | '/mural'
     | '/oponentes'
     | '/perfil'
@@ -315,6 +327,7 @@ export interface RootRouteChildren {
   EquipesRoute: typeof EquipesRoute
   FeedbackRoute: typeof FeedbackRoute
   JogadasRoute: typeof JogadasRoute
+  LandingRoute: typeof LandingRoute
   MuralRoute: typeof MuralRoute
   OponentesRoute: typeof OponentesRoute
   PerfilRoute: typeof PerfilRoute
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       path: '/mural'
       fullPath: '/mural'
       preLoaderRoute: typeof MuralRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing': {
+      id: '/landing'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jogadas': {
@@ -517,6 +537,7 @@ const rootRouteChildren: RootRouteChildren = {
   EquipesRoute: EquipesRoute,
   FeedbackRoute: FeedbackRoute,
   JogadasRoute: JogadasRoute,
+  LandingRoute: LandingRoute,
   MuralRoute: MuralRoute,
   OponentesRoute: OponentesRoute,
   PerfilRoute: PerfilRoute,
