@@ -92,6 +92,7 @@ function isFullBleedRoute(pathname: string) {
     pathname.startsWith("/landing") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/cadastro") ||
+    pathname.startsWith("/aceitar-convite") ||
     pathname.startsWith("/onboarding") ||
     pathname === "/staff" ||
     pathname.startsWith("/staff/")
