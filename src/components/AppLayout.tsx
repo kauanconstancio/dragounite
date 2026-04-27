@@ -71,7 +71,7 @@ const estrategia = [
 ];
 
 function isActive(pathname: string, to: string) {
-  if (to === "/") return pathname === "/";
+  if (to === "/dashboard") return pathname === "/dashboard";
   return pathname.startsWith(to);
 }
 
