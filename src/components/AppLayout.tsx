@@ -77,7 +77,7 @@ function isActive(pathname: string, to: string) {
 
 // Rotas públicas: não exigem autenticação nem seleção de equipe.
 // Inclui a landing (/, /landing) e fluxos de auth/recuperação.
-const PUBLIC_ROUTE_PREFIXES = ["/landing", "/auth", "/cadastro", "/reset-password", "/forgot-password"];
+const PUBLIC_ROUTE_PREFIXES = ["/landing", "/auth", "/cadastro", "/aceitar-convite", "/reset-password", "/forgot-password"];
 const PUBLIC_EXACT_ROUTES = ["/"];
 
 function isPublicRoute(pathname: string) {
