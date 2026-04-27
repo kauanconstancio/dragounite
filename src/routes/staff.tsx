@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStaff, type StaffRole } from "@/hooks/useStaff";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   ShieldAlert,
   Crown,
@@ -16,6 +18,7 @@ import {
   Wrench,
   UserCog,
   ScrollText,
+  LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -91,7 +94,7 @@ const ROLE_LABELS: Record<StaffRole, string> = {
 };
 
 function StaffLayout() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { isStaff, isOwner, hasStaffRole, primaryRole, loading } = useStaff();
   const location = useLocation();
   const navigate = useNavigate();
@@ -99,6 +102,12 @@ function StaffLayout() {
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", replace: true });
   }, [authLoading, user, navigate]);
+
+  async function handleLogout() {
+    await signOut();
+    toast.success("Sessão encerrada");
+    navigate({ to: "/auth", replace: true });
+  }
 
   if (loading || authLoading) {
     return (
@@ -178,6 +187,17 @@ function StaffLayout() {
                 );
               })}
             </nav>
+
+            <div className="pt-4 border-t border-border/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start gap-2 text-xs uppercase tracking-wider"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sair
+              </Button>
+            </div>
           </aside>
 
           <main className="min-w-0">
