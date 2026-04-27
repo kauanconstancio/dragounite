@@ -66,6 +66,8 @@ function AdminPage() {
       <TeamSettingsManager />
 
       <AnnouncementsManager />
+
+      <DeleteTeamZone />
     </div>
   );
 }
