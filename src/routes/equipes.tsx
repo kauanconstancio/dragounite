@@ -33,6 +33,15 @@ function EquipesPage() {
     }
   }, [loading, user, teams, team, setActiveTeam, navigate]);
 
+  // Se o usuário acabou de criar conta (sem equipes) e não é super admin,
+  // levamos direto para o onboarding para configurar a primeira equipe.
+  useEffect(() => {
+    if (loading || authLoading || !user) return;
+    if (teams.length === 0 && !isSuperAdmin) {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [loading, authLoading, user, teams, isSuperAdmin, navigate]);
+
   if (authLoading || loading) {
     return (
       <div className="text-center text-muted-foreground text-xs uppercase tracking-[0.3em] py-20">
