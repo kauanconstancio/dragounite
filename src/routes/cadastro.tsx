@@ -21,6 +21,7 @@ type CheckState =
   | { phase: "idle" }
   | { phase: "checking" }
   | { phase: "ok"; suggestedTeamName: string | null }
+  | { phase: "login"; suggestedTeamName: string | null }
   | { phase: "error"; message: string };
 
 function CadastroPage() {
