@@ -17,7 +17,7 @@ export function GamesShowcaseSection() {
     <section id="games" className="relative overflow-hidden py-24">
       {/* Background ambience */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[900px] rounded-full bg-indigo-600/10 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-[800px] rounded-full bg-indigo-600/10 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-7xl px-6">
