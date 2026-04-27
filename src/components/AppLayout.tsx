@@ -92,9 +92,13 @@ function isFullBleedRoute(pathname: string) {
     pathname.startsWith("/landing") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/cadastro") ||
-    pathname.startsWith("/onboarding")
+    pathname.startsWith("/onboarding") ||
+    pathname === "/staff" ||
+    pathname.startsWith("/staff/")
   );
 }
+
+const STAFF_EMAIL = "staff@gymli.com";
 
 export function AppLayout() {
   const location = useLocation();
