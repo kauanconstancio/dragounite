@@ -134,11 +134,12 @@ export function AppLayout() {
       !activeTeam &&
       !isPublic &&
       !isProfileRoute &&
-      !isTeamPickerRoute
+      !isTeamPickerRoute &&
+      !isOnboardingRoute
     ) {
       navigate({ to: "/equipes", replace: true });
     }
-  }, [loading, user, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, navigate]);
+  }, [loading, user, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, isOnboardingRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
   const { data: profileCheck } = useQuery({
