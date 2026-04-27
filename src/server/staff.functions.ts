@@ -253,11 +253,14 @@ export const listAllUsers = createServerFn({ method: "POST" })
     // and, when a search term is provided, scan up to 10 pages of 1000 to filter.
     const search = data.search.toLowerCase();
 
-    let allUsers: Awaited<ReturnType<typeof supabaseAdmin.auth.admin.listUsers>>["data"]["users"] = [];
+    type AdminUser = Awaited<
+      ReturnType<typeof supabaseAdmin.auth.admin.listUsers>
+    >["data"]["users"][number];
+
+    let allUsers: AdminUser[] = [];
     let total = 0;
 
     if (search) {
-      // Pull up to 10k users to filter by email/name client-side (server-side here).
       for (let p = 1; p <= 10; p++) {
         const { data: chunk, error } = await supabaseAdmin.auth.admin.listUsers({
           page: p,
@@ -282,7 +285,7 @@ export const listAllUsers = createServerFn({ method: "POST" })
       });
       if (error) throw new Error(error.message);
       allUsers = chunk.users;
-      total = chunk.total ?? chunk.users.length;
+      total = (chunk as unknown as { total?: number }).total ?? chunk.users.length;
     }
 
     const userIds = allUsers.map((u) => u.id);
