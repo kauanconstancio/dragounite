@@ -147,6 +147,38 @@ export const signupApprovedUser = createServerFn({ method: "POST" })
   });
 
 /* -------------------------------------------------------------------------- */
+/*  2a. Public preview of an invite by token (anonymous, bypasses RLS)        */
+/* -------------------------------------------------------------------------- */
+
+const previewSchema = z.object({
+  token: z.string().min(10).max(128),
+});
+
+export const getInvitePreview = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => previewSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { data: inv, error } = await supabaseAdmin
+      .from("team_invites")
+      .select(
+        "team_id, team_role, email, expires_at, accepted_at, revoked_at, teams(name)",
+      )
+      .eq("token", data.token)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!inv) return { found: false as const };
+    return {
+      found: true as const,
+      team_id: inv.team_id,
+      team_role: inv.team_role,
+      email: inv.email,
+      expires_at: inv.expires_at,
+      accepted_at: inv.accepted_at,
+      revoked_at: inv.revoked_at,
+      team_name: (inv as { teams?: { name?: string } }).teams?.name ?? null,
+    };
+  });
+
+/* -------------------------------------------------------------------------- */
 /*  2b. Sign up an invited user (bypasses waitlist, requires valid invite)    */
 /* -------------------------------------------------------------------------- */
 
