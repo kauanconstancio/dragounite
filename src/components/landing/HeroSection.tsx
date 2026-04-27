@@ -1,18 +1,16 @@
 import { ArrowRight, Sparkles, KeyRound } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import uniteChar from "@/assets/games/char-unite.png";
-import hokChar from "@/assets/games/char-hok.png";
-import lolChar from "@/assets/games/char-lol.png";
-import mlbbChar from "@/assets/games/char-mlbb.png";
-import aovChar from "@/assets/games/char-aov.png";
+import uniteChar from "@/assets/games/char-unite.webp";
+import hokChar from "@/assets/games/char-hok.webp";
+import lolChar from "@/assets/games/char-lol.webp";
+import mlbbChar from "@/assets/games/char-mlbb.webp";
 
 export function HeroSection() {
   return (
     <section id="top" className="relative overflow-hidden pt-20 pb-32">
       {/* Background glow */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[600px] w-[1000px] rounded-full bg-indigo-600/20 blur-[120px]" />
-        <div className="absolute top-40 right-10 h-[300px] w-[300px] rounded-full bg-indigo-500/10 blur-[100px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[900px] rounded-full bg-indigo-600/20 blur-3xl" />
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -22,14 +20,16 @@ export function HeroSection() {
           }}
         />
 
-        {/* Floating game character splash arts */}
+        {/* Floating game character splash arts (decorative, lazy) */}
         <img
           src={uniteChar}
           alt=""
           aria-hidden="true"
           width={768}
           height={1024}
-          className="hidden md:block absolute top-32 left-[2%] w-40 lg:w-52 opacity-25 -rotate-12 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(250,204,21,0.3)]"
+          loading="lazy"
+          decoding="async"
+          className="hidden md:block absolute top-32 left-[2%] w-40 lg:w-52 opacity-25 -rotate-12 select-none pointer-events-none"
         />
         <img
           src={hokChar}
@@ -37,7 +37,9 @@ export function HeroSection() {
           aria-hidden="true"
           width={768}
           height={1024}
-          className="hidden md:block absolute top-16 right-[3%] w-44 lg:w-56 opacity-20 rotate-6 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(234,179,8,0.3)]"
+          loading="lazy"
+          decoding="async"
+          className="hidden md:block absolute top-16 right-[3%] w-44 lg:w-56 opacity-20 rotate-6 select-none pointer-events-none"
         />
         <img
           src={lolChar}
@@ -45,7 +47,9 @@ export function HeroSection() {
           aria-hidden="true"
           width={768}
           height={1024}
-          className="hidden lg:block absolute top-[58%] left-[1%] w-36 opacity-20 rotate-3 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(79,70,229,0.4)]"
+          loading="lazy"
+          decoding="async"
+          className="hidden lg:block absolute top-[58%] left-[1%] w-36 opacity-20 rotate-3 select-none pointer-events-none"
         />
         <img
           src={mlbbChar}
@@ -53,15 +57,9 @@ export function HeroSection() {
           aria-hidden="true"
           width={768}
           height={1024}
-          className="hidden lg:block absolute top-[62%] right-[1%] w-40 opacity-20 -rotate-6 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(192,38,211,0.4)]"
-        />
-        <img
-          src={aovChar}
-          alt=""
-          aria-hidden="true"
-          width={768}
-          height={1024}
-          className="hidden xl:block absolute bottom-4 left-[44%] w-28 opacity-15 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(56,189,248,0.4)]"
+          loading="lazy"
+          decoding="async"
+          className="hidden lg:block absolute top-[62%] right-[1%] w-40 opacity-20 -rotate-6 select-none pointer-events-none"
         />
       </div>
 

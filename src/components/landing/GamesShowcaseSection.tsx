@@ -1,8 +1,8 @@
-import uniteChar from "@/assets/games/char-unite.png";
-import hokChar from "@/assets/games/char-hok.png";
-import lolChar from "@/assets/games/char-lol.png";
-import mlbbChar from "@/assets/games/char-mlbb.png";
-import aovChar from "@/assets/games/char-aov.png";
+import uniteChar from "@/assets/games/char-unite.webp";
+import hokChar from "@/assets/games/char-hok.webp";
+import lolChar from "@/assets/games/char-lol.webp";
+import mlbbChar from "@/assets/games/char-mlbb.webp";
+import aovChar from "@/assets/games/char-aov.webp";
 
 const games = [
   { name: "Pokémon Unite", short: "Unite", img: uniteChar, status: "live" as const },
@@ -17,7 +17,7 @@ export function GamesShowcaseSection() {
     <section id="games" className="relative overflow-hidden py-24">
       {/* Background ambience */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[900px] rounded-full bg-indigo-600/10 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-[800px] rounded-full bg-indigo-600/10 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-7xl px-6">
@@ -38,7 +38,7 @@ export function GamesShowcaseSection() {
           {games.map((g) => (
             <div
               key={g.short}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-2xl border transition-all duration-500 ${
+              className={`group relative aspect-[3/4] overflow-hidden rounded-2xl border transition-colors duration-300 ${
                 g.status === "live"
                   ? "border-indigo-500/50 bg-gradient-to-b from-indigo-950/60 via-[#0d0d24] to-[#0a0a1a] shadow-[0_0_40px_rgba(79,70,229,0.25)]"
                   : "border-slate-800 bg-gradient-to-b from-[#141432]/60 to-[#0a0a1a] hover:border-indigo-500/30"
@@ -46,7 +46,7 @@ export function GamesShowcaseSection() {
             >
               {/* Decorative pattern */}
               <div
-                className="absolute inset-0 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity"
+                className="absolute inset-0 opacity-[0.04]"
                 style={{
                   backgroundImage:
                     "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
@@ -61,7 +61,8 @@ export function GamesShowcaseSection() {
                 width={768}
                 height={1024}
                 loading="lazy"
-                className="absolute inset-x-0 bottom-0 h-[88%] w-full object-contain object-bottom group-hover:scale-105 transition-all duration-700 drop-shadow-[0_8px_30px_rgba(79,70,229,0.5)]"
+                decoding="async"
+                className="absolute inset-x-0 bottom-0 h-[88%] w-full object-contain object-bottom"
               />
 
               {/* Top gradient label area */}

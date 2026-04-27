@@ -4,7 +4,7 @@ export function WaitlistSection() {
   return (
     <section id="waitlist" className="py-24 relative">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[800px] rounded-full bg-indigo-600/20 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-[700px] rounded-full bg-indigo-600/20 blur-3xl" />
       </div>
       <div className="mx-auto max-w-2xl px-6">
         <div className="text-center mb-10">
