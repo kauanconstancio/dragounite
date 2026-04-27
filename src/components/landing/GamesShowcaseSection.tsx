@@ -1,8 +1,8 @@
-import uniteChar from "@/assets/games/char-unite.png";
-import hokChar from "@/assets/games/char-hok.png";
-import lolChar from "@/assets/games/char-lol.png";
-import mlbbChar from "@/assets/games/char-mlbb.png";
-import aovChar from "@/assets/games/char-aov.png";
+import uniteChar from "@/assets/games/char-unite.webp";
+import hokChar from "@/assets/games/char-hok.webp";
+import lolChar from "@/assets/games/char-lol.webp";
+import mlbbChar from "@/assets/games/char-mlbb.webp";
+import aovChar from "@/assets/games/char-aov.webp";
 
 const games = [
   { name: "Pokémon Unite", short: "Unite", img: uniteChar, status: "live" as const },
