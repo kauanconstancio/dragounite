@@ -187,6 +187,17 @@ function StaffLayout() {
                 );
               })}
             </nav>
+
+            <div className="pt-4 border-t border-border/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start gap-2 text-xs uppercase tracking-wider"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sair
+              </Button>
+            </div>
           </aside>
 
           <main className="min-w-0">
