@@ -50,6 +50,7 @@ import { PokemonImage } from "@/components/PokemonImage";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { toast } from "sonner";
+import { FeedbackHero } from "@/components/feedback/FeedbackHero";
 
 type LikeRow = { announcement_id: string; user_id: string };
 
@@ -362,6 +363,8 @@ function DashboardPage() {
           Visão geral · Performance · Agenda
         </p>
       </div>
+
+      <FeedbackHero />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard

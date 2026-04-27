@@ -249,6 +249,45 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          id: string
+          priority: Database["public"]["Enums"]["feedback_priority"]
+          status: Database["public"]["Enums"]["feedback_status"]
+          title: string
+          type: Database["public"]["Enums"]["feedback_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          priority?: Database["public"]["Enums"]["feedback_priority"]
+          status?: Database["public"]["Enums"]["feedback_status"]
+          title: string
+          type?: Database["public"]["Enums"]["feedback_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["feedback_priority"]
+          status?: Database["public"]["Enums"]["feedback_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["feedback_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_performances: {
         Row: {
           assists: number
@@ -913,6 +952,9 @@ export type Database = {
       attendance_status: "confirmed" | "declined" | "tentative"
       event_status: "scheduled" | "completed" | "cancelled"
       event_type_kind: "training" | "scrim"
+      feedback_priority: "low" | "medium" | "high"
+      feedback_status: "open" | "in_review" | "resolved" | "closed"
+      feedback_type: "suggestion" | "bug" | "improvement"
       lane_role: "top" | "jungle" | "mid" | "bot" | "support" | "flex"
       match_result: "pending" | "win" | "loss" | "draw"
       member_role: "player" | "substitute" | "coach" | "manager"
@@ -1055,6 +1097,9 @@ export const Constants = {
       attendance_status: ["confirmed", "declined", "tentative"],
       event_status: ["scheduled", "completed", "cancelled"],
       event_type_kind: ["training", "scrim"],
+      feedback_priority: ["low", "medium", "high"],
+      feedback_status: ["open", "in_review", "resolved", "closed"],
+      feedback_type: ["suggestion", "bug", "improvement"],
       lane_role: ["top", "jungle", "mid", "bot", "support", "flex"],
       match_result: ["pending", "win", "loss", "draw"],
       member_role: ["player", "substitute", "coach", "manager"],

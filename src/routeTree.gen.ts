@@ -17,6 +17,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OponentesRouteImport } from './routes/oponentes'
 import { Route as MuralRouteImport } from './routes/mural'
 import { Route as JogadasRouteImport } from './routes/jogadas'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EquipesRouteImport } from './routes/equipes'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
@@ -67,6 +68,11 @@ const MuralRoute = MuralRouteImport.update({
 const JogadasRoute = JogadasRouteImport.update({
   id: '/jogadas',
   path: '/jogadas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EquipesRoute = EquipesRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
+  '/feedback': typeof FeedbackRoute
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
+  '/feedback': typeof FeedbackRoute
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/composicoes': typeof ComposicoesRoute
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
+  '/feedback': typeof FeedbackRoute
   '/jogadas': typeof JogadasRoute
   '/mural': typeof MuralRoute
   '/oponentes': typeof OponentesRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/composicoes'
     | '/draft'
     | '/equipes'
+    | '/feedback'
     | '/jogadas'
     | '/mural'
     | '/oponentes'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/composicoes'
     | '/draft'
     | '/equipes'
+    | '/feedback'
     | '/jogadas'
     | '/mural'
     | '/oponentes'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/composicoes'
     | '/draft'
     | '/equipes'
+    | '/feedback'
     | '/jogadas'
     | '/mural'
     | '/oponentes'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   ComposicoesRoute: typeof ComposicoesRoute
   DraftRoute: typeof DraftRoute
   EquipesRoute: typeof EquipesRoute
+  FeedbackRoute: typeof FeedbackRoute
   JogadasRoute: typeof JogadasRoute
   MuralRoute: typeof MuralRoute
   OponentesRoute: typeof OponentesRoute
@@ -333,6 +346,13 @@ declare module '@tanstack/react-router' {
       path: '/jogadas'
       fullPath: '/jogadas'
       preLoaderRoute: typeof JogadasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/equipes': {
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComposicoesRoute: ComposicoesRoute,
   DraftRoute: DraftRoute,
   EquipesRoute: EquipesRoute,
+  FeedbackRoute: FeedbackRoute,
   JogadasRoute: JogadasRoute,
   MuralRoute: MuralRoute,
   OponentesRoute: OponentesRoute,
