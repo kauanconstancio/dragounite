@@ -64,13 +64,20 @@ function EquipesPage() {
             Selecione a equipe que deseja gerenciar agora.
           </p>
         </div>
-        {isSuperAdmin && (
-          <Button asChild className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
-            <Link to="/admin-org">
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" className="uppercase tracking-wider text-xs">
+            <Link to="/onboarding">
               <Plus className="h-4 w-4 mr-2" /> Nova equipe
             </Link>
           </Button>
-        )}
+          {isSuperAdmin && (
+            <Button asChild className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
+              <Link to="/admin-org">
+                <Plus className="h-4 w-4 mr-2" /> Nova equipe (admin)
+              </Link>
+            </Button>
+          )}
+        </div>
       </header>
 
       {teams.length === 0 ? (
