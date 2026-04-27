@@ -477,8 +477,8 @@ function AuthButton() {
         )}
         {isSuperAdmin && (
           <DropdownMenuItem asChild>
-            <Link to="/dev" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
-              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Owner Console
+            <Link to="/staff" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+              <Shield className="h-3.5 w-3.5 mr-2 text-gold" /> Staff Console
             </Link>
           </DropdownMenuItem>
         )}
