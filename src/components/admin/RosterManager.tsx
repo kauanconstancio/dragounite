@@ -196,7 +196,6 @@ export function RosterManager() {
             <Switch checked={showArchived} onCheckedChange={setShowArchived} />
             Mostrar arquivados
           </label>
-          <CreateMemberDialog onSubmit={(d) => createMut.mutate(d)} loading={createMut.isPending} />
           <InviteMemberDialog />
         </div>
       </div>
