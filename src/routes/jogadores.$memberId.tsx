@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,7 +90,12 @@ function PlayerPage() {
   const timeline = kdaTimeline(perfs, dateMap);
   const perfTimeline = performanceTimeline(perfs, scrimMap);
   const byRole = winRateByRole(perfs);
-  const recent = recentScrimsBreakdown(perfs, scrimMap, 10);
+  const recent = recentScrimsBreakdown(perfs, scrimMap, perfs.length);
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(recent.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const pagedRecent = recent.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <div className="space-y-8">
@@ -193,7 +200,14 @@ function PlayerPage() {
       </section>
 
       <Card className="p-5 border-border shadow-card">
-        <h2 className="font-display text-xl tracking-wider mb-4">ÚLTIMAS SCRIMS</h2>
+        <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+          <h2 className="font-display text-xl tracking-wider">ÚLTIMAS SCRIMS</h2>
+          {recent.length > 0 && (
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {recent.length} {recent.length === 1 ? "partida" : "partidas"}
+            </span>
+          )}
+        </div>
         {recent.length === 0 ? (
           <div className="text-sm text-muted-foreground py-10 text-center">Nenhuma partida registrada ainda.</div>
         ) : (
@@ -213,7 +227,7 @@ function PlayerPage() {
                 </tr>
               </thead>
               <tbody>
-                {recent.map((r) => {
+                {pagedRecent.map((r) => {
                   const isWin = r.gameResult === "win";
                   const isLoss = r.gameResult === "loss";
                   return (
@@ -260,6 +274,33 @@ function PlayerPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+        {recent.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              Página {currentPage + 1} de {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
+              >
+                Próxima
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
       </Card>
