@@ -167,8 +167,6 @@ function AcceptInvitePage() {
     }
   }
 
-  if (loading) return null;
-
   const inviteUsable =
     invite &&
     !invite.revoked_at &&
@@ -226,7 +224,13 @@ function AcceptInvitePage() {
                 </p>
               )}
 
-            {inviteUsable && (
+            {loading && (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Verificando sua sessão...
+              </p>
+            )}
+
+            {inviteUsable && !loading && (
               <>
                 {user ? (
                   <div className="mt-6">
