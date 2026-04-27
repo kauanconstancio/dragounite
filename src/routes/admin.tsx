@@ -3,7 +3,8 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import { AnnouncementsManager } from "@/components/admin/AnnouncementsManager";
 import { TeamSettingsManager } from "@/components/admin/TeamSettingsManager";
 import { RosterManager } from "@/components/admin/RosterManager";
@@ -14,12 +15,18 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { user, isCoach, loading } = useAuth();
+  const { user, isCoach, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
+
+  async function handleLogout() {
+    await signOut();
+    toast.success("Sessão encerrada");
+    navigate({ to: "/auth" });
+  }
 
   if (loading) return null;
   if (!user) return null;
@@ -48,6 +55,9 @@ function AdminPage() {
             Gerencie roster, configurações da equipe e comunicados.
           </p>
         </div>
+        <Button variant="outline" onClick={handleLogout} className="gap-2">
+          <LogOut className="h-4 w-4" /> Sair
+        </Button>
       </header>
 
       <Card className="p-4 border-border bg-card/40">
