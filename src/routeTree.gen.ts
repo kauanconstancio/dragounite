@@ -23,6 +23,7 @@ import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EquipesRouteImport } from './routes/equipes'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as DevRouteImport } from './routes/dev'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -30,7 +31,6 @@ import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
@@ -114,6 +114,11 @@ const DevRoute = DevRouteImport.update({
   path: '/dev',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComposicoesRoute = ComposicoesRouteImport.update({
   id: '/composicoes',
   path: '/composicoes',
@@ -147,11 +152,6 @@ const AdminOrgRoute = AdminOrgRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffIndexRoute = StaffIndexRouteImport.update({
@@ -216,7 +216,6 @@ const StaffFinanceWaitlistRoute = StaffFinanceWaitlistRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
@@ -224,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dashboard': typeof DashboardRoute
   '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
@@ -252,7 +252,6 @@ export interface FileRoutesByFullPath {
   '/staff/finance/': typeof StaffFinanceIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
@@ -260,6 +259,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dashboard': typeof DashboardRoute
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
@@ -287,7 +287,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
@@ -295,6 +294,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dashboard': typeof DashboardRoute
   '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
@@ -325,7 +325,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/admin'
     | '/admin-org'
     | '/agenda'
@@ -333,6 +332,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dashboard'
     | '/dev'
     | '/draft'
     | '/equipes'
@@ -361,7 +361,6 @@ export interface FileRouteTypes {
     | '/staff/finance/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/admin'
     | '/admin-org'
     | '/agenda'
@@ -369,6 +368,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dashboard'
     | '/draft'
     | '/equipes'
     | '/feedback'
@@ -395,7 +395,6 @@ export interface FileRouteTypes {
     | '/staff/finance'
   id:
     | '__root__'
-    | '/'
     | '/admin'
     | '/admin-org'
     | '/agenda'
@@ -403,6 +402,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dashboard'
     | '/dev'
     | '/draft'
     | '/equipes'
@@ -432,7 +432,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AdminOrgRoute: typeof AdminOrgRoute
   AgendaRoute: typeof AgendaRoute
@@ -440,6 +439,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BuildsRoute: typeof BuildsRoute
   ComposicoesRoute: typeof ComposicoesRoute
+  DashboardRoute: typeof DashboardRoute
   DevRoute: typeof DevRouteWithChildren
   DraftRoute: typeof DraftRoute
   EquipesRoute: typeof EquipesRoute
@@ -557,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/composicoes': {
       id: '/composicoes'
       path: '/composicoes'
@@ -604,13 +611,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/': {
@@ -739,7 +739,6 @@ const StaffRouteChildren: StaffRouteChildren = {
 const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AdminOrgRoute: AdminOrgRoute,
   AgendaRoute: AgendaRoute,
@@ -747,6 +746,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BuildsRoute: BuildsRoute,
   ComposicoesRoute: ComposicoesRoute,
+  DashboardRoute: DashboardRoute,
   DevRoute: DevRouteWithChildren,
   DraftRoute: DraftRoute,
   EquipesRoute: EquipesRoute,
