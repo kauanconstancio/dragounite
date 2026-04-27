@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     q: "Vocês vão suportar outros jogos?",
-    a: "Sim. Nosso roadmap inclui League of Legends, Valorant e Rainbow Six. A arquitetura do GymLy foi pensada desde o início para múltiplos esports.",
+    a: "Sim. Nosso roadmap inclui League of Legends, Honor Of Kings, Mobile Legends: Bang Bang e Arena Of Valor. A arquitetura do GymLy foi pensada desde o início para múltiplos esports.",
   },
   {
     q: "Meus dados estão seguros?",
@@ -33,9 +33,7 @@ export function FaqSection() {
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.3em] text-indigo-400 mb-3">FAQ</div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
-            Perguntas frequentes
-          </h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">Perguntas frequentes</h2>
         </div>
 
         <Accordion type="single" collapsible className="space-y-3">
@@ -45,12 +43,8 @@ export function FaqSection() {
               value={`item-${i}`}
               className="rounded-xl border border-slate-800 bg-slate-900/40 px-6 !border-b"
             >
-              <AccordionTrigger className="text-left text-white hover:no-underline py-5">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-slate-400 leading-relaxed pb-5">
-                {faq.a}
-              </AccordionContent>
+              <AccordionTrigger className="text-left text-white hover:no-underline py-5">{faq.q}</AccordionTrigger>
+              <AccordionContent className="text-slate-400 leading-relaxed pb-5">{faq.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
