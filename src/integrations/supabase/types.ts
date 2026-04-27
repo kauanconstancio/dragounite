@@ -701,6 +701,72 @@ export type Database = {
           },
         ]
       }
+      staff_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          payload: Json | null
+          staff_role: Database["public"]["Enums"]["staff_role"] | null
+          staff_user_id: string
+          target_team_id: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          staff_role?: Database["public"]["Enums"]["staff_role"] | null
+          staff_user_id: string
+          target_team_id?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          staff_role?: Database["public"]["Enums"]["staff_role"] | null
+          staff_user_id?: string
+          target_team_id?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      staff_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          department: string | null
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["staff_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["staff_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["staff_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       team_memberships: {
         Row: {
           created_at: string
@@ -957,6 +1023,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_staff: {
+        Args: {
+          _role?: Database["public"]["Enums"]["staff_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       is_team_coach: {
         Args: { _team_id: string; _user_id: string }
@@ -965,6 +1038,10 @@ export type Database = {
       is_team_member: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
+      }
+      staff_role_of: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["staff_role"]
       }
       team_role_of: {
         Args: { _team_id: string; _user_id: string }
@@ -988,6 +1065,7 @@ export type Database = {
         | "lategame"
         | "earlygame"
         | "other"
+      staff_role: "owner" | "developer" | "finance" | "support" | "marketing"
       team_role: "coach" | "player" | "viewer"
       tier_rank: "S" | "A" | "B" | "C" | "D"
     }
@@ -1134,6 +1212,7 @@ export const Constants = {
         "earlygame",
         "other",
       ],
+      staff_role: ["owner", "developer", "finance", "support", "marketing"],
       team_role: ["coach", "player", "viewer"],
       tier_rank: ["S", "A", "B", "C", "D"],
     },
