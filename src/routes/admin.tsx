@@ -60,13 +60,6 @@ function AdminPage() {
         </Button>
       </header>
 
-      <Card className="p-4 border-border bg-card/40">
-        <p className="text-xs text-muted-foreground">
-          Para gerenciar contas de usuários, permissões globais e vínculos com equipes, acesse o{" "}
-          <Link to="/staff" className="text-primary underline">Staff Console</Link>.
-        </p>
-      </Card>
-
       <RosterManager />
 
       <TeamSettingsManager />
