@@ -5,6 +5,17 @@ import { useStaff, type StaffRole } from "@/hooks/useStaff";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   ShieldAlert,
@@ -189,14 +200,30 @@ function StaffLayout() {
             </nav>
 
             <div className="pt-4 border-t border-border/60">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="w-full justify-start gap-2 text-xs uppercase tracking-wider"
-              >
-                <LogOut className="h-3.5 w-3.5" /> Sair
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start gap-2 text-xs uppercase tracking-wider"
+                  >
+                    <LogOut className="h-3.5 w-3.5" /> Sair
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Encerrar sessão?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Você será desconectado do Staff Console e redirecionado para a página de
+                      login.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout}>Sair</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </aside>
 
