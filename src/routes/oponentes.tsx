@@ -169,7 +169,7 @@ function OpponentsPage() {
           <p className="text-muted-foreground">Nenhum oponente catalogado ainda.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 auto-rows-fr items-stretch">
           {opponents.map((o, i) => {
             const stats = statsFor(o);
             return (
@@ -178,8 +178,9 @@ function OpponentsPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
+                className="h-full"
               >
-                <Card className="p-5 border-border hover:border-primary/50 shadow-card group">
+                <Card className="p-5 border-border hover:border-primary/50 shadow-card group h-full flex flex-col">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
