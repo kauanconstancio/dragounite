@@ -55,8 +55,8 @@ export function TeamSwitcher() {
         </DropdownMenuItem>
         {isSuperAdmin && (
           <DropdownMenuItem asChild>
-            <Link to="/admin-org" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
-              <Plus className="h-3.5 w-3.5 mr-2 text-gold" /> Gerenciar organização
+            <Link to="/staff" className="text-xs uppercase tracking-wider cursor-pointer flex items-center">
+              <Plus className="h-3.5 w-3.5 mr-2 text-gold" /> Staff console
             </Link>
           </DropdownMenuItem>
         )}

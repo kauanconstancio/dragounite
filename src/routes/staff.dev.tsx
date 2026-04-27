@@ -75,8 +75,8 @@ function DevSystemPage() {
         </div>
         <ul className="text-sm space-y-1.5">
           <li>
-            <Link to="/admin-org" className="text-primary underline">Admin da organização</Link>
-            <span className="text-muted-foreground"> — gestão direta de usuários, roles e equipes.</span>
+            <Link to="/staff/teams" className="text-primary underline">Gestão de equipes</Link>
+            <span className="text-muted-foreground"> — criar, arquivar e vincular usuários.</span>
           </li>
           <li>
             <Link to="/staff/audit" className="text-primary underline">Audit log</Link>

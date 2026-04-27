@@ -31,7 +31,6 @@ import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
-import { Route as AdminOrgRouteImport } from './routes/admin-org'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
@@ -157,11 +156,6 @@ const AgendaRoute = AgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminOrgRoute = AdminOrgRouteImport.update({
-  id: '/admin-org',
-  path: '/admin-org',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -236,7 +230,6 @@ const StaffFinanceWaitlistRoute = StaffFinanceWaitlistRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
@@ -275,7 +268,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
@@ -313,7 +305,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/admin-org': typeof AdminOrgRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
@@ -354,7 +345,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/admin-org'
     | '/agenda'
     | '/amistosos'
     | '/auth'
@@ -393,7 +383,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/admin-org'
     | '/agenda'
     | '/amistosos'
     | '/auth'
@@ -430,7 +419,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
-    | '/admin-org'
     | '/agenda'
     | '/amistosos'
     | '/auth'
@@ -470,7 +458,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  AdminOrgRoute: typeof AdminOrgRoute
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   AuthRoute: typeof AuthRoute
@@ -652,13 +639,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin-org': {
-      id: '/admin-org'
-      path: '/admin-org'
-      fullPath: '/admin-org'
-      preLoaderRoute: typeof AdminOrgRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -801,7 +781,6 @@ const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  AdminOrgRoute: AdminOrgRoute,
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   AuthRoute: AuthRoute,
