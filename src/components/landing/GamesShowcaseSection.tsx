@@ -38,7 +38,7 @@ export function GamesShowcaseSection() {
           {games.map((g) => (
             <div
               key={g.short}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-2xl border transition-all duration-500 ${
+              className={`group relative aspect-[3/4] overflow-hidden rounded-2xl border transition-colors duration-300 ${
                 g.status === "live"
                   ? "border-indigo-500/50 bg-gradient-to-b from-indigo-950/60 via-[#0d0d24] to-[#0a0a1a] shadow-[0_0_40px_rgba(79,70,229,0.25)]"
                   : "border-slate-800 bg-gradient-to-b from-[#141432]/60 to-[#0a0a1a] hover:border-indigo-500/30"
@@ -46,7 +46,7 @@ export function GamesShowcaseSection() {
             >
               {/* Decorative pattern */}
               <div
-                className="absolute inset-0 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity"
+                className="absolute inset-0 opacity-[0.04]"
                 style={{
                   backgroundImage:
                     "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
@@ -61,7 +61,8 @@ export function GamesShowcaseSection() {
                 width={768}
                 height={1024}
                 loading="lazy"
-                className="absolute inset-x-0 bottom-0 h-[88%] w-full object-contain object-bottom group-hover:scale-105 transition-all duration-700 drop-shadow-[0_8px_30px_rgba(79,70,229,0.5)]"
+                decoding="async"
+                className="absolute inset-x-0 bottom-0 h-[88%] w-full object-contain object-bottom"
               />
 
               {/* Top gradient label area */}
