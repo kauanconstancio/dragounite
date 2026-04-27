@@ -175,30 +175,59 @@ export function InviteMemberDialog() {
 
         <div className="space-y-4">
           <div>
-            <Label>Papel na equipe</Label>
-            <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="player">Jogador</SelectItem>
-                <SelectItem value="coach">Coach</SelectItem>
-                <SelectItem value="viewer">Visualizador</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="invitee-name">Nome do convidado</Label>
+            <Input
+              id="invitee-name"
+              value={inviteeName}
+              onChange={(e) => setInviteeName(e.target.value)}
+              placeholder="Como ele aparecerá no roster"
+              maxLength={60}
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Usado para criar automaticamente o vínculo no roster ao aceitar.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Acesso na equipe</Label>
+              <Select value={teamRole} onValueChange={(v) => setTeamRole(v as TeamRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">Jogador</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="viewer">Visualizador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Posição no roster</Label>
+              <Select value={memberRole} onValueChange={(v) => setMemberRole(v as MemberRole)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">Titular</SelectItem>
+                  <SelectItem value="substitute">Reserva</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="manager">Gerente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>
-            <Label>Vincular a membro do roster (opcional)</Label>
+            <Label>Vincular a membro existente (opcional)</Label>
             <Select value={memberId} onValueChange={setMemberId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Não vincular —</SelectItem>
+                <SelectItem value="none">— Criar novo membro no roster —</SelectItem>
                 {(membersQ.data ?? []).map((m) => (
                   <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Se vincular, o convidado herdará o perfil de jogador existente.
+              Se vincular, o convidado herdará o perfil existente. Caso contrário, será criado um novo membro com o nome e posição acima.
             </p>
           </div>
 
