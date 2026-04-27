@@ -154,7 +154,7 @@ function PerfilPage() {
           <p className="text-muted-foreground mt-2 text-sm">
             Sua conta ainda não está vinculada a uma entrada do Roster. Peça para a gestão fazer o vínculo no painel administrativo.
           </p>
-          <Button asChild className="mt-6"><Link to="/">Voltar ao Dashboard</Link></Button>
+          <Button asChild className="mt-6"><Link to="/dashboard">Voltar ao Dashboard</Link></Button>
         </Card>
       </div>
     );

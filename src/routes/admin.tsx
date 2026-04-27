@@ -32,7 +32,7 @@ function AdminPage() {
           <p className="text-muted-foreground mt-2 text-sm">
             Apenas coaches/gerentes podem acessar o painel administrativo.
           </p>
-          <Button asChild className="mt-6"><Link to="/">Voltar ao Dashboard</Link></Button>
+          <Button asChild className="mt-6"><Link to="/dashboard">Voltar ao Dashboard</Link></Button>
         </Card>
       </div>
     );

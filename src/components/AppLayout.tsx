@@ -49,7 +49,7 @@ import { ThemeApplier } from "@/components/ThemeApplier";
 import { TeamSwitcher } from "@/components/TeamSwitcher";
 
 const main = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/roster", label: "Roster", icon: Users },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
 ];
@@ -71,7 +71,7 @@ const estrategia = [
 ];
 
 function isActive(pathname: string, to: string) {
-  if (to === "/") return pathname === "/";
+  if (to === "/dashboard") return pathname === "/dashboard";
   return pathname.startsWith(to);
 }
 
@@ -90,7 +90,7 @@ export function AppLayout() {
   const teamTail = teamRest.join(" ");
 
   const isAuthRoute = location.pathname === "/auth";
-  const isLandingRoute = location.pathname === "/landing";
+  const isLandingRoute = location.pathname === "/landing" || location.pathname === "/";
   const isProfileRoute = location.pathname === "/perfil";
   const isTeamPickerRoute =
     location.pathname === "/equipes" || location.pathname === "/admin-org";
@@ -229,7 +229,7 @@ export function AppLayout() {
       <ThemeApplier />
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl print:hidden presentation-hide">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2 sm:gap-4">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+          <Link to="/dashboard" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
             <img
               src={teamLogo}
               alt={teamName}

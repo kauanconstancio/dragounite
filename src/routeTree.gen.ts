@@ -23,6 +23,7 @@ import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EquipesRouteImport } from './routes/equipes'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as DevRouteImport } from './routes/dev'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -112,6 +113,11 @@ const DraftRoute = DraftRouteImport.update({
 const DevRoute = DevRouteImport.update({
   id: '/dev',
   path: '/dev',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComposicoesRoute = ComposicoesRouteImport.update({
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dashboard': typeof DashboardRoute
   '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dashboard': typeof DashboardRoute
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/builds': typeof BuildsRoute
   '/composicoes': typeof ComposicoesRoute
+  '/dashboard': typeof DashboardRoute
   '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dashboard'
     | '/dev'
     | '/draft'
     | '/equipes'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dashboard'
     | '/draft'
     | '/equipes'
     | '/feedback'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/builds'
     | '/composicoes'
+    | '/dashboard'
     | '/dev'
     | '/draft'
     | '/equipes'
@@ -440,6 +452,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BuildsRoute: typeof BuildsRoute
   ComposicoesRoute: typeof ComposicoesRoute
+  DashboardRoute: typeof DashboardRoute
   DevRoute: typeof DevRouteWithChildren
   DraftRoute: typeof DraftRoute
   EquipesRoute: typeof EquipesRoute
@@ -555,6 +568,13 @@ declare module '@tanstack/react-router' {
       path: '/dev'
       fullPath: '/dev'
       preLoaderRoute: typeof DevRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/composicoes': {
@@ -747,6 +767,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BuildsRoute: BuildsRoute,
   ComposicoesRoute: ComposicoesRoute,
+  DashboardRoute: DashboardRoute,
   DevRoute: DevRouteWithChildren,
   DraftRoute: DraftRoute,
   EquipesRoute: EquipesRoute,
