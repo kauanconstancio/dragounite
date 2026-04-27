@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStaff, type StaffRole } from "@/hooks/useStaff";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   ShieldAlert,
   Crown,
@@ -16,6 +18,7 @@ import {
   Wrench,
   UserCog,
   ScrollText,
+  LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
