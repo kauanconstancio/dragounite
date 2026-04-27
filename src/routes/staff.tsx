@@ -94,7 +94,7 @@ const ROLE_LABELS: Record<StaffRole, string> = {
 };
 
 function StaffLayout() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { isStaff, isOwner, hasStaffRole, primaryRole, loading } = useStaff();
   const location = useLocation();
   const navigate = useNavigate();
@@ -102,6 +102,12 @@ function StaffLayout() {
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", replace: true });
   }, [authLoading, user, navigate]);
+
+  async function handleLogout() {
+    await signOut();
+    toast.success("Sessão encerrada");
+    navigate({ to: "/auth", replace: true });
+  }
 
   if (loading || authLoading) {
     return (
