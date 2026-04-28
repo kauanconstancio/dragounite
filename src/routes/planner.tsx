@@ -540,6 +540,37 @@ function PlannerPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!pendingNote} onOpenChange={(o) => { if (!o) setPendingNote(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar anotação</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const text = noteDraft.trim();
+              if (text && pendingNote) {
+                setNotes((n) => [...n, { id: crypto.randomUUID(), x: pendingNote.x, y: pendingNote.y, text }]);
+              }
+              setPendingNote(null);
+            }}
+            className="space-y-4"
+          >
+            <Input
+              autoFocus
+              placeholder="Texto da anotação..."
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              maxLength={60}
+            />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPendingNote(null)}>Cancelar</Button>
+              <Button type="submit" disabled={!noteDraft.trim()}>Adicionar</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
