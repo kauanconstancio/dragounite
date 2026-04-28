@@ -148,12 +148,14 @@ function DraftPage() {
       {/* Status bar */}
       <StatusBar started={started} finished={finished} currentSlot={currentSlot} step={step} total={DRAFT_ORDER.length} />
 
-      <div className="grid lg:grid-cols-[1fr_2.5fr_1fr] gap-6">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2.5fr)_minmax(0,1fr)] gap-6 items-start">
         {/* Blue side */}
-        <TeamPanel side="blue" state={state} currentSlot={currentSlot} />
+        <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+          <TeamPanel side="blue" state={state} currentSlot={currentSlot} />
+        </div>
 
         {/* Pokémon Pool */}
-        <div className="space-y-4 order-first lg:order-none">
+        <div className="space-y-3 order-first lg:order-none lg:sticky lg:top-4 lg:self-start">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
