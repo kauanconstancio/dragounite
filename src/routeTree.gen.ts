@@ -13,6 +13,7 @@ import { Route as TreinosRouteImport } from './routes/treinos'
 import { Route as TierListRouteImport } from './routes/tier-list'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as RosterRouteImport } from './routes/roster'
+import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PatchesRouteImport } from './routes/patches'
@@ -68,6 +69,11 @@ const StaffRoute = StaffRouteImport.update({
 const RosterRoute = RosterRouteImport.update({
   id: '/roster',
   path: '/roster',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanosRoute = PlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlannerRoute = PlannerRouteImport.update({
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/patches': typeof PatchesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
+  '/planos': typeof PlanosRoute
   '/roster': typeof RosterRoute
   '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
@@ -314,6 +321,7 @@ export interface FileRoutesByTo {
   '/patches': typeof PatchesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
+  '/planos': typeof PlanosRoute
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
@@ -356,6 +364,7 @@ export interface FileRoutesById {
   '/patches': typeof PatchesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
+  '/planos': typeof PlanosRoute
   '/roster': typeof RosterRoute
   '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
@@ -400,6 +409,7 @@ export interface FileRouteTypes {
     | '/patches'
     | '/perfil'
     | '/planner'
+    | '/planos'
     | '/roster'
     | '/staff'
     | '/tier-list'
@@ -440,6 +450,7 @@ export interface FileRouteTypes {
     | '/patches'
     | '/perfil'
     | '/planner'
+    | '/planos'
     | '/roster'
     | '/tier-list'
     | '/treinos'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/patches'
     | '/perfil'
     | '/planner'
+    | '/planos'
     | '/roster'
     | '/staff'
     | '/tier-list'
@@ -524,6 +536,7 @@ export interface RootRouteChildren {
   PatchesRoute: typeof PatchesRoute
   PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
+  PlanosRoute: typeof PlanosRoute
   RosterRoute: typeof RosterRoute
   StaffRoute: typeof StaffRouteWithChildren
   TierListRoute: typeof TierListRoute
@@ -559,6 +572,13 @@ declare module '@tanstack/react-router' {
       path: '/roster'
       fullPath: '/roster'
       preLoaderRoute: typeof RosterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planos': {
+      id: '/planos'
+      path: '/planos'
+      fullPath: '/planos'
+      preLoaderRoute: typeof PlanosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planner': {
@@ -890,6 +910,7 @@ const rootRouteChildren: RootRouteChildren = {
   PatchesRoute: PatchesRoute,
   PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,
+  PlanosRoute: PlanosRoute,
   RosterRoute: RosterRoute,
   StaffRoute: StaffRouteWithChildren,
   TierListRoute: TierListRoute,
