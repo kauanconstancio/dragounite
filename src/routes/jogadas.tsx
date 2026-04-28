@@ -113,9 +113,9 @@ function PlaybooksPage() {
                       <h3 className="font-display text-lg tracking-wider mt-2">{p.name}</h3>
                       {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
                     </div>
-                    <Button size="icon" variant="ghost" className="hover:text-destructive opacity-0 group-hover:opacity-100" onClick={() => { if (confirm("Remover jogada?")) remove.mutate(p.id); }}>
+                    <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive opacity-0 group-hover:opacity-100" title="Remover jogada?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => remove.mutate(p.id)}>
                       <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </ConfirmButton>
                   </div>
                   <div className="mt-3 flex gap-3 text-[10px] uppercase tracking-widest text-muted-foreground">
                     <span>{tokens} tokens</span>
