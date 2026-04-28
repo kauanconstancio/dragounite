@@ -424,7 +424,7 @@ function DashboardPage() {
         </Card>
 
         <Card className="p-5 border-border shadow-card bg-card/70 overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 shrink-0">
             <div className="flex items-center gap-2">
               <Megaphone className="h-4 w-4 text-primary" />
               <h2 className="font-display text-xl tracking-wider">Mural</h2>
