@@ -503,6 +503,21 @@ function PlannerPage() {
                       startDragToken(t.id, e);
                       (e.currentTarget as Element).setPointerCapture(e.pointerId);
                     }}
+                    onPointerMove={(e) => {
+                      if (draggingId === t.id) handleTokenMove(e);
+                    }}
+                    onPointerUp={(e) => {
+                      if (draggingId === t.id) {
+                        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                        endDragToken();
+                      }
+                    }}
+                    onPointerCancel={(e) => {
+                      if (draggingId === t.id) {
+                        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                        endDragToken();
+                      }
+                    }}
                     onDoubleClick={() => removeToken(t.id)}
                     className={cn(
                       "absolute h-12 w-12 transition-transform",
