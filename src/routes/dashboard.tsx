@@ -585,7 +585,7 @@ function DashboardPage() {
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-1 mb-4 p-1 rounded-md border border-border bg-background/40">
+          <div className="flex items-center gap-1 mb-4 p-1 rounded-md border border-border bg-background/40 shrink-0">
             {([
               { key: "all", label: "Todos", Icon: CalendarDays },
               { key: "training", label: "Treinos", Icon: Dumbbell },
