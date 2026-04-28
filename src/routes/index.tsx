@@ -43,6 +43,7 @@ function LandingPage() {
           letter-spacing: -0.02em;
         }
         .gymly-landing { color-scheme: dark; }
+        .gymly-landing, .gymly-landing main, .gymly-landing section { max-width: 100vw; overflow-x: clip; }
       `}</style>
       <LandingNav />
       <main>
