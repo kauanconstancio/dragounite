@@ -37,6 +37,7 @@ import { Route as AceitarConviteRouteImport } from './routes/aceitar-convite'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
+import { Route as BuildsIndexRouteImport } from './routes/builds.index'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTeamsRouteImport } from './routes/staff.teams'
 import { Route as StaffStaffRouteImport } from './routes/staff.staff'
@@ -189,6 +190,11 @@ const DevIndexRoute = DevIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DevRoute,
 } as any)
+const BuildsIndexRoute = BuildsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BuildsRoute,
+} as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/staff/staff': typeof StaffStaffRoute
   '/staff/teams': typeof StaffTeamsRoute
   '/staff/users': typeof StaffUsersRoute
+  '/builds/': typeof BuildsIndexRoute
   '/dev/': typeof DevIndexRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
@@ -293,7 +300,6 @@ export interface FileRoutesByTo {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -320,6 +326,7 @@ export interface FileRoutesByTo {
   '/staff/staff': typeof StaffStaffRoute
   '/staff/teams': typeof StaffTeamsRoute
   '/staff/users': typeof StaffUsersRoute
+  '/builds': typeof BuildsIndexRoute
   '/dev': typeof DevIndexRoute
   '/staff': typeof StaffIndexRoute
   '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
@@ -362,6 +369,7 @@ export interface FileRoutesById {
   '/staff/staff': typeof StaffStaffRoute
   '/staff/teams': typeof StaffTeamsRoute
   '/staff/users': typeof StaffUsersRoute
+  '/builds/': typeof BuildsIndexRoute
   '/dev/': typeof DevIndexRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
@@ -405,6 +413,7 @@ export interface FileRouteTypes {
     | '/staff/staff'
     | '/staff/teams'
     | '/staff/users'
+    | '/builds/'
     | '/dev/'
     | '/staff/'
     | '/staff/finance/waitlist'
@@ -417,7 +426,6 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/amistosos'
     | '/auth'
-    | '/builds'
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
@@ -444,6 +452,7 @@ export interface FileRouteTypes {
     | '/staff/staff'
     | '/staff/teams'
     | '/staff/users'
+    | '/builds'
     | '/dev'
     | '/staff'
     | '/staff/finance/waitlist'
@@ -485,6 +494,7 @@ export interface FileRouteTypes {
     | '/staff/staff'
     | '/staff/teams'
     | '/staff/users'
+    | '/builds/'
     | '/dev/'
     | '/staff/'
     | '/staff/finance/waitlist'
@@ -719,6 +729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevIndexRouteImport
       parentRoute: typeof DevRoute
     }
+    '/builds/': {
+      id: '/builds/'
+      path: '/'
+      fullPath: '/builds/'
+      preLoaderRoute: typeof BuildsIndexRouteImport
+      parentRoute: typeof BuildsRoute
+    }
     '/staff/users': {
       id: '/staff/users'
       path: '/users'
@@ -801,10 +818,12 @@ declare module '@tanstack/react-router' {
 
 interface BuildsRouteChildren {
   BuildsPokemonRoute: typeof BuildsPokemonRoute
+  BuildsIndexRoute: typeof BuildsIndexRoute
 }
 
 const BuildsRouteChildren: BuildsRouteChildren = {
   BuildsPokemonRoute: BuildsPokemonRoute,
+  BuildsIndexRoute: BuildsIndexRoute,
 }
 
 const BuildsRouteWithChildren =
