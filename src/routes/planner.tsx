@@ -234,6 +234,7 @@ function PlannerPage() {
     { key: "draw-yellow", icon: Pencil, label: "Desenhar (amarelo)", color: "bg-yellow-500/80 text-black border-yellow-400" },
     { key: "text", icon: Type, label: "Adicionar texto" },
     { key: "erase", icon: Eraser, label: "Apagar" },
+    { key: "pan", icon: Hand, label: "Mover mapa (pan)" },
   ];
 
   return (
