@@ -27,10 +27,11 @@ type Props = {
  */
 export function PokemonImage({ name, uniteDbSlug, className, withRoleBg = false }: Props) {
   const [errored, setErrored] = useState(false);
-  const { resolve } = usePokemonSlugIndex();
+  const { resolve, resolveRole } = usePokemonSlugIndex();
   const resolvedSlug = uniteDbSlug ?? resolve(name);
   const src = resolvedSlug ? pokemonImage(resolvedSlug) : getPokemonSprite(name);
-  const role = getPokemonRole(name);
+  // Prioriza a role oficial do unite-db; fallback para o roster legado.
+  const role = resolveRole(name) ?? getPokemonRole(name);
   const roleStyle = role ? UNITE_ROLE_STYLES[role] : null;
 
   if (!name) {

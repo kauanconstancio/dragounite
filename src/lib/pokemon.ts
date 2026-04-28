@@ -94,14 +94,11 @@ export const UNITE_ROLE_STYLES: Record<UniteRole, { bg: string; ring: string; gl
 // { name, slug (para URL da imagem oficial), role }
 export type UnitePokemon = { name: string; slug: string; role: UniteRole };
 
+// Roster alinhado 100% com o unite-db (campo `tags.role`).
+// O hook usePokemonSlugIndex resolve role/slug dinamicamente da API,
+// mas mantemos esta lista como fallback SSR e fonte para pickers offline.
 export const POKEMON_DATA: UnitePokemon[] = [
-  // Attackers
-  { name: "Alolan Ninetales", slug: "alolan-ninetales", role: "attacker" },
-  { name: "Articuno", slug: "articuno", role: "attacker" },
-  { name: "Moltres", slug: "moltres", role: "attacker" },
-  { name: "Zapdos", slug: "zapdos", role: "attacker" },
-  { name: "Charizard Y", slug: "charizard", role: "attacker" },
-  { name: "Alolan Raichu", slug: "alolan-raichu", role: "attacker" },
+  // Attackers (24)
   { name: "Armarouge", slug: "armarouge", role: "attacker" },
   { name: "Chandelure", slug: "chandelure", role: "attacker" },
   { name: "Cinderace", slug: "cinderace", role: "attacker" },
@@ -116,14 +113,18 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Greninja", slug: "greninja", role: "attacker" },
   { name: "Inteleon", slug: "inteleon", role: "attacker" },
   { name: "Latios", slug: "latios", role: "attacker" },
+  { name: "Mew", slug: "mew", role: "attacker" },
   { name: "Mewtwo Y", slug: "mewtwo", role: "attacker" },
   { name: "Miraidon", slug: "miraidon", role: "attacker" },
+  { name: "Ninetales", slug: "ninetales", role: "attacker" },
   { name: "Pikachu", slug: "pikachu", role: "attacker" },
+  { name: "Raichu", slug: "raichu", role: "attacker" },
   { name: "Sylveon", slug: "sylveon", role: "attacker" },
-  { name: "Tinkaton", slug: "tinkaton", role: "attacker" },
+  { name: "Typhlosion", slug: "typhlosion", role: "attacker" },
   { name: "Venusaur", slug: "venusaur", role: "attacker" },
+  { name: "Zapdos", slug: "zapdos", role: "attacker" },
 
-  // All-Rounders
+  // All-Rounders (32)
   { name: "Aegislash", slug: "aegislash", role: "all-rounder" },
   { name: "Azumarill", slug: "azumarill", role: "all-rounder" },
   { name: "Blaziken", slug: "blaziken", role: "all-rounder" },
@@ -131,9 +132,8 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Ceruledge", slug: "ceruledge", role: "all-rounder" },
   { name: "Charizard", slug: "charizard", role: "all-rounder" },
   { name: "Charizard X", slug: "charizard", role: "all-rounder" },
-  { name: "Mega Lucario", slug: "lucario", role: "all-rounder" },
-  { name: "Mega Gyarados", slug: "gyarados", role: "all-rounder" },
-  { name: "Sirfetch'd", slug: "sirfetchd", role: "all-rounder" },
+  { name: "Charizard Y", slug: "charizard", role: "all-rounder" },
+  { name: "Dhelmise", slug: "dhelmise", role: "all-rounder" },
   { name: "Dragonite", slug: "dragonite", role: "all-rounder" },
   { name: "Empoleon", slug: "empoleon", role: "all-rounder" },
   { name: "Falinks", slug: "falinks", role: "all-rounder" },
@@ -141,38 +141,42 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Gyarados", slug: "gyarados", role: "all-rounder" },
   { name: "Lucario", slug: "lucario", role: "all-rounder" },
   { name: "Machamp", slug: "machamp", role: "all-rounder" },
-  
+  { name: "Mega Charizard X", slug: "charizard", role: "all-rounder" },
+  { name: "Mega Charizard Y", slug: "charizard", role: "all-rounder" },
+  { name: "Mega Gyarados", slug: "gyarados", role: "all-rounder" },
+  { name: "Mega Lucario", slug: "lucario", role: "all-rounder" },
   { name: "Metagross", slug: "metagross", role: "all-rounder" },
   { name: "Mewtwo X", slug: "mewtwo", role: "all-rounder" },
+  { name: "Mimikyu", slug: "mimikyu", role: "all-rounder" },
+  { name: "Moltres", slug: "moltres", role: "all-rounder" },
   { name: "Pawmot", slug: "pawmot", role: "all-rounder" },
   { name: "Scizor", slug: "scizor", role: "all-rounder" },
+  { name: "Scyther", slug: "scyther", role: "all-rounder" },
+  { name: "Sirfetch'd", slug: "sirfetchd", role: "all-rounder" },
   { name: "Suicune", slug: "suicune", role: "all-rounder" },
+  { name: "Tinkaton", slug: "tinkaton", role: "all-rounder" },
   { name: "Tsareena", slug: "tsareena", role: "all-rounder" },
   { name: "Tyranitar", slug: "tyranitar", role: "all-rounder" },
   { name: "Urshifu", slug: "urshifu", role: "all-rounder" },
   { name: "Zacian", slug: "zacian", role: "all-rounder" },
 
-  // Speedsters
+  // Speedsters (11)
   { name: "Absol", slug: "absol", role: "speedster" },
   { name: "Darkrai", slug: "darkrai", role: "speedster" },
   { name: "Dodrio", slug: "dodrio", role: "speedster" },
-  { name: "Galarian Rapidash", slug: "galarian-rapidash", role: "speedster" },
   { name: "Gengar", slug: "gengar", role: "speedster" },
-  
   { name: "Leafeon", slug: "leafeon", role: "speedster" },
   { name: "Meowscarada", slug: "meowscarada", role: "speedster" },
   { name: "Meowth", slug: "meowth", role: "speedster" },
-  { name: "Mew", slug: "mew", role: "speedster" },
-  { name: "Mimikyu", slug: "mimikyu", role: "speedster" },
-  { name: "Sceptile", slug: "sceptile", role: "speedster" },
+  { name: "Rapidash", slug: "rapidash", role: "speedster" },
   { name: "Talonflame", slug: "talonflame", role: "speedster" },
   { name: "Zeraora", slug: "zeraora", role: "speedster" },
   { name: "Zoroark", slug: "zoroark", role: "speedster" },
 
-  // Defenders
+  // Defenders (13)
+  { name: "Articuno", slug: "articuno", role: "defender" },
   { name: "Blastoise", slug: "blastoise", role: "defender" },
   { name: "Crustle", slug: "crustle", role: "defender" },
-  { name: "Dhelmise", slug: "dhelmise", role: "defender" },
   { name: "Goodra", slug: "goodra", role: "defender" },
   { name: "Greedent", slug: "greedent", role: "defender" },
   { name: "Ho-Oh", slug: "ho-oh", role: "defender" },
@@ -182,8 +186,9 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Snorlax", slug: "snorlax", role: "defender" },
   { name: "Trevenant", slug: "trevenant", role: "defender" },
   { name: "Umbreon", slug: "umbreon", role: "defender" },
+  { name: "Vaporeon", slug: "vaporeon", role: "defender" },
 
-  // Supporters
+  // Supporters (11)
   { name: "Alcremie", slug: "alcremie", role: "supporter" },
   { name: "Blissey", slug: "blissey", role: "supporter" },
   { name: "Clefable", slug: "clefable", role: "supporter" },
@@ -194,7 +199,6 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Mr. Mime", slug: "mr-mime", role: "supporter" },
   { name: "Psyduck", slug: "psyduck", role: "supporter" },
   { name: "Sableye", slug: "sableye", role: "supporter" },
-  { name: "Vaporeon", slug: "vaporeon", role: "supporter" },
   { name: "Wigglytuff", slug: "wigglytuff", role: "supporter" },
 ];
 
