@@ -371,7 +371,7 @@ function PlannerPage() {
                     points={s.points.map((p) => `${p.x},${p.y}`).join(" ")}
                     fill="none"
                     stroke={s.color}
-                    strokeWidth={0.6}
+                    strokeWidth={s.width}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     vectorEffect="non-scaling-stroke"
