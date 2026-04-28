@@ -204,9 +204,9 @@ function PlannerPage() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="grid gap-3 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,18rem)]">
           {/* Toolbar lateral */}
-          <div className="flex flex-col gap-2 shrink-0">
+          <div className="flex lg:flex-col gap-2 shrink-0 flex-wrap">
             {tools.map(({ key, icon: Icon, label, color }) => {
               const active = tool === key;
               return (
