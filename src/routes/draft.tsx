@@ -200,8 +200,9 @@ function DraftPage() {
                     type="button"
                     onClick={() => selectPokemon(p.name)}
                     disabled={isUsed}
+                    style={{ contentVisibility: "auto", containIntrinsicSize: "80px" }}
                     className={cn(
-                      "group relative flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 transition-all",
+                      "group relative flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 transition-transform duration-150 will-change-transform",
                       isUsed
                         ? "opacity-30 grayscale cursor-not-allowed border-border"
                         : "border-transparent hover:bg-accent/30 hover:scale-[1.04] hover:border-primary/40 cursor-pointer",
