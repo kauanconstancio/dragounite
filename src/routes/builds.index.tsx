@@ -152,11 +152,6 @@ function BuildsPage() {
                           {role}
                         </Badge>
                       )}
-                      {p.tier && (
-                        <Badge variant="outline" className="text-[8px] uppercase tracking-widest border-gold/40 text-gold">
-                          T{p.tier}
-                        </Badge>
-                      )}
                     </div>
                     <div className="mt-1.5 text-[9px] text-muted-foreground uppercase tracking-widest">
                       {p.builds?.length ?? 0} builds
