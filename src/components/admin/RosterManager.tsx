@@ -49,6 +49,7 @@ type MemberRow = {
   id: string;
   name: string;
   ign: string | null;
+  game_id: string | null;
   lane: Lane | null;
   role: MemberRole;
   main_pokemon: string | null;
@@ -72,7 +73,7 @@ export function RosterManager() {
       if (!teamId) return [] as MemberRow[];
       const { data, error } = await supabase
         .from("members")
-        .select("id, name, ign, lane, role, main_pokemon, discord, archived")
+        .select("id, name, ign, game_id, lane, role, main_pokemon, discord, archived")
         .eq("team_id", teamId)
         .order("archived", { ascending: true })
         .order("name");
@@ -206,6 +207,7 @@ export function RosterManager() {
             <tr>
               <th className="text-left px-4 py-3">Nome</th>
               <th className="text-left px-4 py-3">IGN</th>
+              <th className="text-left px-4 py-3">ID no jogo</th>
               <th className="text-left px-4 py-3">Lane</th>
               <th className="text-left px-4 py-3">Função</th>
               <th className="text-left px-4 py-3">Pokémon Main</th>
@@ -216,10 +218,10 @@ export function RosterManager() {
           </thead>
           <tbody>
             {membersQ.isLoading && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
+              <tr><td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
             )}
             {!membersQ.isLoading && visible.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhum membro.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">Nenhum membro.</td></tr>
             )}
             {visible.map((m) => {
               const editing = editingId === m.id;
@@ -240,6 +242,11 @@ export function RosterManager() {
                     {editing ? (
                       <Input value={draft.ign ?? ""} onChange={(e) => setDraft((d) => ({ ...d, ign: e.target.value }))} className="h-8" />
                     ) : (m.ign ?? "—")}
+                  </td>
+                  <td className="px-4 py-2 font-mono text-xs">
+                    {editing ? (
+                      <Input value={draft.game_id ?? ""} onChange={(e) => setDraft((d) => ({ ...d, game_id: e.target.value }))} className="h-8" />
+                    ) : (m.game_id ?? "—")}
                   </td>
                   <td className="px-4 py-2">
                     {editing ? (
@@ -358,6 +365,7 @@ function CreateMemberDialog({
     onSubmit({
       name: name.trim(),
       ign: ign.trim() || null,
+      game_id: null,
       lane,
       role,
       main_pokemon: mainPokemon.trim() || null,
