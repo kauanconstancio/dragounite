@@ -185,3 +185,28 @@ export function UniteBuildCard({
           </div>
         )}
       </div>
+
+      {build.emblem_link && build.emblem_link.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1">
+            <Sparkles className="h-2.5 w-2.5" /> Emblemas
+          </div>
+          <div className="space-y-1">
+            {build.emblem_link.map((link, i) => (
+              <a
+                key={link}
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-gold hover:underline truncate"
+              >
+                <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                <span className="truncate">{build.emblem_name?.[i] ?? `Loadout ${i + 1}`}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
