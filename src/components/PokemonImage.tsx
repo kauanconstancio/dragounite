@@ -36,8 +36,10 @@ export function PokemonImage({ name, className, withRoleBg = false }: Props) {
         alt={name}
         loading="lazy"
         decoding="async"
+        draggable={false}
+        onDragStart={(e) => e.preventDefault()}
         onError={() => setErrored(true)}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain select-none pointer-events-none"
       />
     );
 
