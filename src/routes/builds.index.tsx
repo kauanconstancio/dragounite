@@ -141,7 +141,7 @@ function BuildsPage() {
                 >
                   <Card className="p-3 border-border hover:border-primary/60 hover:shadow-glow transition-all bg-card/60 h-full flex flex-col items-center text-center">
                     <div className="h-20 w-20 mb-2">
-                      <PokemonImage name={p.display_name} withRoleBg />
+                      <PokemonImage name={p.display_name} uniteDbSlug={p.name} withRoleBg />
                     </div>
                     <div className="font-display text-sm tracking-wider truncate w-full group-hover:text-primary transition-colors">
                       {p.display_name}

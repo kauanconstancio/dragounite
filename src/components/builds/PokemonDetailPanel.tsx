@@ -25,7 +25,7 @@ export function PokemonDetailPanel({
     <div className="space-y-6">
       <header className="flex items-start gap-4">
         <div className="h-24 w-24 shrink-0">
-          <PokemonImage name={pokemon.display_name} withRoleBg />
+          <PokemonImage name={pokemon.display_name} uniteDbSlug={pokemon.name} withRoleBg />
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="font-display text-3xl tracking-wider">{pokemon.display_name}</h2>
