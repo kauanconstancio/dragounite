@@ -23,6 +23,7 @@ type Member = {
   id: string;
   name: string;
   ign: string | null;
+  game_id: string | null;
   role: "player" | "substitute" | "coach" | "manager";
   lane: "top" | "jungle" | "mid" | "bot" | "support" | "flex" | null;
   main_pokemon: string | null;
@@ -154,6 +155,9 @@ function RosterPage() {
                         )}
                         {m.discord && (
                           <div className="mt-1 text-xs text-muted-foreground">Discord: {m.discord}</div>
+                        )}
+                        {m.game_id && (
+                          <div className="mt-1 text-xs text-muted-foreground">ID no jogo: <span className="text-foreground font-mono">{m.game_id}</span></div>
                         )}
                         {m.notes && (
                           <p className="mt-3 text-xs text-muted-foreground italic line-clamp-2">{m.notes}</p>

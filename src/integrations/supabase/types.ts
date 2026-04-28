@@ -376,6 +376,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           discord: string | null
+          game_id: string | null
           id: string
           ign: string | null
           lane: Database["public"]["Enums"]["lane_role"] | null
@@ -391,6 +392,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           discord?: string | null
+          game_id?: string | null
           id?: string
           ign?: string | null
           lane?: Database["public"]["Enums"]["lane_role"] | null
@@ -406,6 +408,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           discord?: string | null
+          game_id?: string | null
           id?: string
           ign?: string | null
           lane?: Database["public"]["Enums"]["lane_role"] | null
