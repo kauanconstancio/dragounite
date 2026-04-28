@@ -15,6 +15,7 @@ import { Route as StaffRouteImport } from './routes/staff'
 import { Route as RosterRouteImport } from './routes/roster'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as PatchesRouteImport } from './routes/patches'
 import { Route as OponentesRouteImport } from './routes/oponentes'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MuralRouteImport } from './routes/mural'
@@ -75,6 +76,11 @@ const PlannerRoute = PlannerRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatchesRoute = PatchesRouteImport.update({
+  id: '/patches',
+  path: '/patches',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OponentesRoute = OponentesRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/mural': typeof MuralRoute
   '/onboarding': typeof OnboardingRoute
   '/oponentes': typeof OponentesRoute
+  '/patches': typeof PatchesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
@@ -291,6 +298,7 @@ export interface FileRoutesByTo {
   '/mural': typeof MuralRoute
   '/onboarding': typeof OnboardingRoute
   '/oponentes': typeof OponentesRoute
+  '/patches': typeof PatchesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/mural': typeof MuralRoute
   '/onboarding': typeof OnboardingRoute
   '/oponentes': typeof OponentesRoute
+  '/patches': typeof PatchesRoute
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/roster': typeof RosterRoute
@@ -371,6 +380,7 @@ export interface FileRouteTypes {
     | '/mural'
     | '/onboarding'
     | '/oponentes'
+    | '/patches'
     | '/perfil'
     | '/planner'
     | '/roster'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/mural'
     | '/onboarding'
     | '/oponentes'
+    | '/patches'
     | '/perfil'
     | '/planner'
     | '/roster'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/mural'
     | '/onboarding'
     | '/oponentes'
+    | '/patches'
     | '/perfil'
     | '/planner'
     | '/roster'
@@ -487,6 +499,7 @@ export interface RootRouteChildren {
   MuralRoute: typeof MuralRoute
   OnboardingRoute: typeof OnboardingRoute
   OponentesRoute: typeof OponentesRoute
+  PatchesRoute: typeof PatchesRoute
   PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
   RosterRoute: typeof RosterRoute
@@ -538,6 +551,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patches': {
+      id: '/patches'
+      path: '/patches'
+      fullPath: '/patches'
+      preLoaderRoute: typeof PatchesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oponentes': {
@@ -818,6 +838,7 @@ const rootRouteChildren: RootRouteChildren = {
   MuralRoute: MuralRoute,
   OnboardingRoute: OnboardingRoute,
   OponentesRoute: OponentesRoute,
+  PatchesRoute: PatchesRoute,
   PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,
   RosterRoute: RosterRoute,
