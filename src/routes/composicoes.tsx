@@ -168,7 +168,7 @@ function CompsPage() {
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity presentation-hide">
                       <Button size="icon" variant="ghost" onClick={() => { setEditing(c); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) remove.mutate(c.id); }}><Trash2 className="h-4 w-4" /></Button>
+                      <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover composição?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => remove.mutate(c.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </div>
                   </div>
 
