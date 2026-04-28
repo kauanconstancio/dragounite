@@ -150,10 +150,8 @@ function PlannerPage() {
     const pt = getRelativeCoords(e);
 
     if (tool === "text") {
-      const text = window.prompt("Anotação:");
-      if (text?.trim()) {
-        setNotes((n) => [...n, { id: crypto.randomUUID(), x: pt.x, y: pt.y, text: text.trim() }]);
-      }
+      setPendingNote({ x: pt.x, y: pt.y });
+      setNoteDraft("");
       return;
     }
 
