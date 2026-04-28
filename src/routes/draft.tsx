@@ -184,57 +184,64 @@ function DraftPage() {
           </div>
 
           <div className={cn(
-            "grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2",
-            (!started || finished) && "opacity-50 pointer-events-none",
+            "rounded-lg border border-border/40 bg-background/30 p-2",
+            "lg:max-h-[calc(100vh-14rem)] lg:overflow-y-auto",
           )}>
-            {filtered.map((p) => {
-              const isUsed = used.has(p.name);
-              const style = UNITE_ROLE_STYLES[p.role];
-              return (
-                <button
-                  key={p.name}
-                  type="button"
-                  onClick={() => selectPokemon(p.name)}
-                  disabled={isUsed}
-                  className={cn(
-                    "group relative flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 transition-all",
-                    isUsed
-                      ? "opacity-30 grayscale cursor-not-allowed border-border"
-                      : "border-transparent hover:bg-accent/30 hover:scale-[1.04] hover:border-primary/40 cursor-pointer",
-                  )}
-                >
-                  <div className="aspect-square w-full">
-                    <PokemonImage name={p.name} withRoleBg />
-                  </div>
-                  <span className="font-display text-[10px] tracking-wider text-center leading-tight truncate w-full uppercase">
-                    {p.name}
-                  </span>
-                  <span
+            <div className={cn(
+              "grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-7 gap-2",
+              (!started || finished) && "opacity-50 pointer-events-none",
+            )}>
+              {filtered.map((p) => {
+                const isUsed = used.has(p.name);
+                const style = UNITE_ROLE_STYLES[p.role];
+                return (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => selectPokemon(p.name)}
+                    disabled={isUsed}
                     className={cn(
-                      "px-1 py-0.5 rounded text-[8px] uppercase tracking-widest font-display border w-full text-center truncate",
-                      style.bg, style.ring, style.text,
+                      "group relative flex flex-col items-center gap-1 p-1.5 rounded-md border bg-card/50 transition-all",
+                      isUsed
+                        ? "opacity-30 grayscale cursor-not-allowed border-border"
+                        : "border-transparent hover:bg-accent/30 hover:scale-[1.04] hover:border-primary/40 cursor-pointer",
                     )}
                   >
-                    {UNITE_ROLE_LABEL[p.role]}
-                  </span>
-                  {isUsed && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <Ban className="h-6 w-6 text-destructive" />
+                    <div className="aspect-square w-full">
+                      <PokemonImage name={p.name} withRoleBg />
                     </div>
-                  )}
-                </button>
-              );
-            })}
-            {filtered.length === 0 && (
-              <div className="col-span-full text-center text-muted-foreground py-12 text-sm">
-                Nenhum Pokémon encontrado.
-              </div>
-            )}
+                    <span className="font-display text-[10px] tracking-wider text-center leading-tight truncate w-full uppercase">
+                      {p.name}
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1 py-0.5 rounded text-[8px] uppercase tracking-widest font-display border w-full text-center truncate",
+                        style.bg, style.ring, style.text,
+                      )}
+                    >
+                      {UNITE_ROLE_LABEL[p.role]}
+                    </span>
+                    {isUsed && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <Ban className="h-6 w-6 text-destructive" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+              {filtered.length === 0 && (
+                <div className="col-span-full text-center text-muted-foreground py-12 text-sm">
+                  Nenhum Pokémon encontrado.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Orange side */}
-        <TeamPanel side="orange" state={state} currentSlot={currentSlot} />
+        <div className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+          <TeamPanel side="orange" state={state} currentSlot={currentSlot} />
+        </div>
       </div>
     </div>
   );
