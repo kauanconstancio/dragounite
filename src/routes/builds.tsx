@@ -63,8 +63,7 @@ type RoleFilter = (typeof ROLE_FILTERS)[number];
 
 function matchesRole(p: UniteDbPokemon, role: RoleFilter): boolean {
   if (role === "Todos") return true;
-  const tags = (p.tags ?? []).map((t) => t.toLowerCase());
-  return tags.includes(role.toLowerCase());
+  return (p.tags?.role ?? "").toLowerCase() === role.toLowerCase();
 }
 
 function BuildsPage() {
