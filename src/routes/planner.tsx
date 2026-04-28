@@ -265,7 +265,32 @@ function PlannerPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
+            {tool.startsWith("draw-") && (
+              <div className="flex items-center gap-2 px-3 h-9 border border-border rounded-md bg-card/60" title="Espessura do lápis">
+                <Pencil className="h-3.5 w-3.5" style={{ color: TOOL_COLORS[tool] }} />
+                <span
+                  className="rounded-full shrink-0"
+                  style={{
+                    width: Math.max(2, Math.min(strokeWidth, 14)),
+                    height: Math.max(2, Math.min(strokeWidth, 14)),
+                    background: TOOL_COLORS[tool],
+                    boxShadow: `0 0 6px ${TOOL_COLORS[tool]}`,
+                  }}
+                />
+                <Slider
+                  min={1}
+                  max={12}
+                  step={1}
+                  value={[strokeWidth]}
+                  onValueChange={(v) => setStrokeWidth(v[0])}
+                  className="w-28"
+                />
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums w-8 text-right">
+                  {strokeWidth}px
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-1 border border-border rounded-md bg-card/60">
               <Button variant="ghost" size="icon" className="h-8 w-8" title="Diminuir zoom" onClick={() => zoomBy(-0.25)} disabled={zoom <= MIN_ZOOM}>
                 <ZoomOut className="h-3.5 w-3.5" />
