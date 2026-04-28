@@ -3,7 +3,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, Sparkles } from "lucide-react";
-import { heldItemImage, battleItemImage, skillImage, type UniteDbBuild } from "@/lib/unite-db-types";
+import {
+  heldItemImage,
+  battleItemImage,
+  skillImage,
+  type UniteDbBuild,
+  type UniteDbSkill,
+} from "@/lib/unite-db-types";
+import { useUniteItemsIndex } from "@/hooks/useUniteItemsIndex";
+import {
+  BattleItemTooltip,
+  HeldItemTooltip,
+  SkillTooltip,
+} from "@/components/builds/UniteTooltips";
 
 function ItemImg({ name, kind }: { name: string; kind: "held" | "battle" }) {
   const [err, setErr] = useState(false);
@@ -51,12 +63,28 @@ function MoveImg({ pokemonSlug, name }: { pokemonSlug: string; name: string }) {
 export function UniteBuildCard({
   build,
   pokemonSlug,
+  skills,
   onImport,
 }: {
   build: UniteDbBuild;
   pokemonSlug?: string;
+  /** Skills do pokémon — usadas para enriquecer tooltips de moveset. */
+  skills?: UniteDbSkill[];
   onImport?: (b: UniteDbBuild) => void;
 }) {
+  const { findHeld, findBattle } = useUniteItemsIndex();
+  const findSkill = (name: string): UniteDbSkill | null => {
+    if (!skills) return null;
+    const n = name.toLowerCase().trim();
+    return (
+      skills.find(
+        (s) =>
+          s.name.toLowerCase().trim() === n ||
+          s.name.toLowerCase().replace(/\s+/g, "") === n.replace(/\s+/g, ""),
+      ) ?? null
+    );
+  };
+
   return (
     <Card className="p-4 border-border bg-card/60 hover:border-primary/40 transition-colors">
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -86,10 +114,17 @@ export function UniteBuildCard({
           <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Hold Items</div>
           <div className="flex gap-2 items-center flex-wrap">
             {build.held_items.map((it) => (
-              <div key={it} className="flex items-center gap-1.5">
-                <ItemImg name={it} kind="held" />
-                <span className="text-[10px] text-foreground">{it}</span>
-              </div>
+              <HeldItemTooltip
+                key={it}
+                name={it}
+                data={findHeld(it)}
+                trigger={
+                  <span className="flex items-center gap-1.5 cursor-help">
+                    <ItemImg name={it} kind="held" />
+                    <span className="text-[10px] text-foreground">{it}</span>
+                  </span>
+                }
+              />
             ))}
           </div>
           {build.held_items_optional && (
@@ -102,10 +137,16 @@ export function UniteBuildCard({
         {build.battle_item && (
           <div>
             <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Battle Item</div>
-            <div className="flex items-center gap-1.5">
-              <ItemImg name={build.battle_item} kind="battle" />
-              <span className="text-[10px] text-foreground">{build.battle_item}</span>
-            </div>
+            <BattleItemTooltip
+              name={build.battle_item}
+              data={findBattle(build.battle_item)}
+              trigger={
+                <span className="flex items-center gap-1.5 cursor-help">
+                  <ItemImg name={build.battle_item} kind="battle" />
+                  <span className="text-[10px] text-foreground">{build.battle_item}</span>
+                </span>
+              }
+            />
             {build.battle_item_optional && (
               <div className="text-[9px] text-muted-foreground mt-1">Alt: {build.battle_item_optional}</div>
             )}
@@ -116,15 +157,25 @@ export function UniteBuildCard({
           <div>
             <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Moveset</div>
             <div className="flex flex-wrap gap-1.5">
-              {build.upgrade?.map((m) =>
-                pokemonSlug ? (
-                  <MoveImg key={m} pokemonSlug={pokemonSlug} name={m} />
+              {build.upgrade?.map((m) => {
+                const skill = findSkill(m);
+                const node = pokemonSlug ? (
+                  <MoveImg pokemonSlug={pokemonSlug} name={m} />
                 ) : (
-                  <Badge key={m} variant="outline" className="text-[10px] border-primary/40 text-primary">
+                  <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
                     {m}
                   </Badge>
-                ),
-              )}
+                );
+                return skill ? (
+                  <SkillTooltip
+                    key={m}
+                    skill={skill}
+                    trigger={<span className="cursor-help">{node}</span>}
+                  />
+                ) : (
+                  <span key={m}>{node}</span>
+                );
+              })}
             </div>
             {build.basic && build.basic.length > 0 && (
               <div className="text-[9px] text-muted-foreground mt-1">
