@@ -33,7 +33,21 @@ export const Route = createFileRoute("/planner")({
 });
 
 type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase" | "pan";
-type Token = { id: string; pokemon: string; x: number; y: number };
+type Team = "purple" | "orange";
+type Token = { id: string; pokemon: string; x: number; y: number; team: Team };
+
+const TEAM_STYLES: Record<Team, { bg: string; ring: string; glow: string }> = {
+  purple: {
+    bg: "bg-gradient-to-br from-purple-500/80 to-purple-700/80",
+    ring: "ring-2 ring-purple-300",
+    glow: "shadow-[0_0_12px_rgba(168,85,247,0.6)]",
+  },
+  orange: {
+    bg: "bg-gradient-to-br from-orange-400/80 to-orange-600/80",
+    ring: "ring-2 ring-orange-200",
+    glow: "shadow-[0_0_12px_rgba(249,115,22,0.6)]",
+  },
+};
 type Stroke = { id: string; color: string; width: number; points: { x: number; y: number }[] };
 type TextNote = { id: string; x: number; y: number; text: string };
 
@@ -190,8 +204,12 @@ function PlannerPage() {
   function addToken(name: string, pos?: { x: number; y: number }) {
     setTokens((t) => [
       ...t,
-      { id: crypto.randomUUID(), pokemon: name, x: pos?.x ?? 50, y: pos?.y ?? 50 },
+      { id: crypto.randomUUID(), pokemon: name, x: pos?.x ?? 50, y: pos?.y ?? 50, team: "purple" },
     ]);
+  }
+
+  function toggleTokenTeam(id: string) {
+    setTokens((ts) => ts.map((t) => (t.id === id ? { ...t, team: t.team === "purple" ? "orange" : "purple" } : t)));
   }
 
   const [dragOverMap, setDragOverMap] = useState(false);
@@ -218,18 +236,34 @@ function PlannerPage() {
     addToken(name, pt);
   }
 
-  function startDragToken(id: string) {
+  const tokenDragRef = useRef<{ id: string; startX: number; startY: number; moved: boolean } | null>(null);
+
+  function startDragToken(id: string, e: React.PointerEvent) {
     if (tool !== "select") return;
+    tokenDragRef.current = { id, startX: e.clientX, startY: e.clientY, moved: false };
     setDraggingId(id);
   }
 
   function handleTokenMove(e: React.PointerEvent) {
     if (!draggingId) return;
+    const ref = tokenDragRef.current;
+    if (ref && !ref.moved) {
+      const dx = Math.abs(e.clientX - ref.startX);
+      const dy = Math.abs(e.clientY - ref.startY);
+      if (dx < 4 && dy < 4) return; // ignora micro-movimentos antes de iniciar drag real
+      ref.moved = true;
+    }
     const pt = getRelativeCoords(e);
     setTokens((ts) => ts.map((t) => (t.id === draggingId ? { ...t, x: pt.x, y: pt.y } : t)));
   }
 
   function endDragToken() {
+    const ref = tokenDragRef.current;
+    if (ref && !ref.moved) {
+      // Foi um clique, não um drag → alterna time
+      toggleTokenTeam(ref.id);
+    }
+    tokenDragRef.current = null;
     setDraggingId(null);
   }
 
@@ -458,31 +492,36 @@ function PlannerPage() {
               ))}
 
               {/* Tokens (Pokémons) */}
-              {tokens.map((t) => (
-                <div
-                  key={t.id}
-                  onPointerDown={(e) => {
-                    if (tool !== "select") return;
-                    e.stopPropagation();
-                    startDragToken(t.id);
-                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
-                  }}
-                  onDoubleClick={() => removeToken(t.id)}
-                  className={cn(
-                    "absolute h-12 w-12 transition-transform",
-                    tool === "select" ? "cursor-grab active:cursor-grabbing" : "cursor-inherit pointer-events-none",
-                    draggingId === t.id && "z-10",
-                  )}
-                  style={{
-                    left: `${t.x}%`,
-                    top: `${t.y}%`,
-                    transform: `translate(-50%, -50%) scale(${(draggingId === t.id ? 1.1 : 1) / zoom})`,
-                  }}
-                  title={`${t.pokemon} (duplo clique para remover)`}
-                >
-                  <PokemonImage name={t.pokemon} withRoleBg />
-                </div>
-              ))}
+              {tokens.map((t) => {
+                const teamStyle = TEAM_STYLES[t.team];
+                return (
+                  <div
+                    key={t.id}
+                    onPointerDown={(e) => {
+                      if (tool !== "select") return;
+                      e.stopPropagation();
+                      startDragToken(t.id, e);
+                      (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                    }}
+                    onDoubleClick={() => removeToken(t.id)}
+                    className={cn(
+                      "absolute h-12 w-12 transition-transform",
+                      tool === "select" ? "cursor-grab active:cursor-grabbing" : "cursor-inherit pointer-events-none",
+                      draggingId === t.id && "z-10",
+                    )}
+                    style={{
+                      left: `${t.x}%`,
+                      top: `${t.y}%`,
+                      transform: `translate(-50%, -50%) scale(${(draggingId === t.id ? 1.1 : 1) / zoom})`,
+                    }}
+                    title={`${t.pokemon} · time ${t.team === "purple" ? "roxo" : "laranja"} (clique para alternar · duplo clique para remover)`}
+                  >
+                    <div className={cn("w-full h-full rounded-full flex items-center justify-center p-0.5 overflow-hidden transition-colors", teamStyle.bg, teamStyle.ring, teamStyle.glow)}>
+                      <PokemonImage name={t.pokemon} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Indicador de zoom */}
