@@ -168,7 +168,7 @@ function PlannerPage() {
 
     // drawing
     const color = TOOL_COLORS[tool];
-    setDrawing({ id: crypto.randomUUID(), color, points: [pt] });
+    setDrawing({ id: crypto.randomUUID(), color, width: strokeWidth, points: [pt] });
     (e.target as Element).setPointerCapture(e.pointerId);
   }
 
