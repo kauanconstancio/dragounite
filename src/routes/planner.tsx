@@ -492,31 +492,36 @@ function PlannerPage() {
               ))}
 
               {/* Tokens (Pokémons) */}
-              {tokens.map((t) => (
-                <div
-                  key={t.id}
-                  onPointerDown={(e) => {
-                    if (tool !== "select") return;
-                    e.stopPropagation();
-                    startDragToken(t.id);
-                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
-                  }}
-                  onDoubleClick={() => removeToken(t.id)}
-                  className={cn(
-                    "absolute h-12 w-12 transition-transform",
-                    tool === "select" ? "cursor-grab active:cursor-grabbing" : "cursor-inherit pointer-events-none",
-                    draggingId === t.id && "z-10",
-                  )}
-                  style={{
-                    left: `${t.x}%`,
-                    top: `${t.y}%`,
-                    transform: `translate(-50%, -50%) scale(${(draggingId === t.id ? 1.1 : 1) / zoom})`,
-                  }}
-                  title={`${t.pokemon} (duplo clique para remover)`}
-                >
-                  <PokemonImage name={t.pokemon} withRoleBg />
-                </div>
-              ))}
+              {tokens.map((t) => {
+                const teamStyle = TEAM_STYLES[t.team];
+                return (
+                  <div
+                    key={t.id}
+                    onPointerDown={(e) => {
+                      if (tool !== "select") return;
+                      e.stopPropagation();
+                      startDragToken(t.id, e);
+                      (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                    }}
+                    onDoubleClick={() => removeToken(t.id)}
+                    className={cn(
+                      "absolute h-12 w-12 transition-transform",
+                      tool === "select" ? "cursor-grab active:cursor-grabbing" : "cursor-inherit pointer-events-none",
+                      draggingId === t.id && "z-10",
+                    )}
+                    style={{
+                      left: `${t.x}%`,
+                      top: `${t.y}%`,
+                      transform: `translate(-50%, -50%) scale(${(draggingId === t.id ? 1.1 : 1) / zoom})`,
+                    }}
+                    title={`${t.pokemon} · time ${t.team === "purple" ? "roxo" : "laranja"} (clique para alternar · duplo clique para remover)`}
+                  >
+                    <div className={cn("w-full h-full rounded-full flex items-center justify-center p-0.5 overflow-hidden transition-colors", teamStyle.bg, teamStyle.ring, teamStyle.glow)}>
+                      <PokemonImage name={t.pokemon} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Indicador de zoom */}
