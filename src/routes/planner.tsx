@@ -315,95 +315,130 @@ function PlannerPage() {
           <div
             ref={mapRef}
             className={cn(
-              "relative flex-1 rounded-lg overflow-hidden border border-border bg-background select-none",
-              tool === "select" ? "cursor-default" : tool === "erase" ? "cursor-cell" : "cursor-crosshair",
+              "relative flex-1 rounded-lg overflow-hidden border border-border bg-background select-none touch-none",
+              tool === "select"
+                ? "cursor-default"
+                : tool === "erase"
+                  ? "cursor-cell"
+                  : tool === "pan"
+                    ? panStartRef.current
+                      ? "cursor-grabbing"
+                      : "cursor-grab"
+                    : "cursor-crosshair",
             )}
             style={{ aspectRatio: "16 / 9" }}
             onPointerDown={handleMapPointerDown}
             onPointerMove={(e) => {
+              if (tool === "pan") handlePanPointerMove(e);
               handleMapPointerMove(e);
               handleTokenMove(e);
             }}
             onPointerUp={() => {
+              handlePanPointerUp();
               handleMapPointerUp();
               endDragToken();
             }}
             onPointerLeave={() => {
+              handlePanPointerUp();
               handleMapPointerUp();
               endDragToken();
             }}
+            onWheel={handleWheel}
           >
-            <img
-              src={currentMap.image}
-              alt={`Mapa ${currentMap.label}`}
-              draggable={false}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
+            {/* Camada transformada (zoom/pan) */}
+            <div
+              className="absolute inset-0 origin-center"
+              style={{
+                transform: `translate(${pan.x}%, ${pan.y}%) scale(${zoom})`,
+                transformOrigin: "center center",
+                transition: panStartRef.current ? "none" : "transform 120ms ease-out",
+              }}
+            >
+              <img
+                src={currentMap.image}
+                alt={`Mapa ${currentMap.label}`}
+                draggable={false}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              />
 
-            {/* SVG layer para desenhos */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-              {strokes.map((s) => (
-                <polyline
-                  key={s.id}
-                  points={s.points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  stroke={s.color}
-                  strokeWidth={0.6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                  style={{ filter: `drop-shadow(0 0 2px ${s.color})` }}
-                />
-              ))}
-              {drawing && (
-                <polyline
-                  points={drawing.points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  stroke={drawing.color}
-                  strokeWidth={0.6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-              )}
-            </svg>
-
-            {/* Anotações de texto */}
-            {notes.map((n) => (
-              <div
-                key={n.id}
-                className="absolute -translate-x-1/2 -translate-y-1/2 px-2 py-1 rounded bg-background/90 border border-gold/60 text-gold font-display text-xs uppercase tracking-widest shadow-glow whitespace-nowrap pointer-events-none"
-                style={{ left: `${n.x}%`, top: `${n.y}%` }}
-              >
-                {n.text}
-              </div>
-            ))}
-
-            {/* Tokens (Pokémons) */}
-            {tokens.map((t) => (
-              <div
-                key={t.id}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  startDragToken(t.id);
-                  (e.currentTarget as Element).setPointerCapture(e.pointerId);
-                }}
-                onDoubleClick={() => removeToken(t.id)}
-                className={cn(
-                  "absolute -translate-x-1/2 -translate-y-1/2 h-12 w-12 cursor-grab active:cursor-grabbing transition-transform",
-                  draggingId === t.id && "scale-110 z-10",
+              {/* SVG layer para desenhos */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {strokes.map((s) => (
+                  <polyline
+                    key={s.id}
+                    points={s.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth={0.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ filter: `drop-shadow(0 0 2px ${s.color})` }}
+                  />
+                ))}
+                {drawing && (
+                  <polyline
+                    points={drawing.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
+                    stroke={drawing.color}
+                    strokeWidth={0.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
                 )}
-                style={{ left: `${t.x}%`, top: `${t.y}%` }}
-                title={`${t.pokemon} (duplo clique para remover)`}
-              >
-                <PokemonImage name={t.pokemon} withRoleBg />
+              </svg>
+
+              {/* Anotações de texto */}
+              {notes.map((n) => (
+                <div
+                  key={n.id}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 px-2 py-1 rounded bg-background/90 border border-gold/60 text-gold font-display text-xs uppercase tracking-widest shadow-glow whitespace-nowrap pointer-events-none"
+                  style={{ left: `${n.x}%`, top: `${n.y}%`, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+                >
+                  {n.text}
+                </div>
+              ))}
+
+              {/* Tokens (Pokémons) */}
+              {tokens.map((t) => (
+                <div
+                  key={t.id}
+                  onPointerDown={(e) => {
+                    if (tool !== "select") return;
+                    e.stopPropagation();
+                    startDragToken(t.id);
+                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                  }}
+                  onDoubleClick={() => removeToken(t.id)}
+                  className={cn(
+                    "absolute h-12 w-12 transition-transform",
+                    tool === "select" ? "cursor-grab active:cursor-grabbing" : "cursor-inherit pointer-events-none",
+                    draggingId === t.id && "z-10",
+                  )}
+                  style={{
+                    left: `${t.x}%`,
+                    top: `${t.y}%`,
+                    transform: `translate(-50%, -50%) scale(${(draggingId === t.id ? 1.1 : 1) / zoom})`,
+                  }}
+                  title={`${t.pokemon} (duplo clique para remover)`}
+                >
+                  <PokemonImage name={t.pokemon} withRoleBg />
+                </div>
+              ))}
+            </div>
+
+            {/* Indicador de zoom */}
+            {zoom > 1 && (
+              <div className="absolute top-3 left-3 px-2 py-1 rounded bg-background/80 border border-border text-[10px] uppercase tracking-widest text-muted-foreground pointer-events-none backdrop-blur-sm">
+                {Math.round(zoom * 100)}% · {tool === "pan" ? "arraste para mover" : "ctrl + scroll para zoom"}
               </div>
-            ))}
+            )}
 
             {tokens.length === 0 && strokes.length === 0 && notes.length === 0 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-background/80 border border-border text-[10px] uppercase tracking-widest text-muted-foreground pointer-events-none">
-                Clique em um Pokémon abaixo para adicionar ao mapa
+                Clique em um Pokémon ao lado para adicionar ao mapa
               </div>
             )}
           </div>
