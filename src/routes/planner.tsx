@@ -53,8 +53,55 @@ function PlannerPage() {
   const [drawing, setDrawing] = useState<Stroke | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [mapId, setMapId] = useState<MapId>("rayquaza");
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const currentMap = MAPS.find((m) => m.id === mapId)!;
+
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 4;
+
+  function clampPan(z: number, p: { x: number; y: number }) {
+    // Limita o pan para que a imagem (escalada) não saia do container.
+    // Em % do container: deslocamento máximo = (z - 1) * 50.
+    const max = (z - 1) * 50;
+    return {
+      x: Math.max(-max, Math.min(max, p.x)),
+      y: Math.max(-max, Math.min(max, p.y)),
+    };
+  }
+
+  function zoomBy(delta: number, anchor?: { x: number; y: number }) {
+    setZoom((z) => {
+      const nz = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, +(z + delta).toFixed(2)));
+      if (nz === 1) {
+        setPan({ x: 0, y: 0 });
+      } else if (anchor) {
+        // Mantém o ponto sob o cursor estável durante o zoom
+        setPan((p) => {
+          const dx = (anchor.x - 50) * (nz - z) / z * -1;
+          const dy = (anchor.y - 50) * (nz - z) / z * -1;
+          return clampPan(nz, { x: p.x + dx, y: p.y + dy });
+        });
+      } else {
+        setPan((p) => clampPan(nz, p));
+      }
+      return nz;
+    });
+  }
+
+  function resetZoom() {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }
+
+  function handleWheel(e: React.WheelEvent) {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const anchor = getRelativeCoords(e as unknown as React.MouseEvent);
+    zoomBy(e.deltaY < 0 ? 0.25 : -0.25, anchor);
+  }
 
   const filtered = useMemo(
     () =>
