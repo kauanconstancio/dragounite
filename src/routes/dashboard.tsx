@@ -475,7 +475,7 @@ function DashboardPage() {
           )}
         </Card>
 
-        <Card className="p-5 border-border shadow-card bg-card/70">
+        <Card className="p-5 border-border shadow-card bg-card/70 overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-primary" />
