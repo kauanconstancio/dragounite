@@ -14,6 +14,7 @@ import {
   BookOpen,
   ListOrdered,
   Library,
+  ScrollText,
   ChevronDown,
   Bell,
   BellOff,
@@ -68,6 +69,7 @@ const estrategia = [
   { to: "/planner", label: "Planner", icon: Map },
   { to: "/jogadas", label: "Jogadas", icon: Library },
   { to: "/tier-list", label: "Tier List", icon: ListOrdered },
+  { to: "/patches", label: "Patches", icon: ScrollText },
 ];
 
 function isActive(pathname: string, to: string) {
