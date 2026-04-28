@@ -35,8 +35,9 @@ export function PokemonImage({ name, className, withRoleBg = false }: Props) {
         src={src}
         alt={name}
         loading="lazy"
+        decoding="async"
         onError={() => setErrored(true)}
-        className="w-full h-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
+        className="w-full h-full object-contain"
       />
     );
 
@@ -44,10 +45,9 @@ export function PokemonImage({ name, className, withRoleBg = false }: Props) {
     return (
       <div
         className={cn(
-          "w-full h-full rounded-md border flex items-center justify-center p-1 overflow-hidden transition-shadow",
+          "w-full h-full rounded-md border flex items-center justify-center p-1 overflow-hidden",
           roleStyle.bg,
           roleStyle.ring,
-          roleStyle.glow,
           className,
         )}
       >
