@@ -404,8 +404,8 @@ function DashboardPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="p-5 border-border shadow-card bg-card/70">
+      <div className="grid lg:grid-cols-3 gap-6 lg:[&>*]:h-[560px] lg:[&>*]:flex lg:[&>*]:flex-col">
+        <Card className="p-5 border-border shadow-card bg-card/70 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-gold" />
@@ -423,7 +423,7 @@ function DashboardPage() {
           <WinrateBarChart scrimWr={wr} matchWr={matchWr} />
         </Card>
 
-        <Card className="p-5 border-border shadow-card bg-card/70">
+        <Card className="p-5 border-border shadow-card bg-card/70 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Megaphone className="h-4 w-4 text-primary" />
@@ -436,7 +436,7 @@ function DashboardPage() {
           {announcements.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nenhum aviso.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-y-auto pr-1 -mr-1 flex-1 min-h-0">
               {announcements.map((a: any) => {
                 const list = announcementLikes.filter((l) => l.announcement_id === a.id);
                 const count = list.length;
@@ -475,7 +475,7 @@ function DashboardPage() {
           )}
         </Card>
 
-        <Card className="p-5 border-border shadow-card bg-card/70">
+        <Card className="p-5 border-border shadow-card bg-card/70 overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-primary" />
@@ -612,7 +612,7 @@ function DashboardPage() {
           {todayEvents.length === 0 && next.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nada agendado.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto pr-1 -mr-1 flex-1 min-h-0">
               {todayEvents.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
