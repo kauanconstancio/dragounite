@@ -30,7 +30,7 @@ export const Route = createFileRoute("/planner")({
   component: PlannerPage,
 });
 
-type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase";
+type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase" | "pan";
 type Token = { id: string; pokemon: string; x: number; y: number };
 type Stroke = { id: string; color: string; points: { x: number; y: number }[] };
 type TextNote = { id: string; x: number; y: number; text: string };
