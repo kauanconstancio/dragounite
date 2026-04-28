@@ -32,7 +32,7 @@ export const Route = createFileRoute("/planner")({
 
 type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase" | "pan";
 type Token = { id: string; pokemon: string; x: number; y: number };
-type Stroke = { id: string; color: string; points: { x: number; y: number }[] };
+type Stroke = { id: string; color: string; width: number; points: { x: number; y: number }[] };
 type TextNote = { id: string; x: number; y: number; text: string };
 
 const ROLE_FILTERS: (UniteRole | "all")[] = ["all", "attacker", "speedster", "all-rounder", "defender", "supporter"];
