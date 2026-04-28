@@ -59,6 +59,8 @@ function PlannerPage() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const [pendingNote, setPendingNote] = useState<{ x: number; y: number } | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
   const currentMap = MAPS.find((m) => m.id === mapId)!;
 
   const MIN_ZOOM = 1;
