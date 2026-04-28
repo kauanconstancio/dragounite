@@ -3,7 +3,7 @@ import { useRef, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move } from "lucide-react";
+import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/planner")({
   component: PlannerPage,
 });
 
-type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase";
+type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase" | "pan";
 type Token = { id: string; pokemon: string; x: number; y: number };
 type Stroke = { id: string; color: string; points: { x: number; y: number }[] };
 type TextNote = { id: string; x: number; y: number; text: string };
@@ -53,8 +53,55 @@ function PlannerPage() {
   const [drawing, setDrawing] = useState<Stroke | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [mapId, setMapId] = useState<MapId>("rayquaza");
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const currentMap = MAPS.find((m) => m.id === mapId)!;
+
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 4;
+
+  function clampPan(z: number, p: { x: number; y: number }) {
+    // Limita o pan para que a imagem (escalada) não saia do container.
+    // Em % do container: deslocamento máximo = (z - 1) * 50.
+    const max = (z - 1) * 50;
+    return {
+      x: Math.max(-max, Math.min(max, p.x)),
+      y: Math.max(-max, Math.min(max, p.y)),
+    };
+  }
+
+  function zoomBy(delta: number, anchor?: { x: number; y: number }) {
+    setZoom((z) => {
+      const nz = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, +(z + delta).toFixed(2)));
+      if (nz === 1) {
+        setPan({ x: 0, y: 0 });
+      } else if (anchor) {
+        // Mantém o ponto sob o cursor estável durante o zoom
+        setPan((p) => {
+          const dx = (anchor.x - 50) * (nz - z) / z * -1;
+          const dy = (anchor.y - 50) * (nz - z) / z * -1;
+          return clampPan(nz, { x: p.x + dx, y: p.y + dy });
+        });
+      } else {
+        setPan((p) => clampPan(nz, p));
+      }
+      return nz;
+    });
+  }
+
+  function resetZoom() {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }
+
+  function handleWheel(e: React.WheelEvent) {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const anchor = getRelativeCoords(e as unknown as React.MouseEvent);
+    zoomBy(e.deltaY < 0 ? 0.25 : -0.25, anchor);
+  }
 
   const filtered = useMemo(
     () =>
@@ -67,13 +114,34 @@ function PlannerPage() {
 
   function getRelativeCoords(e: React.MouseEvent | React.PointerEvent) {
     const rect = mapRef.current!.getBoundingClientRect();
+    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+    // Converte coordenadas do container para coordenadas do conteúdo (considerando zoom + pan)
     return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
+      x: 50 + (xPct - 50 - pan.x) / zoom,
+      y: 50 + (yPct - 50 - pan.y) / zoom,
     };
   }
 
+  function handlePanPointerDown(e: React.PointerEvent) {
+    panStartRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+  }
+
+  function handlePanPointerMove(e: React.PointerEvent) {
+    if (!panStartRef.current || !mapRef.current) return;
+    const rect = mapRef.current.getBoundingClientRect();
+    const dxPct = ((e.clientX - panStartRef.current.x) / rect.width) * 100;
+    const dyPct = ((e.clientY - panStartRef.current.y) / rect.height) * 100;
+    setPan(clampPan(zoom, { x: panStartRef.current.panX + dxPct, y: panStartRef.current.panY + dyPct }));
+  }
+
+  function handlePanPointerUp() {
+    panStartRef.current = null;
+  }
+
   function handleMapPointerDown(e: React.PointerEvent) {
+    if (tool === "pan") { handlePanPointerDown(e); return; }
     if (tool === "select") return;
     const pt = getRelativeCoords(e);
 
@@ -166,6 +234,7 @@ function PlannerPage() {
     { key: "draw-yellow", icon: Pencil, label: "Desenhar (amarelo)", color: "bg-yellow-500/80 text-black border-yellow-400" },
     { key: "text", icon: Type, label: "Adicionar texto" },
     { key: "erase", icon: Eraser, label: "Apagar" },
+    { key: "pan", icon: Hand, label: "Mover mapa (pan)" },
   ];
 
   return (
@@ -194,7 +263,21 @@ function PlannerPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-1 border border-border rounded-md bg-card/60">
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Diminuir zoom" onClick={() => zoomBy(-0.25)} disabled={zoom <= MIN_ZOOM}>
+                <ZoomOut className="h-3.5 w-3.5" />
+              </Button>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums w-10 text-center">
+                {Math.round(zoom * 100)}%
+              </span>
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Aumentar zoom" onClick={() => zoomBy(0.25)} disabled={zoom >= MAX_ZOOM}>
+                <ZoomIn className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Resetar zoom" onClick={resetZoom} disabled={zoom === 1 && pan.x === 0 && pan.y === 0}>
+                <Maximize2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
             <Button variant="outline" size="sm" onClick={undoLast} className="uppercase tracking-wider">
               <RotateCcw className="mr-2 h-3.5 w-3.5" /> Desfazer
             </Button>
@@ -232,95 +315,130 @@ function PlannerPage() {
           <div
             ref={mapRef}
             className={cn(
-              "relative flex-1 rounded-lg overflow-hidden border border-border bg-background select-none",
-              tool === "select" ? "cursor-default" : tool === "erase" ? "cursor-cell" : "cursor-crosshair",
+              "relative flex-1 rounded-lg overflow-hidden border border-border bg-background select-none touch-none",
+              tool === "select"
+                ? "cursor-default"
+                : tool === "erase"
+                  ? "cursor-cell"
+                  : tool === "pan"
+                    ? panStartRef.current
+                      ? "cursor-grabbing"
+                      : "cursor-grab"
+                    : "cursor-crosshair",
             )}
             style={{ aspectRatio: "16 / 9" }}
             onPointerDown={handleMapPointerDown}
             onPointerMove={(e) => {
+              if (tool === "pan") handlePanPointerMove(e);
               handleMapPointerMove(e);
               handleTokenMove(e);
             }}
             onPointerUp={() => {
+              handlePanPointerUp();
               handleMapPointerUp();
               endDragToken();
             }}
             onPointerLeave={() => {
+              handlePanPointerUp();
               handleMapPointerUp();
               endDragToken();
             }}
+            onWheel={handleWheel}
           >
-            <img
-              src={currentMap.image}
-              alt={`Mapa ${currentMap.label}`}
-              draggable={false}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
+            {/* Camada transformada (zoom/pan) */}
+            <div
+              className="absolute inset-0 origin-center"
+              style={{
+                transform: `translate(${pan.x}%, ${pan.y}%) scale(${zoom})`,
+                transformOrigin: "center center",
+                transition: panStartRef.current ? "none" : "transform 120ms ease-out",
+              }}
+            >
+              <img
+                src={currentMap.image}
+                alt={`Mapa ${currentMap.label}`}
+                draggable={false}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              />
 
-            {/* SVG layer para desenhos */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-              {strokes.map((s) => (
-                <polyline
-                  key={s.id}
-                  points={s.points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  stroke={s.color}
-                  strokeWidth={0.6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                  style={{ filter: `drop-shadow(0 0 2px ${s.color})` }}
-                />
-              ))}
-              {drawing && (
-                <polyline
-                  points={drawing.points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  stroke={drawing.color}
-                  strokeWidth={0.6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-              )}
-            </svg>
-
-            {/* Anotações de texto */}
-            {notes.map((n) => (
-              <div
-                key={n.id}
-                className="absolute -translate-x-1/2 -translate-y-1/2 px-2 py-1 rounded bg-background/90 border border-gold/60 text-gold font-display text-xs uppercase tracking-widest shadow-glow whitespace-nowrap pointer-events-none"
-                style={{ left: `${n.x}%`, top: `${n.y}%` }}
-              >
-                {n.text}
-              </div>
-            ))}
-
-            {/* Tokens (Pokémons) */}
-            {tokens.map((t) => (
-              <div
-                key={t.id}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  startDragToken(t.id);
-                  (e.currentTarget as Element).setPointerCapture(e.pointerId);
-                }}
-                onDoubleClick={() => removeToken(t.id)}
-                className={cn(
-                  "absolute -translate-x-1/2 -translate-y-1/2 h-12 w-12 cursor-grab active:cursor-grabbing transition-transform",
-                  draggingId === t.id && "scale-110 z-10",
+              {/* SVG layer para desenhos */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {strokes.map((s) => (
+                  <polyline
+                    key={s.id}
+                    points={s.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth={0.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ filter: `drop-shadow(0 0 2px ${s.color})` }}
+                  />
+                ))}
+                {drawing && (
+                  <polyline
+                    points={drawing.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                    fill="none"
+                    stroke={drawing.color}
+                    strokeWidth={0.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
                 )}
-                style={{ left: `${t.x}%`, top: `${t.y}%` }}
-                title={`${t.pokemon} (duplo clique para remover)`}
-              >
-                <PokemonImage name={t.pokemon} withRoleBg />
+              </svg>
+
+              {/* Anotações de texto */}
+              {notes.map((n) => (
+                <div
+                  key={n.id}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 px-2 py-1 rounded bg-background/90 border border-gold/60 text-gold font-display text-xs uppercase tracking-widest shadow-glow whitespace-nowrap pointer-events-none"
+                  style={{ left: `${n.x}%`, top: `${n.y}%`, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+                >
+                  {n.text}
+                </div>
+              ))}
+
+              {/* Tokens (Pokémons) */}
+              {tokens.map((t) => (
+                <div
+                  key={t.id}
+                  onPointerDown={(e) => {
+                    if (tool !== "select") return;
+                    e.stopPropagation();
+                    startDragToken(t.id);
+                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                  }}
+                  onDoubleClick={() => removeToken(t.id)}
+                  className={cn(
+                    "absolute h-12 w-12 transition-transform",
+                    tool === "select" ? "cursor-grab active:cursor-grabbing" : "cursor-inherit pointer-events-none",
+                    draggingId === t.id && "z-10",
+                  )}
+                  style={{
+                    left: `${t.x}%`,
+                    top: `${t.y}%`,
+                    transform: `translate(-50%, -50%) scale(${(draggingId === t.id ? 1.1 : 1) / zoom})`,
+                  }}
+                  title={`${t.pokemon} (duplo clique para remover)`}
+                >
+                  <PokemonImage name={t.pokemon} withRoleBg />
+                </div>
+              ))}
+            </div>
+
+            {/* Indicador de zoom */}
+            {zoom > 1 && (
+              <div className="absolute top-3 left-3 px-2 py-1 rounded bg-background/80 border border-border text-[10px] uppercase tracking-widest text-muted-foreground pointer-events-none backdrop-blur-sm">
+                {Math.round(zoom * 100)}% · {tool === "pan" ? "arraste para mover" : "ctrl + scroll para zoom"}
               </div>
-            ))}
+            )}
 
             {tokens.length === 0 && strokes.length === 0 && notes.length === 0 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-background/80 border border-border text-[10px] uppercase tracking-widest text-muted-foreground pointer-events-none">
-                Clique em um Pokémon abaixo para adicionar ao mapa
+                Clique em um Pokémon ao lado para adicionar ao mapa
               </div>
             )}
           </div>
