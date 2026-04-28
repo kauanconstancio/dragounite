@@ -404,7 +404,7 @@ function DashboardPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6 lg:[&>*]:h-[560px] lg:[&>*]:flex lg:[&>*]:flex-col">
+      <div className="grid lg:grid-cols-3 gap-6 lg:[&>*]:h-[420px] lg:[&>*]:flex lg:[&>*]:flex-col">
         <Card className="p-5 border-border shadow-card bg-card/70 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
