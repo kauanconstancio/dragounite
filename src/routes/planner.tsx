@@ -236,18 +236,34 @@ function PlannerPage() {
     addToken(name, pt);
   }
 
-  function startDragToken(id: string) {
+  const tokenDragRef = useRef<{ id: string; startX: number; startY: number; moved: boolean } | null>(null);
+
+  function startDragToken(id: string, e: React.PointerEvent) {
     if (tool !== "select") return;
+    tokenDragRef.current = { id, startX: e.clientX, startY: e.clientY, moved: false };
     setDraggingId(id);
   }
 
   function handleTokenMove(e: React.PointerEvent) {
     if (!draggingId) return;
+    const ref = tokenDragRef.current;
+    if (ref && !ref.moved) {
+      const dx = Math.abs(e.clientX - ref.startX);
+      const dy = Math.abs(e.clientY - ref.startY);
+      if (dx < 4 && dy < 4) return; // ignora micro-movimentos antes de iniciar drag real
+      ref.moved = true;
+    }
     const pt = getRelativeCoords(e);
     setTokens((ts) => ts.map((t) => (t.id === draggingId ? { ...t, x: pt.x, y: pt.y } : t)));
   }
 
   function endDragToken() {
+    const ref = tokenDragRef.current;
+    if (ref && !ref.moved) {
+      // Foi um clique, não um drag → alterna time
+      toggleTokenTeam(ref.id);
+    }
+    tokenDragRef.current = null;
     setDraggingId(null);
   }
 
