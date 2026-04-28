@@ -365,6 +365,7 @@ function CreateMemberDialog({
     onSubmit({
       name: name.trim(),
       ign: ign.trim() || null,
+      game_id: null,
       lane,
       role,
       main_pokemon: mainPokemon.trim() || null,
