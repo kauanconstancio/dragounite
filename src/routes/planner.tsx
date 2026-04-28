@@ -114,10 +114,30 @@ function PlannerPage() {
 
   function getRelativeCoords(e: React.MouseEvent | React.PointerEvent) {
     const rect = mapRef.current!.getBoundingClientRect();
+    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+    // Converte coordenadas do container para coordenadas do conteúdo (considerando zoom + pan)
     return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
+      x: 50 + (xPct - 50 - pan.x) / zoom,
+      y: 50 + (yPct - 50 - pan.y) / zoom,
     };
+  }
+
+  function handlePanPointerDown(e: React.PointerEvent) {
+    panStartRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+  }
+
+  function handlePanPointerMove(e: React.PointerEvent) {
+    if (!panStartRef.current || !mapRef.current) return;
+    const rect = mapRef.current.getBoundingClientRect();
+    const dxPct = ((e.clientX - panStartRef.current.x) / rect.width) * 100;
+    const dyPct = ((e.clientY - panStartRef.current.y) / rect.height) * 100;
+    setPan(clampPan(zoom, { x: panStartRef.current.panX + dxPct, y: panStartRef.current.panY + dyPct }));
+  }
+
+  function handlePanPointerUp() {
+    panStartRef.current = null;
   }
 
   function handleMapPointerDown(e: React.PointerEvent) {
