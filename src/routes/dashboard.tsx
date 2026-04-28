@@ -436,7 +436,7 @@ function DashboardPage() {
           {announcements.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nenhum aviso.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-y-auto pr-1 -mr-1 flex-1 min-h-0">
               {announcements.map((a: any) => {
                 const list = announcementLikes.filter((l) => l.announcement_id === a.id);
                 const count = list.length;
