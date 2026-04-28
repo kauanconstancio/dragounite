@@ -1,6 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getUniteDbPokemon } from "@/server/unite-db.functions";
+import type { UniteRole } from "@/lib/pokemon";
+
+/** Mapeia o `tags.role` exato do unite-db para o tipo interno UniteRole. */
+function normalizeRole(raw: string | undefined | null): UniteRole | null {
+  if (!raw) return null;
+  const s = raw.toLowerCase().trim();
+  if (s === "attacker") return "attacker";
+  if (s === "speedster") return "speedster";
+  if (s === "defender") return "defender";
+  if (s === "supporter") return "supporter";
+  if (s === "all-rounder" || s === "allrounder" || s === "all rounder")
+    return "all-rounder";
+  return null;
+}
 
 /**
  * Fetches the unite-db pokemon list (cached) and exposes a fast lookup
