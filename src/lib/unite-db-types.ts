@@ -64,17 +64,20 @@ export type UniteDbPatchNote = {
   patchNoteDetails: string; // markdown
 };
 
-// CDN público de imagens do unite-db (descoberto via HTML público do site).
+// CDN público de imagens do unite-db (descoberto via bundle público do site).
 export const UNITE_DB_CDN = "https://d275t8dp8rxb42.cloudfront.net";
 
+/** Espaços viram "+" — convenção interna do unite-db para os filenames. */
+function uniteFile(name: string): string {
+  return name.replace(/ /g, "+");
+}
+
 export function heldItemImage(name: string): string {
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return `${UNITE_DB_CDN}/items/${slug}.png`;
+  return `${UNITE_DB_CDN}/items/held/${uniteFile(name)}.png`;
 }
 
 export function battleItemImage(name: string): string {
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return `${UNITE_DB_CDN}/battle_items/${slug}.png`;
+  return `${UNITE_DB_CDN}/items/battle/${uniteFile(name)}.png`;
 }
 
 /**
@@ -84,4 +87,12 @@ export function battleItemImage(name: string): string {
  */
 export function pokemonImage(slug: string): string {
   return `${UNITE_DB_CDN}/pokemon/portrait/${encodeURIComponent(slug)}.png`;
+}
+
+/**
+ * Retorna a URL do ícone de uma skill (move, passiva ou unite move).
+ * `pokemonSlug` é o campo `name` da API; `skillName` é o `name` da skill.
+ */
+export function skillImage(pokemonSlug: string, skillName: string): string {
+  return `${UNITE_DB_CDN}/skills/${pokemonSlug}/${uniteFile(skillName)}.png`;
 }
