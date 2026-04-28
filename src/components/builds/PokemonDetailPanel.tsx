@@ -88,17 +88,23 @@ export function PokemonDetailPanel({
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
             <Zap className="h-3 w-3 text-gold" /> Skills
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
             {pokemon.skills.map((s) => (
-              <Badge
+              <div
                 key={`sk-${s.name}`}
-                variant="outline"
-                className="text-[10px] border-primary/40 text-primary"
+                className="flex items-center gap-2 p-2 rounded-md border border-border bg-card/40"
                 title={s.description ?? ""}
               >
-                {s.name}
-                {s.ability ? ` · ${s.ability}` : ""}
-              </Badge>
+                <SkillIcon pokemonSlug={pokemon.name} skill={s} />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-foreground truncate">{s.name}</div>
+                  {s.ability && (
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
+                      {s.ability}
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -116,7 +122,12 @@ export function PokemonDetailPanel({
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {pokemon.builds.map((b) => (
-              <UniteBuildCard key={`${pokemon.name}-${b.name}`} build={b} onImport={onImportBuild} />
+              <UniteBuildCard
+                key={`${pokemon.name}-${b.name}`}
+                build={b}
+                pokemonSlug={pokemon.name}
+                onImport={onImportBuild}
+              />
             ))}
           </div>
         )}
