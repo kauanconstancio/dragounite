@@ -51,7 +51,7 @@ function PlannerPage() {
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UniteRole | "all">("all");
   const [drawing, setDrawing] = useState<Stroke | null>(null);
-  const [strokeWidth, setStrokeWidth] = useState(0.6);
+  const [strokeWidth, setStrokeWidth] = useState(3);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [mapId, setMapId] = useState<MapId>("rayquaza");
   const [zoom, setZoom] = useState(1);
