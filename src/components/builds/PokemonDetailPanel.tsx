@@ -4,6 +4,7 @@ import { PokemonImage } from "@/components/PokemonImage";
 import { UniteBuildCard } from "@/components/builds/UniteBuildCard";
 import { Sparkles, Zap } from "lucide-react";
 import { skillImage, type UniteDbBuild, type UniteDbPokemon, type UniteDbSkill } from "@/lib/unite-db-types";
+import { SkillTooltip } from "@/components/builds/UniteTooltips";
 
 function SkillIcon({ pokemonSlug, skill }: { pokemonSlug: string; skill: UniteDbSkill }) {
   const [err, setErr] = useState(false);
