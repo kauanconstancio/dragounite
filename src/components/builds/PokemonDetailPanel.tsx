@@ -1,8 +1,31 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { PokemonImage } from "@/components/PokemonImage";
 import { UniteBuildCard } from "@/components/builds/UniteBuildCard";
 import { Sparkles, Zap } from "lucide-react";
-import type { UniteDbBuild, UniteDbPokemon } from "@/lib/unite-db-types";
+import { skillImage, type UniteDbBuild, type UniteDbPokemon, type UniteDbSkill } from "@/lib/unite-db-types";
+
+function SkillIcon({ pokemonSlug, skill }: { pokemonSlug: string; skill: UniteDbSkill }) {
+  const [err, setErr] = useState(false);
+  // "Attack" (Basic) não tem ícone próprio no CDN.
+  const hasIcon = skill.name && skill.name.toLowerCase() !== "attack";
+  if (!hasIcon || err) {
+    return (
+      <div className="h-12 w-12 rounded-md bg-muted/40 border border-border flex items-center justify-center shrink-0">
+        <Zap className="h-4 w-4 text-muted-foreground/60" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={skillImage(pokemonSlug, skill.name)}
+      alt={skill.name}
+      loading="lazy"
+      onError={() => setErr(true)}
+      className="h-12 w-12 rounded-md bg-muted/40 border border-border object-contain shrink-0"
+    />
+  );
+}
 
 const TIER_COLORS: Record<string, string> = {
   S: "border-gold/60 text-gold bg-gold/10",
