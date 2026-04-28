@@ -60,20 +60,21 @@ export function PokemonDetailPanel({
         </div>
       </header>
 
-      {(pokemon.early_learn?.length || pokemon.standard_moves?.length) && (
+      {Array.isArray(pokemon.skills) && pokemon.skills.length > 0 && (
         <section>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Zap className="h-3 w-3 text-gold" /> Skill Pool
+            <Zap className="h-3 w-3 text-gold" /> Skills
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {pokemon.early_learn?.map((s) => (
-              <Badge key={`e-${s}`} variant="outline" className="text-[10px] border-muted-foreground/40 text-muted-foreground">
-                {s}
-              </Badge>
-            ))}
-            {pokemon.standard_moves?.map((s) => (
-              <Badge key={`u-${s}`} variant="outline" className="text-[10px] border-primary/40 text-primary">
-                {s}
+            {pokemon.skills.map((s) => (
+              <Badge
+                key={`sk-${s.name}`}
+                variant="outline"
+                className="text-[10px] border-primary/40 text-primary"
+                title={s.description ?? ""}
+              >
+                {s.name}
+                {s.ability ? ` · ${s.ability}` : ""}
               </Badge>
             ))}
           </div>
