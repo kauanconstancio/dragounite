@@ -28,6 +28,7 @@ import { Route as DevRouteImport } from './routes/dev'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
@@ -144,6 +145,11 @@ const CadastroRoute = CadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuildsRoute = BuildsRouteImport.update({
+  id: '/builds',
+  path: '/builds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -185,9 +191,9 @@ const DevIndexRoute = DevIndexRouteImport.update({
   getParentRoute: () => DevRoute,
 } as any)
 const BuildsIndexRoute = BuildsIndexRouteImport.update({
-  id: '/builds/',
-  path: '/builds/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => BuildsRoute,
 } as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
   id: '/users',
@@ -252,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
+  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -333,6 +340,7 @@ export interface FileRoutesById {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
+  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -376,6 +384,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/amistosos'
     | '/auth'
+    | '/builds'
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/amistosos'
     | '/auth'
+    | '/builds'
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
@@ -498,6 +508,7 @@ export interface RootRouteChildren {
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   AuthRoute: typeof AuthRoute
+  BuildsRoute: typeof BuildsRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DashboardRoute: typeof DashboardRoute
@@ -518,7 +529,6 @@ export interface RootRouteChildren {
   TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
   JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
-  BuildsIndexRoute: typeof BuildsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -656,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/builds': {
+      id: '/builds'
+      path: '/builds'
+      fullPath: '/builds'
+      preLoaderRoute: typeof BuildsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -714,10 +731,10 @@ declare module '@tanstack/react-router' {
     }
     '/builds/': {
       id: '/builds/'
-      path: '/builds'
+      path: '/'
       fullPath: '/builds/'
       preLoaderRoute: typeof BuildsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof BuildsRoute
     }
     '/staff/users': {
       id: '/staff/users'
@@ -799,6 +816,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BuildsRouteChildren {
+  BuildsPokemonRoute: typeof BuildsPokemonRoute
+  BuildsIndexRoute: typeof BuildsIndexRoute
+}
+
+const BuildsRouteChildren: BuildsRouteChildren = {
+  BuildsPokemonRoute: BuildsPokemonRoute,
+  BuildsIndexRoute: BuildsIndexRoute,
+}
+
+const BuildsRouteWithChildren =
+  BuildsRoute._addFileChildren(BuildsRouteChildren)
+
 interface DevRouteChildren {
   DevFeedbackRoute: typeof DevFeedbackRoute
   DevIndexRoute: typeof DevIndexRoute
@@ -844,6 +874,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   AuthRoute: AuthRoute,
+  BuildsRoute: BuildsRouteWithChildren,
   CadastroRoute: CadastroRoute,
   ComposicoesRoute: ComposicoesRoute,
   DashboardRoute: DashboardRoute,
@@ -864,7 +895,6 @@ const rootRouteChildren: RootRouteChildren = {
   TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
   JogadoresMemberIdRoute: JogadoresMemberIdRoute,
-  BuildsIndexRoute: BuildsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
