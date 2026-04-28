@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { Library, Trash2, Map } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
