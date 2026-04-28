@@ -311,31 +311,6 @@ function PlannerPage() {
                 </button>
               );
             })}
-            {tool.startsWith("draw-") && (
-              <div className="lg:mt-2 flex lg:flex-col items-center gap-2 lg:w-10 px-1 lg:py-2 rounded-md border border-border bg-card/60">
-                <span
-                  className="rounded-full"
-                  style={{
-                    width: Math.min(strokeWidth, 12),
-                    height: Math.min(strokeWidth, 12),
-                    background: TOOL_COLORS[tool],
-                    boxShadow: `0 0 6px ${TOOL_COLORS[tool]}`,
-                  }}
-                />
-                <Slider
-                  min={1}
-                  max={12}
-                  step={1}
-                  value={[strokeWidth]}
-                  onValueChange={(v) => setStrokeWidth(v[0])}
-                  orientation="vertical"
-                  className="h-24 lg:h-28"
-                />
-                <span className="text-[9px] uppercase tracking-widest text-muted-foreground tabular-nums">
-                  {strokeWidth}px
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Mapa */}
