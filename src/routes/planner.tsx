@@ -187,11 +187,35 @@ function PlannerPage() {
     }
   }
 
-  function addToken(name: string) {
+  function addToken(name: string, pos?: { x: number; y: number }) {
     setTokens((t) => [
       ...t,
-      { id: crypto.randomUUID(), pokemon: name, x: 50, y: 50 },
+      { id: crypto.randomUUID(), pokemon: name, x: pos?.x ?? 50, y: pos?.y ?? 50 },
     ]);
+  }
+
+  const [dragOverMap, setDragOverMap] = useState(false);
+
+  function handleMapDragOver(e: React.DragEvent) {
+    if (e.dataTransfer.types.includes("application/x-pokemon")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      if (!dragOverMap) setDragOverMap(true);
+    }
+  }
+
+  function handleMapDragLeave(e: React.DragEvent) {
+    // Only clear when leaving the map container itself
+    if (e.currentTarget === e.target) setDragOverMap(false);
+  }
+
+  function handleMapDrop(e: React.DragEvent) {
+    const name = e.dataTransfer.getData("application/x-pokemon");
+    setDragOverMap(false);
+    if (!name) return;
+    e.preventDefault();
+    const pt = getRelativeCoords(e as unknown as React.MouseEvent);
+    addToken(name, pt);
   }
 
   function startDragToken(id: string) {
