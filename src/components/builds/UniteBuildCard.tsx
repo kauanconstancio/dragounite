@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, Sparkles } from "lucide-react";
-import { heldItemImage, battleItemImage, type UniteDbBuild } from "@/lib/unite-db-types";
+import { heldItemImage, battleItemImage, skillImage, type UniteDbBuild } from "@/lib/unite-db-types";
 
 function ItemImg({ name, kind }: { name: string; kind: "held" | "battle" }) {
   const [err, setErr] = useState(false);
@@ -25,11 +25,36 @@ function ItemImg({ name, kind }: { name: string; kind: "held" | "battle" }) {
   );
 }
 
+function MoveImg({ pokemonSlug, name }: { pokemonSlug: string; name: string }) {
+  const [err, setErr] = useState(false);
+  if (err) {
+    return (
+      <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+        {name}
+      </Badge>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5 px-1.5 py-1 rounded-md border border-primary/30 bg-primary/5">
+      <img
+        src={skillImage(pokemonSlug, name)}
+        alt={name}
+        className="h-6 w-6 object-contain"
+        loading="lazy"
+        onError={() => setErr(true)}
+      />
+      <span className="text-[10px] text-primary font-medium">{name}</span>
+    </div>
+  );
+}
+
 export function UniteBuildCard({
   build,
+  pokemonSlug,
   onImport,
 }: {
   build: UniteDbBuild;
+  pokemonSlug?: string;
   onImport?: (b: UniteDbBuild) => void;
 }) {
   return (
