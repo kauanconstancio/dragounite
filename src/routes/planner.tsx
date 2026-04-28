@@ -324,58 +324,74 @@ function PlannerPage() {
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Pool de Pokémons */}
-      <div className="space-y-3 rounded-xl border border-border bg-card/40 p-4">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar Pokémon..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as UniteRole | "all")}>
-            <SelectTrigger className="sm:w-48"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {ROLE_FILTERS.map((r) => (
-                <SelectItem key={r} value={r}>
-                  {r === "all" ? "Todas as funções" : UNITE_ROLE_LABEL[r]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {filtered.map((p) => {
-            const style = UNITE_ROLE_STYLES[p.role];
-            return (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => addToken(p.name)}
-                className="group shrink-0 w-16 flex flex-col items-center gap-1 p-1 rounded-md border border-transparent hover:bg-accent/30 hover:border-primary/40 transition-all"
-                title={`Adicionar ${p.name} ao mapa`}
-              >
-                <div className="h-12 w-12 group-hover:scale-110 transition-transform">
-                  <PokemonImage name={p.name} withRoleBg />
-                </div>
-                <span className={cn("text-[8px] uppercase tracking-widest font-display truncate w-full text-center", style.text)}>
-                  {p.name.split(" ")[0]}
-                </span>
-              </button>
-            );
-          })}
-          {filtered.length === 0 && (
-            <div className="text-center text-muted-foreground py-6 text-sm w-full">
-              Nenhum Pokémon encontrado.
+          {/* Pool de Pokémons - Sidebar */}
+          <div className="rounded-lg border border-border bg-background/40 flex flex-col lg:max-h-[calc(100vh-12rem)] lg:sticky lg:top-4 self-start w-full">
+            <div className="p-3 border-b border-border space-y-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar Pokémon..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="pl-9 h-9"
+                />
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                {ROLE_FILTERS.map((r) => {
+                  const active = roleFilter === r;
+                  const style = r !== "all" ? UNITE_ROLE_STYLES[r] : null;
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRoleFilter(r)}
+                      className={cn(
+                        "text-[10px] uppercase tracking-widest font-display px-2 py-1 rounded border transition-colors",
+                        active
+                          ? style
+                            ? cn(style.bg, style.ring, style.text)
+                            : "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40",
+                      )}
+                    >
+                      {r === "all" ? "Todos" : UNITE_ROLE_LABEL[r]}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                {filtered.length} Pokémon{filtered.length === 1 ? "" : "s"} · clique para adicionar
+              </p>
             </div>
-          )}
+            <div className="overflow-y-auto p-2 grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 gap-1.5 max-h-80 lg:max-h-none">
+              {filtered.map((p) => {
+                const style = UNITE_ROLE_STYLES[p.role];
+                return (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => addToken(p.name)}
+                    className="group flex flex-col items-center gap-1 p-1.5 rounded-md border border-transparent hover:bg-accent/40 hover:border-primary/40 transition-colors"
+                    title={`Adicionar ${p.name} ao mapa`}
+                    style={{ contentVisibility: "auto", containIntrinsicSize: "70px" }}
+                  >
+                    <div className="h-10 w-10 group-hover:scale-110 transition-transform">
+                      <PokemonImage name={p.name} withRoleBg />
+                    </div>
+                    <span className={cn("text-[8px] uppercase tracking-widest font-display truncate w-full text-center leading-tight", style.text)}>
+                      {p.name.split(" ")[0]}
+                    </span>
+                  </button>
+                );
+              })}
+              {filtered.length === 0 && (
+                <div className="text-center text-muted-foreground py-6 text-xs col-span-full">
+                  Nenhum Pokémon encontrado.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
