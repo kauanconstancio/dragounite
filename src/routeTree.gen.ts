@@ -45,6 +45,7 @@ import { Route as StaffDevRouteImport } from './routes/staff.dev'
 import { Route as StaffAuditRouteImport } from './routes/staff.audit'
 import { Route as JogadoresMemberIdRouteImport } from './routes/jogadores.$memberId'
 import { Route as DevFeedbackRouteImport } from './routes/dev.feedback'
+import { Route as BuildsPokemonRouteImport } from './routes/builds.$pokemon'
 import { Route as StaffFinanceIndexRouteImport } from './routes/staff.finance.index'
 import { Route as StaffFinanceWaitlistRouteImport } from './routes/staff.finance.waitlist'
 
@@ -228,6 +229,11 @@ const DevFeedbackRoute = DevFeedbackRouteImport.update({
   path: '/feedback',
   getParentRoute: () => DevRoute,
 } as any)
+const BuildsPokemonRoute = BuildsPokemonRouteImport.update({
+  id: '/$pokemon',
+  path: '/$pokemon',
+  getParentRoute: () => BuildsRoute,
+} as any)
 const StaffFinanceIndexRoute = StaffFinanceIndexRouteImport.update({
   id: '/finance/',
   path: '/finance/',
@@ -246,7 +252,7 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRoute
+  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/builds/$pokemon': typeof BuildsPokemonRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
   '/staff/audit': typeof StaffAuditRoute
@@ -286,7 +293,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRoute
+  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/builds/$pokemon': typeof BuildsPokemonRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
   '/staff/audit': typeof StaffAuditRoute
@@ -325,7 +333,7 @@ export interface FileRoutesById {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRoute
+  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -345,6 +353,7 @@ export interface FileRoutesById {
   '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
+  '/builds/$pokemon': typeof BuildsPokemonRoute
   '/dev/feedback': typeof DevFeedbackRoute
   '/jogadores/$memberId': typeof JogadoresMemberIdRoute
   '/staff/audit': typeof StaffAuditRoute
@@ -387,6 +396,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/tier-list'
     | '/treinos'
+    | '/builds/$pokemon'
     | '/dev/feedback'
     | '/jogadores/$memberId'
     | '/staff/audit'
@@ -425,6 +435,7 @@ export interface FileRouteTypes {
     | '/roster'
     | '/tier-list'
     | '/treinos'
+    | '/builds/$pokemon'
     | '/dev/feedback'
     | '/jogadores/$memberId'
     | '/staff/audit'
@@ -465,6 +476,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/tier-list'
     | '/treinos'
+    | '/builds/$pokemon'
     | '/dev/feedback'
     | '/jogadores/$memberId'
     | '/staff/audit'
@@ -486,7 +498,7 @@ export interface RootRouteChildren {
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   AuthRoute: typeof AuthRoute
-  BuildsRoute: typeof BuildsRoute
+  BuildsRoute: typeof BuildsRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DashboardRoute: typeof DashboardRoute
@@ -763,6 +775,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevFeedbackRouteImport
       parentRoute: typeof DevRoute
     }
+    '/builds/$pokemon': {
+      id: '/builds/$pokemon'
+      path: '/$pokemon'
+      fullPath: '/builds/$pokemon'
+      preLoaderRoute: typeof BuildsPokemonRouteImport
+      parentRoute: typeof BuildsRoute
+    }
     '/staff/finance/': {
       id: '/staff/finance/'
       path: '/finance'
@@ -779,6 +798,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface BuildsRouteChildren {
+  BuildsPokemonRoute: typeof BuildsPokemonRoute
+}
+
+const BuildsRouteChildren: BuildsRouteChildren = {
+  BuildsPokemonRoute: BuildsPokemonRoute,
+}
+
+const BuildsRouteWithChildren =
+  BuildsRoute._addFileChildren(BuildsRouteChildren)
 
 interface DevRouteChildren {
   DevFeedbackRoute: typeof DevFeedbackRoute
@@ -825,7 +855,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   AuthRoute: AuthRoute,
-  BuildsRoute: BuildsRoute,
+  BuildsRoute: BuildsRouteWithChildren,
   CadastroRoute: CadastroRoute,
   ComposicoesRoute: ComposicoesRoute,
   DashboardRoute: DashboardRoute,
