@@ -91,21 +91,23 @@ export function PokemonDetailPanel({
           </div>
           <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
             {pokemon.skills.map((s) => (
-              <div
+              <SkillTooltip
                 key={`sk-${s.name}`}
-                className="flex items-center gap-2 p-2 rounded-md border border-border bg-card/40"
-                title={s.description ?? ""}
-              >
-                <SkillIcon pokemonSlug={pokemon.name} skill={s} />
-                <div className="min-w-0">
-                  <div className="text-xs font-medium text-foreground truncate">{s.name}</div>
-                  {s.ability && (
-                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
-                      {s.ability}
+                skill={s}
+                trigger={
+                  <div className="flex items-center gap-2 p-2 rounded-md border border-border bg-card/40 cursor-help hover:border-primary/40 transition-colors w-full">
+                    <SkillIcon pokemonSlug={pokemon.name} skill={s} />
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium text-foreground truncate">{s.name}</div>
+                      {s.ability && (
+                        <div className="text-[9px] uppercase tracking-widest text-muted-foreground truncate">
+                          {s.ability}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                }
+              />
             ))}
           </div>
         </section>
