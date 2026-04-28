@@ -198,8 +198,6 @@ function TierListPage() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                        <Trash2 className="h-2.5 w-2.5" />
-                      </button>
                     </div>
                   ))
                 )}
