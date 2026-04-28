@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
@@ -59,6 +60,8 @@ function PlannerPage() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const [pendingNote, setPendingNote] = useState<{ x: number; y: number } | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
   const currentMap = MAPS.find((m) => m.id === mapId)!;
 
   const MIN_ZOOM = 1;
@@ -148,10 +151,8 @@ function PlannerPage() {
     const pt = getRelativeCoords(e);
 
     if (tool === "text") {
-      const text = window.prompt("Anotação:");
-      if (text?.trim()) {
-        setNotes((n) => [...n, { id: crypto.randomUUID(), x: pt.x, y: pt.y, text: text.trim() }]);
-      }
+      setPendingNote({ x: pt.x, y: pt.y });
+      setNoteDraft("");
       return;
     }
 
@@ -539,6 +540,37 @@ function PlannerPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!pendingNote} onOpenChange={(o) => { if (!o) setPendingNote(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar anotação</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const text = noteDraft.trim();
+              if (text && pendingNote) {
+                setNotes((n) => [...n, { id: crypto.randomUUID(), x: pendingNote.x, y: pendingNote.y, text }]);
+              }
+              setPendingNote(null);
+            }}
+            className="space-y-4"
+          >
+            <Input
+              autoFocus
+              placeholder="Texto da anotação..."
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              maxLength={60}
+            />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPendingNote(null)}>Cancelar</Button>
+              <Button type="submit" disabled={!noteDraft.trim()}>Adicionar</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

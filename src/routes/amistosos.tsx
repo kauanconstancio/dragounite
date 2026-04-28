@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -257,7 +258,7 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, mu
                         </Button>
                       )}
                       <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover?")) onDelete(s.id); }}><Trash2 className="h-4 w-4" /></Button>
+                      <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover amistoso?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => onDelete(s.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </RequireRole>
                   </div>
                 </div>

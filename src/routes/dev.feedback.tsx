@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
@@ -236,16 +237,17 @@ function DevFeedbackPage() {
                 )}
 
                 <div className="mt-4 flex justify-between gap-2">
-                  <Button
+                  <ConfirmButton
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (confirm("Remover este feedback?")) deleteMutation.mutate(item.id);
-                    }}
+                    title="Remover feedback?"
+                    description="Esta ação não pode ser desfeita."
+                    confirmLabel="Remover"
+                    onConfirm={() => deleteMutation.mutate(item.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5 mr-1" /> Remover
-                  </Button>
+                  </ConfirmButton>
                   <Button size="sm" onClick={() => setEditing(item)}>
                     Gerenciar
                   </Button>

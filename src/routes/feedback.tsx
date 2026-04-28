@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { FeedbackDialog } from "@/components/feedback/FeedbackDialog";
 import {
   Plus,
@@ -149,16 +150,17 @@ function FeedbackPage() {
                       {format(new Date(item.created_at), "dd MMM yyyy · HH:mm", { locale: ptBR })}
                     </span>
                     {item.status === "open" && (
-                      <Button
+                      <ConfirmButton
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          if (confirm("Remover este feedback?")) deleteMutation.mutate(item.id);
-                        }}
+                        title="Remover feedback?"
+                        description="Esta ação não pode ser desfeita."
+                        confirmLabel="Remover"
+                        onConfirm={() => deleteMutation.mutate(item.id)}
                         className="h-7 text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-3 w-3" />
-                      </Button>
+                      </ConfirmButton>
                     )}
                   </div>
                 </Card>

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStaff, type StaffRole } from "@/hooks/useStaff";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -246,17 +247,16 @@ function StaffMembersPage() {
                   >
                     {s.active ? "Desativar" : "Reativar"}
                   </Button>
-                  <Button
+                  <ConfirmButton
                     size="sm"
                     variant="ghost"
-                    onClick={() => {
-                      if (confirm(`Remover ${s.full_name ?? s.email} da equipe?`)) {
-                        removeMut.mutate(s.id);
-                      }
-                    }}
+                    title={`Remover ${s.full_name ?? s.email}?`}
+                    description="O membro perderá acesso à equipe."
+                    confirmLabel="Remover"
+                    onConfirm={() => removeMut.mutate(s.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  </ConfirmButton>
                 </TableCell>
               </TableRow>
             ))}

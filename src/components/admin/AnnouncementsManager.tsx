@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -154,9 +155,17 @@ export function AnnouncementsManager() {
                   <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover aviso?")) remove.mutate(p.id); }}>
+                  <ConfirmButton
+                    size="icon"
+                    variant="ghost"
+                    className="hover:text-destructive"
+                    title="Remover aviso?"
+                    description="Esta ação não pode ser desfeita."
+                    confirmLabel="Remover"
+                    onConfirm={() => remove.mutate(p.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </ConfirmButton>
                 </div>
               </div>
             </Card>
