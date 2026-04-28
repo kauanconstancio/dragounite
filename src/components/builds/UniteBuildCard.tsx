@@ -115,12 +115,16 @@ export function UniteBuildCard({
         {(build.basic?.length || build.upgrade?.length) && (
           <div>
             <div className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Moveset</div>
-            <div className="flex flex-wrap gap-1">
-              {build.upgrade?.map((m) => (
-                <Badge key={m} variant="outline" className="text-[10px] border-primary/40 text-primary">
-                  {m}
-                </Badge>
-              ))}
+            <div className="flex flex-wrap gap-1.5">
+              {build.upgrade?.map((m) =>
+                pokemonSlug ? (
+                  <MoveImg key={m} pokemonSlug={pokemonSlug} name={m} />
+                ) : (
+                  <Badge key={m} variant="outline" className="text-[10px] border-primary/40 text-primary">
+                    {m}
+                  </Badge>
+                ),
+              )}
             </div>
             {build.basic && build.basic.length > 0 && (
               <div className="text-[9px] text-muted-foreground mt-1">
