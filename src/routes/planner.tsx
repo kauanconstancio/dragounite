@@ -280,6 +280,29 @@ function PlannerPage() {
     setDraggingId(null);
   }
 
+  useEffect(() => {
+    if (!draggingId) return;
+
+    function handleWindowPointerMove(e: PointerEvent) {
+      moveTokenAt(e.clientX, e.clientY);
+    }
+
+    function handleWindowPointerEnd() {
+      endDragToken();
+    }
+
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", handleWindowPointerEnd);
+    window.addEventListener("pointercancel", handleWindowPointerEnd);
+    window.addEventListener("blur", handleWindowPointerEnd);
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerEnd);
+      window.removeEventListener("pointercancel", handleWindowPointerEnd);
+      window.removeEventListener("blur", handleWindowPointerEnd);
+    };
+  }, [draggingId, pan.x, pan.y, zoom]);
+
   function removeToken(id: string) {
     setTokens((ts) => ts.filter((t) => t.id !== id));
   }
