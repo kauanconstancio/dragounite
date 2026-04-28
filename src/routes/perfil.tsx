@@ -28,6 +28,7 @@ type Member = {
   id: string;
   name: string;
   ign: string | null;
+  game_id: string | null;
   role: "player" | "substitute" | "coach" | "manager";
   lane: "top" | "jungle" | "mid" | "bot" | "support" | "flex" | null;
   main_pokemon: string | null;
@@ -115,6 +116,7 @@ function PerfilPage() {
       const payload = {
         name: displayName,
         ign: form.ign?.trim() || null,
+        game_id: form.game_id?.trim() || null,
         discord: form.discord?.trim() || null,
         main_pokemon: form.main_pokemon ?? null,
         lane: form.lane ?? null,
@@ -232,6 +234,18 @@ function PerfilPage() {
               onChange={(e) => setForm({ ...form, ign: e.target.value })}
               placeholder="Ex: Nkyy!"
             />
+          </div>
+          <div>
+            <Label>ID da conta no jogo</Label>
+            <Input
+              value={form.game_id ?? ""}
+              onChange={(e) => setForm({ ...form, game_id: e.target.value })}
+              placeholder="Ex: 1234-5678-9012"
+              maxLength={64}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
+              Friend code / ID usado para adicionar no jogo
+            </p>
           </div>
           <div>
             <Label>Discord</Label>
