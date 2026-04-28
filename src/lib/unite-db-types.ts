@@ -44,6 +44,7 @@ export type UniteDbHeldItem = {
   bonus3?: string;
   description1?: string;
   description2?: string;
+  note?: string;
   tier?: string;
 };
 
