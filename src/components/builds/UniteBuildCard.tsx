@@ -3,7 +3,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, Sparkles } from "lucide-react";
-import { heldItemImage, battleItemImage, skillImage, type UniteDbBuild } from "@/lib/unite-db-types";
+import {
+  heldItemImage,
+  battleItemImage,
+  skillImage,
+  type UniteDbBuild,
+  type UniteDbSkill,
+} from "@/lib/unite-db-types";
+import { useUniteItemsIndex } from "@/hooks/useUniteItemsIndex";
+import {
+  BattleItemTooltip,
+  HeldItemTooltip,
+  SkillTooltip,
+} from "@/components/builds/UniteTooltips";
 
 function ItemImg({ name, kind }: { name: string; kind: "held" | "battle" }) {
   const [err, setErr] = useState(false);
