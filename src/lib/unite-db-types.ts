@@ -28,8 +28,9 @@ export type UniteDbPokemon = {
   damage_type?: string;
   tags?: { range?: string; difficulty?: string; role?: string };
   notes?: string;
-  early_learn?: string[];
-  standard_moves?: string[];
+  // API retorna estes como flags string ("True"/"False"), não listas.
+  early_learn?: string;
+  standard_moves?: string;
   builds: UniteDbBuild[];
   skills?: UniteDbSkill[];
   last_updated?: string;
