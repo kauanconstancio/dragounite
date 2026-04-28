@@ -172,7 +172,7 @@ function Section({ title, items, onEdit, onDelete, muted }: { title: string; ite
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button size="icon" variant="ghost" onClick={() => onEdit(t)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" className="hover:text-destructive" onClick={() => { if (confirm("Remover treino?")) onDelete(t.id); }}><Trash2 className="h-4 w-4" /></Button>
+                      <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover treino?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => onDelete(t.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </div>
                   </div>
                 </Card>
