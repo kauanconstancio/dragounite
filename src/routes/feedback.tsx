@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/shared/ConfirmButton";
 import { FeedbackDialog } from "@/components/feedback/FeedbackDialog";
 import {
   Plus,
