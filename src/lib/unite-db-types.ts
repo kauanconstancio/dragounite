@@ -26,7 +26,7 @@ export type UniteDbPokemon = {
   tier?: string;
   soloQtier?: string;
   damage_type?: string;
-  tags?: string[];
+  tags?: { range?: string; difficulty?: string; role?: string };
   notes?: string;
   early_learn?: string[];
   standard_moves?: string[];

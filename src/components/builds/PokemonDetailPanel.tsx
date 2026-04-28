@@ -45,11 +45,14 @@ export function PokemonDetailPanel({
                 {pokemon.damage_type}
               </Badge>
             )}
-            {pokemon.tags?.slice(0, 4).map((t) => (
-              <Badge key={t} variant="outline" className="text-[10px] uppercase tracking-widest border-border/60 text-muted-foreground">
-                {t}
-              </Badge>
-            ))}
+            {[pokemon.tags?.role, pokemon.tags?.range, pokemon.tags?.difficulty]
+              .filter((t): t is string => Boolean(t))
+              .slice(0, 4)
+              .map((t) => (
+                <Badge key={t} variant="outline" className="text-[10px] uppercase tracking-widest border-border/60 text-muted-foreground">
+                  {t}
+                </Badge>
+              ))}
           </div>
           {pokemon.notes && (
             <p className="mt-3 text-xs text-muted-foreground italic line-clamp-3">{pokemon.notes}</p>
