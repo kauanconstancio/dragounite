@@ -18,6 +18,7 @@ export function LandingNav() {
           <a href="#features" className="hover:text-white transition-colors">Recursos</a>
           <a href="#how" className="hover:text-white transition-colors">Como funciona</a>
           <a href="#roadmap" className="hover:text-white transition-colors">Roadmap</a>
+          <Link to="/planos" className="hover:text-white transition-colors">Planos</Link>
           <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
         </nav>
 
