@@ -544,13 +544,17 @@ function PlannerPage() {
                     }}
                     onPointerUp={(e) => {
                       if (draggingId === t.id) {
-                        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                          e.currentTarget.releasePointerCapture(e.pointerId);
+                        }
                         endDragToken();
                       }
                     }}
                     onPointerCancel={(e) => {
                       if (draggingId === t.id) {
-                        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                          e.currentTarget.releasePointerCapture(e.pointerId);
+                        }
                         endDragToken();
                       }
                     }}
