@@ -3,7 +3,7 @@ import { useRef, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move } from "lucide-react";
+import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
