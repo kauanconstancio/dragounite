@@ -263,7 +263,21 @@ function PlannerPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-1 border border-border rounded-md bg-card/60">
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Diminuir zoom" onClick={() => zoomBy(-0.25)} disabled={zoom <= MIN_ZOOM}>
+                <ZoomOut className="h-3.5 w-3.5" />
+              </Button>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums w-10 text-center">
+                {Math.round(zoom * 100)}%
+              </span>
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Aumentar zoom" onClick={() => zoomBy(0.25)} disabled={zoom >= MAX_ZOOM}>
+                <ZoomIn className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" title="Resetar zoom" onClick={resetZoom} disabled={zoom === 1 && pan.x === 0 && pan.y === 0}>
+                <Maximize2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
             <Button variant="outline" size="sm" onClick={undoLast} className="uppercase tracking-wider">
               <RotateCcw className="mr-2 h-3.5 w-3.5" /> Desfazer
             </Button>
