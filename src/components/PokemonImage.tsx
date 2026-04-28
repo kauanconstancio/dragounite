@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { getPokemonSprite, getPokemonRole, UNITE_ROLE_STYLES } from "@/lib/pokemon";
 import { pokemonImage } from "@/lib/unite-db-types";
+import { usePokemonSlugIndex } from "@/hooks/usePokemonSlugIndex";
 import { cn } from "@/lib/utils";
 
 type Props = {
   name: string | null | undefined;
   /**
    * Slug oficial do unite-db (campo `name` da API). Quando informado,
-   * a imagem vem direto do CDN do unite-db, garantindo cobertura total
-   * sem depender do mapeamento manual de sprites.
+   * pula a resolução automática e usa este slug direto.
    */
   uniteDbSlug?: string | null;
   className?: string;
@@ -17,13 +17,19 @@ type Props = {
 };
 
 /**
- * Renders a Pokémon's official Unite artwork. Prefere o CDN do unite-db
- * quando `uniteDbSlug` é informado; caso contrário usa o sprite oficial
- * mapeado em src/lib/pokemon.ts. Cai para texto se a imagem falhar.
+ * Renders a Pokémon's official Unite artwork.
+ *
+ * Resolução do src (em ordem de preferência):
+ * 1. `uniteDbSlug` explícito → CDN unite-db
+ * 2. Lookup automático no index do unite-db (cobre 91 pokémons sem mapeamento manual)
+ * 3. Fallback para o sprite oficial mapeado em src/lib/pokemon.ts
+ * 4. Texto com o nome se nada carregar
  */
 export function PokemonImage({ name, uniteDbSlug, className, withRoleBg = false }: Props) {
   const [errored, setErrored] = useState(false);
-  const src = uniteDbSlug ? pokemonImage(uniteDbSlug) : getPokemonSprite(name);
+  const { resolve } = usePokemonSlugIndex();
+  const resolvedSlug = uniteDbSlug ?? resolve(name);
+  const src = resolvedSlug ? pokemonImage(resolvedSlug) : getPokemonSprite(name);
   const role = getPokemonRole(name);
   const roleStyle = role ? UNITE_ROLE_STYLES[role] : null;
 
