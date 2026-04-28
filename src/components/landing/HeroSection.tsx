@@ -108,48 +108,8 @@ export function HeroSection() {
           </a>
         </div>
 
-        {/* Mockup */}
-        <div className="relative mt-20 mx-auto max-w-5xl">
-          <div className="absolute -inset-4 bg-gradient-to-r from-indigo-600/30 via-purple-600/20 to-indigo-600/30 rounded-2xl blur-2xl" />
-          <div className="relative rounded-2xl border border-indigo-500/20 bg-gradient-to-b from-[#141432] to-[#0a0a1a] p-6 shadow-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-3 w-3 rounded-full bg-red-500/60" />
-              <div className="h-3 w-3 rounded-full bg-yellow-500/60" />
-              <div className="h-3 w-3 rounded-full bg-green-500/60" />
-              <div className="ml-3 text-xs text-slate-500 font-mono">gymly.app/dashboard</div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { label: "Win Rate", value: "68%", trend: "+12%" },
-                { label: "KA Médio", value: "9.4", trend: "+1.2" },
-                { label: "Scrims", value: "42", trend: "esta semana" },
-              ].map((kpi) => (
-                <div
-                  key={kpi.label}
-                  className="rounded-xl border border-indigo-500/10 bg-[#0a0a1a]/60 p-4 text-left"
-                >
-                  <div className="text-[10px] uppercase tracking-widest text-slate-500">
-                    {kpi.label}
-                  </div>
-                  <div className="mt-2 text-3xl font-bold text-white">{kpi.value}</div>
-                  <div className="mt-1 text-xs text-indigo-400">{kpi.trend}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 rounded-xl border border-indigo-500/10 bg-[#0a0a1a]/60 p-4 h-48 flex items-end gap-2">
-              {[40, 65, 50, 80, 70, 90, 75, 95, 85, 100, 88, 92].map((h, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t bg-gradient-to-t from-indigo-600 to-indigo-400"
-                  style={{ height: `${h}%`, opacity: 0.4 + i * 0.05 }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
 }
+
