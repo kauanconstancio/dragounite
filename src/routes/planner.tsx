@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -131,15 +131,23 @@ function PlannerPage() {
     [query, roleFilter],
   );
 
-  function getRelativeCoords(e: React.MouseEvent | React.PointerEvent) {
+  function getRelativeCoordsFromClient(clientX: number, clientY: number) {
     const rect = mapRef.current!.getBoundingClientRect();
-    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+    const xPct = ((clientX - rect.left) / rect.width) * 100;
+    const yPct = ((clientY - rect.top) / rect.height) * 100;
     // Converte coordenadas do container para coordenadas do conteúdo (considerando zoom + pan)
     return {
       x: 50 + (xPct - 50 - pan.x) / zoom,
       y: 50 + (yPct - 50 - pan.y) / zoom,
     };
+  }
+
+  function getRelativeCoords(e: React.MouseEvent | React.PointerEvent) {
+    return getRelativeCoordsFromClient(e.clientX, e.clientY);
+  }
+
+  function clampMapPercent(value: number) {
+    return Math.max(0, Math.min(100, value));
   }
 
   function handlePanPointerDown(e: React.PointerEvent) {
