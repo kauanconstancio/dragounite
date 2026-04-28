@@ -135,9 +135,17 @@ function BuildsPage() {
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(b); setOpen(true); }}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 hover:text-destructive" onClick={() => { if (confirm("Remover?")) remove.mutate(b.id); }}>
+                    <ConfirmButton
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 hover:text-destructive"
+                      title="Remover build?"
+                      description="Esta ação não pode ser desfeita."
+                      confirmLabel="Remover"
+                      onConfirm={() => remove.mutate(b.id)}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    </ConfirmButton>
                   </div>
                 </div>
 
