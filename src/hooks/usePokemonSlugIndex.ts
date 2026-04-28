@@ -32,58 +32,70 @@ export function usePokemonSlugIndex() {
     gcTime: 60 * 60 * 1000,
   });
 
-  const index = useMemo(() => {
-    const map = new Map<string, string>();
-    const add = (key: string, slug: string) => {
+  const { slugIndex, roleIndex } = useMemo(() => {
+    const slug = new Map<string, string>();
+    const role = new Map<string, UniteRole>();
+    const addSlug = (key: string, value: string) => {
       const k = key.toLowerCase().trim();
-      if (k && !map.has(k)) map.set(k, slug);
+      if (k && !slug.has(k)) slug.set(k, value);
+    };
+    const addRole = (key: string, value: UniteRole) => {
+      const k = key.toLowerCase().trim();
+      if (k && !role.has(k)) role.set(k, value);
     };
     const flat = (s: string) =>
       s.replace(/[-._']/g, " ").replace(/\s+/g, " ").trim();
 
     for (const p of data?.data ?? []) {
-      const slug = p.name;
+      const slugVal = p.name;
       const display = p.display_name;
+      const r = normalizeRole(p.tags?.role);
 
-      // 1) chaves diretas
-      add(display, slug);
-      add(slug, slug);
-
-      // 2) variantes normalizadas (sem hífens / pontos / apóstrofos)
-      add(flat(display), slug);
-      add(flat(slug), slug);
-      add(flat(display).replace(/\s+/g, ""), slug);
-      add(flat(slug).replace(/\s+/g, ""), slug);
-
-      // 3) aliases para variantes Mega — roster interno usa "Charizard X",
-      //    "Mewtwo Y", "Mega Lucario" etc., enquanto a API expõe
-      //    "Mega Charizard X" / "Mega Mewtwo X". Indexa ambos os formatos.
+      const keys = new Set<string>([
+        display,
+        slugVal,
+        flat(display),
+        flat(slugVal),
+        flat(display).replace(/\s+/g, ""),
+        flat(slugVal).replace(/\s+/g, ""),
+      ]);
+      // Aliases para variantes Mega
       if (/^mega\s+/i.test(display)) {
         const noMega = display.replace(/^mega\s+/i, "").trim();
-        add(noMega, slug);
-        add(flat(noMega), slug);
-        add(flat(noMega).replace(/\s+/g, ""), slug);
+        keys.add(noMega);
+        keys.add(flat(noMega));
+        keys.add(flat(noMega).replace(/\s+/g, ""));
       }
-      // slug "MewtwoX" → "Mewtwo X" / "Mega Mewtwo X"
-      const spaced = slug.replace(/([a-z])([A-Z])/g, "$1 $2");
-      if (spaced !== slug) {
-        add(spaced, slug);
-        add(`mega ${spaced}`, slug);
+      const spaced = slugVal.replace(/([a-z])([A-Z])/g, "$1 $2");
+      if (spaced !== slugVal) {
+        keys.add(spaced);
+        keys.add(`mega ${spaced}`);
+      }
+
+      for (const k of keys) {
+        addSlug(k, slugVal);
+        if (r) addRole(k, r);
       }
     }
-    return map;
+    return { slugIndex: slug, roleIndex: role };
   }, [data]);
 
-  function resolve(name: string | null | undefined): string | null {
+  function lookup<T>(map: Map<string, T>, name: string | null | undefined): T | null {
     if (!name) return null;
     const raw = name.toLowerCase().trim();
-    if (index.has(raw)) return index.get(raw)!;
-    const flat = raw.replace(/[-._']/g, " ").replace(/\s+/g, " ").trim();
-    if (index.has(flat)) return index.get(flat)!;
-    const compact = flat.replace(/\s+/g, "");
-    if (index.has(compact)) return index.get(compact)!;
+    if (map.has(raw)) return map.get(raw)!;
+    const f = raw.replace(/[-._']/g, " ").replace(/\s+/g, " ").trim();
+    if (map.has(f)) return map.get(f)!;
+    const c = f.replace(/\s+/g, "");
+    if (map.has(c)) return map.get(c)!;
     return null;
   }
 
-  return { resolve, ready: index.size > 0 };
+  return {
+    /** Resolve um nome qualquer para o slug oficial do unite-db. */
+    resolve: (name: string | null | undefined) => lookup(slugIndex, name),
+    /** Resolve a role oficial (unite-db) para qualquer nome conhecido. */
+    resolveRole: (name: string | null | undefined) => lookup(roleIndex, name),
+    ready: slugIndex.size > 0,
+  };
 }
