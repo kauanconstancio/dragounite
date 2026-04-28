@@ -612,7 +612,7 @@ function DashboardPage() {
           {todayEvents.length === 0 && next.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nada agendado.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto pr-1 -mr-1 flex-1 min-h-0">
               {todayEvents.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
