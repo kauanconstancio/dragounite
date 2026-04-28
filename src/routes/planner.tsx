@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -131,15 +131,23 @@ function PlannerPage() {
     [query, roleFilter],
   );
 
-  function getRelativeCoords(e: React.MouseEvent | React.PointerEvent) {
+  function getRelativeCoordsFromClient(clientX: number, clientY: number) {
     const rect = mapRef.current!.getBoundingClientRect();
-    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+    const xPct = ((clientX - rect.left) / rect.width) * 100;
+    const yPct = ((clientY - rect.top) / rect.height) * 100;
     // Converte coordenadas do container para coordenadas do conteúdo (considerando zoom + pan)
     return {
       x: 50 + (xPct - 50 - pan.x) / zoom,
       y: 50 + (yPct - 50 - pan.y) / zoom,
     };
+  }
+
+  function getRelativeCoords(e: React.MouseEvent | React.PointerEvent) {
+    return getRelativeCoordsFromClient(e.clientX, e.clientY);
+  }
+
+  function clampMapPercent(value: number) {
+    return Math.max(0, Math.min(100, value));
   }
 
   function handlePanPointerDown(e: React.PointerEvent) {
@@ -236,25 +244,30 @@ function PlannerPage() {
     addToken(name, pt);
   }
 
-  const tokenDragRef = useRef<{ id: string; startX: number; startY: number; moved: boolean } | null>(null);
+  const tokenDragRef = useRef<{ id: string; startX: number; startY: number; moved: boolean; pointerId: number | null } | null>(null);
 
   function startDragToken(id: string, e: React.PointerEvent) {
     if (tool !== "select") return;
-    tokenDragRef.current = { id, startX: e.clientX, startY: e.clientY, moved: false };
+    e.preventDefault();
+    tokenDragRef.current = { id, startX: e.clientX, startY: e.clientY, moved: false, pointerId: e.pointerId };
     setDraggingId(id);
   }
 
-  function handleTokenMove(e: React.PointerEvent) {
+  function moveTokenAt(clientX: number, clientY: number) {
     if (!draggingId) return;
     const ref = tokenDragRef.current;
     if (ref && !ref.moved) {
-      const dx = Math.abs(e.clientX - ref.startX);
-      const dy = Math.abs(e.clientY - ref.startY);
+      const dx = Math.abs(clientX - ref.startX);
+      const dy = Math.abs(clientY - ref.startY);
       if (dx < 4 && dy < 4) return; // ignora micro-movimentos antes de iniciar drag real
       ref.moved = true;
     }
-    const pt = getRelativeCoords(e);
-    setTokens((ts) => ts.map((t) => (t.id === draggingId ? { ...t, x: pt.x, y: pt.y } : t)));
+    const pt = getRelativeCoordsFromClient(clientX, clientY);
+    setTokens((ts) => ts.map((t) => (t.id === draggingId ? { ...t, x: clampMapPercent(pt.x), y: clampMapPercent(pt.y) } : t)));
+  }
+
+  function handleTokenMove(e: React.PointerEvent) {
+    moveTokenAt(e.clientX, e.clientY);
   }
 
   function endDragToken() {
@@ -266,6 +279,29 @@ function PlannerPage() {
     tokenDragRef.current = null;
     setDraggingId(null);
   }
+
+  useEffect(() => {
+    if (!draggingId) return;
+
+    function handleWindowPointerMove(e: PointerEvent) {
+      moveTokenAt(e.clientX, e.clientY);
+    }
+
+    function handleWindowPointerEnd() {
+      endDragToken();
+    }
+
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", handleWindowPointerEnd);
+    window.addEventListener("pointercancel", handleWindowPointerEnd);
+    window.addEventListener("blur", handleWindowPointerEnd);
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerEnd);
+      window.removeEventListener("pointercancel", handleWindowPointerEnd);
+      window.removeEventListener("blur", handleWindowPointerEnd);
+    };
+  }, [draggingId, pan.x, pan.y, zoom]);
 
   function removeToken(id: string) {
     setTokens((ts) => ts.filter((t) => t.id !== id));
@@ -508,13 +544,17 @@ function PlannerPage() {
                     }}
                     onPointerUp={(e) => {
                       if (draggingId === t.id) {
-                        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                          e.currentTarget.releasePointerCapture(e.pointerId);
+                        }
                         endDragToken();
                       }
                     }}
                     onPointerCancel={(e) => {
                       if (draggingId === t.id) {
-                        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+                        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                          e.currentTarget.releasePointerCapture(e.pointerId);
+                        }
                         endDragToken();
                       }
                     }}
