@@ -1,23 +1,29 @@
 import { useState } from "react";
 import { getPokemonSprite, getPokemonRole, UNITE_ROLE_STYLES } from "@/lib/pokemon";
+import { pokemonImage } from "@/lib/unite-db-types";
 import { cn } from "@/lib/utils";
 
 type Props = {
   name: string | null | undefined;
+  /**
+   * Slug oficial do unite-db (campo `name` da API). Quando informado,
+   * a imagem vem direto do CDN do unite-db, garantindo cobertura total
+   * sem depender do mapeamento manual de sprites.
+   */
+  uniteDbSlug?: string | null;
   className?: string;
   /** When true, wraps the sprite in a colored role-tinted background tile. */
   withRoleBg?: boolean;
 };
 
 /**
- * Renders a Pokémon's official Unite artwork. Falls back to the name text
- * if the sprite fails to load or the Pokémon isn't mapped.
- * If `withRoleBg` is true, applies a colored gradient + glow based on the
- * Pokémon's Unite role (attacker, speedster, etc).
+ * Renders a Pokémon's official Unite artwork. Prefere o CDN do unite-db
+ * quando `uniteDbSlug` é informado; caso contrário usa o sprite oficial
+ * mapeado em src/lib/pokemon.ts. Cai para texto se a imagem falhar.
  */
-export function PokemonImage({ name, className, withRoleBg = false }: Props) {
+export function PokemonImage({ name, uniteDbSlug, className, withRoleBg = false }: Props) {
   const [errored, setErrored] = useState(false);
-  const src = getPokemonSprite(name);
+  const src = uniteDbSlug ? pokemonImage(uniteDbSlug) : getPokemonSprite(name);
   const role = getPokemonRole(name);
   const roleStyle = role ? UNITE_ROLE_STYLES[role] : null;
 

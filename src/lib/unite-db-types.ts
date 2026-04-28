@@ -76,3 +76,12 @@ export function battleItemImage(name: string): string {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return `${UNITE_DB_CDN}/battle_items/${slug}.png`;
 }
+
+/**
+ * Retorna a URL do retrato oficial de um Pokémon no CDN do unite-db.
+ * O `slug` deve ser o campo `name` retornado por /pokemon.json
+ * (ex.: "Aegislash", "MewtwoX", "Mr.Mime", "Mega-Charizard-X").
+ */
+export function pokemonImage(slug: string): string {
+  return `${UNITE_DB_CDN}/pokemon/portrait/${encodeURIComponent(slug)}.png`;
+}
