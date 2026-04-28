@@ -3,6 +3,7 @@ import { useRef, useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Search, MousePointer2, Pencil, Type, RotateCcw, Trash2, Eraser, Move, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/planner")({
 
 type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase" | "pan";
 type Token = { id: string; pokemon: string; x: number; y: number };
-type Stroke = { id: string; color: string; points: { x: number; y: number }[] };
+type Stroke = { id: string; color: string; width: number; points: { x: number; y: number }[] };
 type TextNote = { id: string; x: number; y: number; text: string };
 
 const ROLE_FILTERS: (UniteRole | "all")[] = ["all", "attacker", "speedster", "all-rounder", "defender", "supporter"];
@@ -51,6 +52,7 @@ function PlannerPage() {
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UniteRole | "all">("all");
   const [drawing, setDrawing] = useState<Stroke | null>(null);
+  const [strokeWidth, setStrokeWidth] = useState(3);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [mapId, setMapId] = useState<MapId>("rayquaza");
   const [zoom, setZoom] = useState(1);
@@ -167,7 +169,7 @@ function PlannerPage() {
 
     // drawing
     const color = TOOL_COLORS[tool];
-    setDrawing({ id: crypto.randomUUID(), color, points: [pt] });
+    setDrawing({ id: crypto.randomUUID(), color, width: strokeWidth, points: [pt] });
     (e.target as Element).setPointerCapture(e.pointerId);
   }
 
@@ -263,7 +265,32 @@ function PlannerPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
+            {tool.startsWith("draw-") && (
+              <div className="flex items-center gap-2 px-3 h-9 border border-border rounded-md bg-card/60" title="Espessura do lápis">
+                <Pencil className="h-3.5 w-3.5" style={{ color: TOOL_COLORS[tool] }} />
+                <span
+                  className="rounded-full shrink-0"
+                  style={{
+                    width: Math.max(2, Math.min(strokeWidth, 14)),
+                    height: Math.max(2, Math.min(strokeWidth, 14)),
+                    background: TOOL_COLORS[tool],
+                    boxShadow: `0 0 6px ${TOOL_COLORS[tool]}`,
+                  }}
+                />
+                <Slider
+                  min={1}
+                  max={12}
+                  step={1}
+                  value={[strokeWidth]}
+                  onValueChange={(v) => setStrokeWidth(v[0])}
+                  className="w-28"
+                />
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums w-8 text-right">
+                  {strokeWidth}px
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-1 border border-border rounded-md bg-card/60">
               <Button variant="ghost" size="icon" className="h-8 w-8" title="Diminuir zoom" onClick={() => zoomBy(-0.25)} disabled={zoom <= MIN_ZOOM}>
                 <ZoomOut className="h-3.5 w-3.5" />
@@ -370,7 +397,7 @@ function PlannerPage() {
                     points={s.points.map((p) => `${p.x},${p.y}`).join(" ")}
                     fill="none"
                     stroke={s.color}
-                    strokeWidth={0.6}
+                    strokeWidth={s.width}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     vectorEffect="non-scaling-stroke"
@@ -382,7 +409,7 @@ function PlannerPage() {
                     points={drawing.points.map((p) => `${p.x},${p.y}`).join(" ")}
                     fill="none"
                     stroke={drawing.color}
-                    strokeWidth={0.6}
+                    strokeWidth={drawing.width}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     vectorEffect="non-scaling-stroke"
