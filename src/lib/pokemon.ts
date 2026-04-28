@@ -131,8 +131,6 @@ export const POKEMON_DATA: UnitePokemon[] = [
   { name: "Buzzwole", slug: "buzzwole", role: "all-rounder" },
   { name: "Ceruledge", slug: "ceruledge", role: "all-rounder" },
   { name: "Charizard", slug: "charizard", role: "all-rounder" },
-  { name: "Charizard X", slug: "charizard", role: "all-rounder" },
-  { name: "Charizard Y", slug: "charizard", role: "all-rounder" },
   { name: "Dhelmise", slug: "dhelmise", role: "all-rounder" },
   { name: "Dragonite", slug: "dragonite", role: "all-rounder" },
   { name: "Empoleon", slug: "empoleon", role: "all-rounder" },
