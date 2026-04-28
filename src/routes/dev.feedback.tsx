@@ -237,16 +237,17 @@ function DevFeedbackPage() {
                 )}
 
                 <div className="mt-4 flex justify-between gap-2">
-                  <Button
+                  <ConfirmButton
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (confirm("Remover este feedback?")) deleteMutation.mutate(item.id);
-                    }}
+                    title="Remover feedback?"
+                    description="Esta ação não pode ser desfeita."
+                    confirmLabel="Remover"
+                    onConfirm={() => deleteMutation.mutate(item.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5 mr-1" /> Remover
-                  </Button>
+                  </ConfirmButton>
                   <Button size="sm" onClick={() => setEditing(item)}>
                     Gerenciar
                   </Button>
