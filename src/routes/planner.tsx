@@ -367,7 +367,8 @@ function PlannerPage() {
           <div
             ref={mapRef}
             className={cn(
-              "relative flex-1 rounded-lg overflow-hidden border border-border bg-background select-none touch-none",
+              "relative flex-1 rounded-lg overflow-hidden border bg-background select-none touch-none transition-colors",
+              dragOverMap ? "border-gold border-2 ring-4 ring-gold/30" : "border-border",
               tool === "select"
                 ? "cursor-default"
                 : tool === "erase"
@@ -396,6 +397,9 @@ function PlannerPage() {
               endDragToken();
             }}
             onWheel={handleWheel}
+            onDragOver={handleMapDragOver}
+            onDragLeave={handleMapDragLeave}
+            onDrop={handleMapDrop}
           >
             {/* Camada transformada (zoom/pan) */}
             <div
