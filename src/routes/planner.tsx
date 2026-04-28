@@ -187,11 +187,35 @@ function PlannerPage() {
     }
   }
 
-  function addToken(name: string) {
+  function addToken(name: string, pos?: { x: number; y: number }) {
     setTokens((t) => [
       ...t,
-      { id: crypto.randomUUID(), pokemon: name, x: 50, y: 50 },
+      { id: crypto.randomUUID(), pokemon: name, x: pos?.x ?? 50, y: pos?.y ?? 50 },
     ]);
+  }
+
+  const [dragOverMap, setDragOverMap] = useState(false);
+
+  function handleMapDragOver(e: React.DragEvent) {
+    if (e.dataTransfer.types.includes("application/x-pokemon")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      if (!dragOverMap) setDragOverMap(true);
+    }
+  }
+
+  function handleMapDragLeave(e: React.DragEvent) {
+    // Only clear when leaving the map container itself
+    if (e.currentTarget === e.target) setDragOverMap(false);
+  }
+
+  function handleMapDrop(e: React.DragEvent) {
+    const name = e.dataTransfer.getData("application/x-pokemon");
+    setDragOverMap(false);
+    if (!name) return;
+    e.preventDefault();
+    const pt = getRelativeCoords(e as unknown as React.MouseEvent);
+    addToken(name, pt);
   }
 
   function startDragToken(id: string) {
@@ -343,7 +367,8 @@ function PlannerPage() {
           <div
             ref={mapRef}
             className={cn(
-              "relative flex-1 rounded-lg overflow-hidden border border-border bg-background select-none touch-none",
+              "relative flex-1 rounded-lg overflow-hidden border bg-background select-none touch-none transition-colors",
+              dragOverMap ? "border-gold border-2 ring-4 ring-gold/30" : "border-border",
               tool === "select"
                 ? "cursor-default"
                 : tool === "erase"
@@ -372,6 +397,9 @@ function PlannerPage() {
               endDragToken();
             }}
             onWheel={handleWheel}
+            onDragOver={handleMapDragOver}
+            onDragLeave={handleMapDragLeave}
+            onDrop={handleMapDrop}
           >
             {/* Camada transformada (zoom/pan) */}
             <div
@@ -464,9 +492,17 @@ function PlannerPage() {
               </div>
             )}
 
-            {tokens.length === 0 && strokes.length === 0 && notes.length === 0 && (
+            {tokens.length === 0 && strokes.length === 0 && notes.length === 0 && !dragOverMap && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-background/80 border border-border text-[10px] uppercase tracking-widest text-muted-foreground pointer-events-none">
-                Clique em um Pokémon ao lado para adicionar ao mapa
+                Arraste ou clique em um Pokémon ao lado para adicionar ao mapa
+              </div>
+            )}
+
+            {dragOverMap && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gold/10 pointer-events-none">
+                <div className="px-4 py-2 rounded-full bg-background/90 border-2 border-dashed border-gold text-gold font-display uppercase tracking-widest text-xs shadow-glow">
+                  Solte aqui para adicionar
+                </div>
               </div>
             )}
           </div>
@@ -518,14 +554,19 @@ function PlannerPage() {
                     key={p.name}
                     type="button"
                     onClick={() => addToken(p.name)}
-                    className="group flex flex-col items-center gap-1 p-1.5 rounded-md border border-transparent hover:bg-accent/40 hover:border-primary/40 transition-colors"
-                    title={`Adicionar ${p.name} ao mapa`}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("application/x-pokemon", p.name);
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                    className="group flex flex-col items-center gap-1 p-1.5 rounded-md border border-transparent hover:bg-accent/40 hover:border-primary/40 active:opacity-50 transition-colors cursor-grab active:cursor-grabbing"
+                    title={`Arraste para o mapa ou clique para adicionar — ${p.name}`}
                     style={{ contentVisibility: "auto", containIntrinsicSize: "70px" }}
                   >
-                    <div className="h-10 w-10 group-hover:scale-110 transition-transform">
+                    <div className="h-10 w-10 group-hover:scale-110 transition-transform pointer-events-none">
                       <PokemonImage name={p.name} withRoleBg />
                     </div>
-                    <span className={cn("text-[8px] uppercase tracking-widest font-display truncate w-full text-center leading-tight", style.text)}>
+                    <span className={cn("text-[8px] uppercase tracking-widest font-display truncate w-full text-center leading-tight pointer-events-none", style.text)}>
                       {p.name.split(" ")[0]}
                     </span>
                   </button>
