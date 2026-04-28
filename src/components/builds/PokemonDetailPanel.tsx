@@ -129,6 +129,7 @@ export function PokemonDetailPanel({
                 key={`${pokemon.name}-${b.name}`}
                 build={b}
                 pokemonSlug={pokemon.name}
+                skills={pokemon.skills}
                 onImport={onImportBuild}
               />
             ))}
