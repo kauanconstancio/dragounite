@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
 function LandingPage() {
   return (
     <div
-      className="gymly-landing min-h-screen bg-[#0a0a1a] text-white antialiased"
+      className="gymly-landing min-h-screen overflow-x-hidden bg-[#0a0a1a] text-white antialiased"
       style={{ fontFamily: '"Manrope", system-ui, sans-serif' }}
     >
       <style>{`
@@ -43,6 +43,7 @@ function LandingPage() {
           letter-spacing: -0.02em;
         }
         .gymly-landing { color-scheme: dark; }
+        .gymly-landing, .gymly-landing main, .gymly-landing section { max-width: 100vw; overflow-x: clip; }
       `}</style>
       <LandingNav />
       <main>
