@@ -23,6 +23,7 @@ type Member = {
   id: string;
   name: string;
   ign: string | null;
+  game_id: string | null;
   role: "player" | "substitute" | "coach" | "manager";
   lane: "top" | "jungle" | "mid" | "bot" | "support" | "flex" | null;
   main_pokemon: string | null;
