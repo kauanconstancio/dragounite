@@ -204,8 +204,12 @@ function PlannerPage() {
   function addToken(name: string, pos?: { x: number; y: number }) {
     setTokens((t) => [
       ...t,
-      { id: crypto.randomUUID(), pokemon: name, x: pos?.x ?? 50, y: pos?.y ?? 50 },
+      { id: crypto.randomUUID(), pokemon: name, x: pos?.x ?? 50, y: pos?.y ?? 50, team: "purple" },
     ]);
+  }
+
+  function toggleTokenTeam(id: string) {
+    setTokens((ts) => ts.map((t) => (t.id === id ? { ...t, team: t.team === "purple" ? "orange" : "purple" } : t)));
   }
 
   const [dragOverMap, setDragOverMap] = useState(false);
