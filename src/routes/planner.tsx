@@ -492,9 +492,17 @@ function PlannerPage() {
               </div>
             )}
 
-            {tokens.length === 0 && strokes.length === 0 && notes.length === 0 && (
+            {tokens.length === 0 && strokes.length === 0 && notes.length === 0 && !dragOverMap && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-background/80 border border-border text-[10px] uppercase tracking-widest text-muted-foreground pointer-events-none">
-                Clique em um Pokémon ao lado para adicionar ao mapa
+                Arraste ou clique em um Pokémon ao lado para adicionar ao mapa
+              </div>
+            )}
+
+            {dragOverMap && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gold/10 pointer-events-none">
+                <div className="px-4 py-2 rounded-full bg-background/90 border-2 border-dashed border-gold text-gold font-display uppercase tracking-widest text-xs shadow-glow">
+                  Solte aqui para adicionar
+                </div>
               </div>
             )}
           </div>
