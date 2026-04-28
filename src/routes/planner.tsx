@@ -33,7 +33,21 @@ export const Route = createFileRoute("/planner")({
 });
 
 type Tool = "select" | "draw-red" | "draw-blue" | "draw-yellow" | "text" | "erase" | "pan";
-type Token = { id: string; pokemon: string; x: number; y: number };
+type Team = "purple" | "orange";
+type Token = { id: string; pokemon: string; x: number; y: number; team: Team };
+
+const TEAM_STYLES: Record<Team, { bg: string; ring: string; glow: string }> = {
+  purple: {
+    bg: "bg-gradient-to-br from-purple-500/80 to-purple-700/80",
+    ring: "ring-2 ring-purple-300",
+    glow: "shadow-[0_0_12px_rgba(168,85,247,0.6)]",
+  },
+  orange: {
+    bg: "bg-gradient-to-br from-orange-400/80 to-orange-600/80",
+    ring: "ring-2 ring-orange-200",
+    glow: "shadow-[0_0_12px_rgba(249,115,22,0.6)]",
+  },
+};
 type Stroke = { id: string; color: string; width: number; points: { x: number; y: number }[] };
 type TextNote = { id: string; x: number; y: number; text: string };
 
