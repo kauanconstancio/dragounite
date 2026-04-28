@@ -546,14 +546,19 @@ function PlannerPage() {
                     key={p.name}
                     type="button"
                     onClick={() => addToken(p.name)}
-                    className="group flex flex-col items-center gap-1 p-1.5 rounded-md border border-transparent hover:bg-accent/40 hover:border-primary/40 transition-colors"
-                    title={`Adicionar ${p.name} ao mapa`}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("application/x-pokemon", p.name);
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                    className="group flex flex-col items-center gap-1 p-1.5 rounded-md border border-transparent hover:bg-accent/40 hover:border-primary/40 active:opacity-50 transition-colors cursor-grab active:cursor-grabbing"
+                    title={`Arraste para o mapa ou clique para adicionar — ${p.name}`}
                     style={{ contentVisibility: "auto", containIntrinsicSize: "70px" }}
                   >
-                    <div className="h-10 w-10 group-hover:scale-110 transition-transform">
+                    <div className="h-10 w-10 group-hover:scale-110 transition-transform pointer-events-none">
                       <PokemonImage name={p.name} withRoleBg />
                     </div>
-                    <span className={cn("text-[8px] uppercase tracking-widest font-display truncate w-full text-center leading-tight", style.text)}>
+                    <span className={cn("text-[8px] uppercase tracking-widest font-display truncate w-full text-center leading-tight pointer-events-none", style.text)}>
                       {p.name.split(" ")[0]}
                     </span>
                   </button>
