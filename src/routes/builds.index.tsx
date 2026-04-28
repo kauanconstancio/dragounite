@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { getUniteDbPokemon } from "@/server/unite-db.functions";
 import type { UniteDbPokemon } from "@/lib/unite-db-types";
 
-export const Route = createFileRoute("/builds")({
+export const Route = createFileRoute("/builds/")({
   head: () => ({
     meta: [
       { title: "Builds — Battle Arena" },

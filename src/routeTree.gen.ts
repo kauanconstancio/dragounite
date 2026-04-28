@@ -28,7 +28,6 @@ import { Route as DevRouteImport } from './routes/dev'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as CadastroRouteImport } from './routes/cadastro'
-import { Route as BuildsRouteImport } from './routes/builds'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
@@ -37,6 +36,7 @@ import { Route as AceitarConviteRouteImport } from './routes/aceitar-convite'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as DevIndexRouteImport } from './routes/dev.index'
+import { Route as BuildsIndexRouteImport } from './routes/builds.index'
 import { Route as StaffUsersRouteImport } from './routes/staff.users'
 import { Route as StaffTeamsRouteImport } from './routes/staff.teams'
 import { Route as StaffStaffRouteImport } from './routes/staff.staff'
@@ -144,11 +144,6 @@ const CadastroRoute = CadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BuildsRoute = BuildsRouteImport.update({
-  id: '/builds',
-  path: '/builds',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -188,6 +183,11 @@ const DevIndexRoute = DevIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DevRoute,
+} as any)
+const BuildsIndexRoute = BuildsIndexRouteImport.update({
+  id: '/builds/',
+  path: '/builds/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const StaffUsersRoute = StaffUsersRouteImport.update({
   id: '/users',
@@ -252,7 +252,6 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -281,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/staff/staff': typeof StaffStaffRoute
   '/staff/teams': typeof StaffTeamsRoute
   '/staff/users': typeof StaffUsersRoute
+  '/builds/': typeof BuildsIndexRoute
   '/dev/': typeof DevIndexRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
@@ -293,7 +293,6 @@ export interface FileRoutesByTo {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -320,6 +319,7 @@ export interface FileRoutesByTo {
   '/staff/staff': typeof StaffStaffRoute
   '/staff/teams': typeof StaffTeamsRoute
   '/staff/users': typeof StaffUsersRoute
+  '/builds': typeof BuildsIndexRoute
   '/dev': typeof DevIndexRoute
   '/staff': typeof StaffIndexRoute
   '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
@@ -333,7 +333,6 @@ export interface FileRoutesById {
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
   '/auth': typeof AuthRoute
-  '/builds': typeof BuildsRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
@@ -362,6 +361,7 @@ export interface FileRoutesById {
   '/staff/staff': typeof StaffStaffRoute
   '/staff/teams': typeof StaffTeamsRoute
   '/staff/users': typeof StaffUsersRoute
+  '/builds/': typeof BuildsIndexRoute
   '/dev/': typeof DevIndexRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/finance/waitlist': typeof StaffFinanceWaitlistRoute
@@ -376,7 +376,6 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/amistosos'
     | '/auth'
-    | '/builds'
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
@@ -405,6 +404,7 @@ export interface FileRouteTypes {
     | '/staff/staff'
     | '/staff/teams'
     | '/staff/users'
+    | '/builds/'
     | '/dev/'
     | '/staff/'
     | '/staff/finance/waitlist'
@@ -417,7 +417,6 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/amistosos'
     | '/auth'
-    | '/builds'
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
@@ -444,6 +443,7 @@ export interface FileRouteTypes {
     | '/staff/staff'
     | '/staff/teams'
     | '/staff/users'
+    | '/builds'
     | '/dev'
     | '/staff'
     | '/staff/finance/waitlist'
@@ -456,7 +456,6 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/amistosos'
     | '/auth'
-    | '/builds'
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
@@ -485,6 +484,7 @@ export interface FileRouteTypes {
     | '/staff/staff'
     | '/staff/teams'
     | '/staff/users'
+    | '/builds/'
     | '/dev/'
     | '/staff/'
     | '/staff/finance/waitlist'
@@ -498,7 +498,6 @@ export interface RootRouteChildren {
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
   AuthRoute: typeof AuthRoute
-  BuildsRoute: typeof BuildsRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DashboardRoute: typeof DashboardRoute
@@ -519,6 +518,7 @@ export interface RootRouteChildren {
   TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
   JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
+  BuildsIndexRoute: typeof BuildsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -656,13 +656,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/builds': {
-      id: '/builds'
-      path: '/builds'
-      fullPath: '/builds'
-      preLoaderRoute: typeof BuildsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -718,6 +711,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dev/'
       preLoaderRoute: typeof DevIndexRouteImport
       parentRoute: typeof DevRoute
+    }
+    '/builds/': {
+      id: '/builds/'
+      path: '/builds'
+      fullPath: '/builds/'
+      preLoaderRoute: typeof BuildsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/staff/users': {
       id: '/staff/users'
@@ -799,17 +799,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface BuildsRouteChildren {
-  BuildsPokemonRoute: typeof BuildsPokemonRoute
-}
-
-const BuildsRouteChildren: BuildsRouteChildren = {
-  BuildsPokemonRoute: BuildsPokemonRoute,
-}
-
-const BuildsRouteWithChildren =
-  BuildsRoute._addFileChildren(BuildsRouteChildren)
-
 interface DevRouteChildren {
   DevFeedbackRoute: typeof DevFeedbackRoute
   DevIndexRoute: typeof DevIndexRoute
@@ -855,7 +844,6 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
   AuthRoute: AuthRoute,
-  BuildsRoute: BuildsRouteWithChildren,
   CadastroRoute: CadastroRoute,
   ComposicoesRoute: ComposicoesRoute,
   DashboardRoute: DashboardRoute,
@@ -876,7 +864,17 @@ const rootRouteChildren: RootRouteChildren = {
   TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
   JogadoresMemberIdRoute: JogadoresMemberIdRoute,
+  BuildsIndexRoute: BuildsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
