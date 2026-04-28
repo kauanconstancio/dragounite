@@ -141,6 +141,7 @@ function PlannerPage() {
   }
 
   function handleMapPointerDown(e: React.PointerEvent) {
+    if (tool === "pan") { handlePanPointerDown(e); return; }
     if (tool === "select") return;
     const pt = getRelativeCoords(e);
 
