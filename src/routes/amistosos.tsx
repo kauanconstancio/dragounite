@@ -394,15 +394,17 @@ function ScrimDialog({
 }: {
   editing: Scrim | null;
   opponents: Opponent[];
-  onSave: (s: Partial<Scrim>) => void;
+  onSave: (values: Partial<Scrim>, recurrence: RecurrenceRule | null) => void;
   saving: boolean;
 }) {
   const [form, setForm] = useState<ScrimForm>(() =>
     editing ? fromScrim(editing) : emptyScrimForm(),
   );
+  const [recurrence, setRecurrence] = useState<RecurrenceState>(() => emptyRecurrence());
 
   useEffect(() => {
     setForm(editing ? fromScrim(editing) : emptyScrimForm());
+    setRecurrence(emptyRecurrence());
   }, [editing]);
 
   const canSave =
@@ -416,19 +418,22 @@ function ScrimDialog({
       toast.error("Data inválida");
       return;
     }
-    onSave({
-      opponent: form.opponent.trim(),
-      opponent_id: form.opponent_id,
-      scheduled_at: parsed.toISOString(),
-      best_of: form.best_of,
-      result: form.result,
-      score_us: Math.max(0, Math.round(form.score_us) || 0),
-      score_them: Math.max(0, Math.round(form.score_them) || 0),
-      status: form.status,
-      notes: form.notes.trim() || null,
-      vod_url: form.vod_url.trim() || null,
-      vod_notes: form.vod_notes.trim() || null,
-    });
+    onSave(
+      {
+        opponent: form.opponent.trim(),
+        opponent_id: form.opponent_id,
+        scheduled_at: parsed.toISOString(),
+        best_of: form.best_of,
+        result: form.result,
+        score_us: Math.max(0, Math.round(form.score_us) || 0),
+        score_them: Math.max(0, Math.round(form.score_them) || 0),
+        status: form.status,
+        notes: form.notes.trim() || null,
+        vod_url: form.vod_url.trim() || null,
+        vod_notes: form.vod_notes.trim() || null,
+      },
+      editing ? null : toRecurrenceRule(recurrence),
+    );
   };
 
   return (
