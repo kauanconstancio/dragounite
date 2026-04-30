@@ -51,6 +51,8 @@ type Training = {
   focus: string | null;
   notes: string | null;
   status: "scheduled" | "completed" | "cancelled";
+  recurrence_group_id: string | null;
+  recurrence_rule: RecurrenceRule | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
