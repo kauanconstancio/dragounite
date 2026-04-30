@@ -80,20 +80,32 @@ function TreinosPage() {
   });
 
   const save = useMutation({
-    mutationFn: async (t: Partial<Training>) => {
+    mutationFn: async (payload: { values: Partial<Training>; recurrence: RecurrenceRule | null }) => {
       if (!teamId) throw new Error("Selecione uma equipe");
+      const { values, recurrence } = payload;
       if (editing) {
-        const { error } = await supabase.from("trainings").update(t).eq("id", editing.id);
+        const { error } = await supabase.from("trainings").update(values).eq("id", editing.id);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("trainings").insert({ ...t, team_id: teamId } as any);
-        if (error) throw error;
+        return { count: 1 };
       }
+      const baseISO = values.scheduled_at as string;
+      const dates = recurrence ? expandRecurrence(baseISO, recurrence) : [new Date(baseISO)];
+      const groupId = recurrence ? crypto.randomUUID() : null;
+      const rows = dates.map((d) => ({
+        ...values,
+        team_id: teamId,
+        scheduled_at: d.toISOString(),
+        recurrence_group_id: groupId,
+        recurrence_rule: recurrence ?? null,
+      }));
+      const { error } = await supabase.from("trainings").insert(rows as any);
+      if (error) throw error;
+      return { count: rows.length };
     },
-    onSuccess: () => {
+    onSuccess: ({ count }) => {
       qc.invalidateQueries({ queryKey: ["trainings"] });
       setOpen(false); setEditing(null);
-      toast.success("Salvo");
+      toast.success(count > 1 ? `${count} treinos criados` : "Salvo");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -104,6 +116,21 @@ function TreinosPage() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["trainings"] }); toast.success("Removido"); },
+  });
+
+  const removeSeries = useMutation({
+    mutationFn: async (groupId: string) => {
+      if (!teamId) return;
+      const { error } = await supabase
+        .from("trainings")
+        .delete()
+        .eq("team_id", teamId)
+        .eq("recurrence_group_id", groupId)
+        .gte("scheduled_at", new Date().toISOString());
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["trainings"] }); toast.success("Série removida"); },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const upcoming = trainings.filter((t) => !isPast(new Date(t.scheduled_at)) && t.status === "scheduled");
