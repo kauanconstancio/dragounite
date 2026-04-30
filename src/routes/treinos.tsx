@@ -153,7 +153,7 @@ function TreinosPage() {
               <Plus className="mr-2 h-4 w-4" /> Novo treino
             </Button>
           </DialogTrigger>
-          <TrainingDialog editing={editing} onSave={(t) => save.mutate(t)} saving={save.isPending} />
+          <TrainingDialog editing={editing} onSave={(values, recurrence) => save.mutate({ values, recurrence })} saving={save.isPending} />
         </Dialog>
       </div>
 
