@@ -305,6 +305,11 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
                         </Button>
                       )}
                       <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
+                      {s.recurrence_group_id && (
+                        <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover toda a série?" description="Apaga este amistoso e todas as próximas ocorrências futuras desta recorrência." confirmLabel="Remover série" onConfirm={() => onDeleteSeries(s.recurrence_group_id!)}>
+                          <Repeat className="h-4 w-4" />
+                        </ConfirmButton>
+                      )}
                       <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover amistoso?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => onDelete(s.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </RequireRole>
                   </div>
