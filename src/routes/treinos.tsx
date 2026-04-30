@@ -265,15 +265,17 @@ function TrainingDialog({
   saving,
 }: {
   editing: Training | null;
-  onSave: (t: Partial<Training>) => void;
+  onSave: (values: Partial<Training>, recurrence: RecurrenceRule | null) => void;
   saving: boolean;
 }) {
   const [form, setForm] = useState<TrainingForm>(() =>
     editing ? fromTraining(editing) : emptyTrainingForm(),
   );
+  const [recurrence, setRecurrence] = useState<RecurrenceState>(() => emptyRecurrence());
 
   useEffect(() => {
     setForm(editing ? fromTraining(editing) : emptyTrainingForm());
+    setRecurrence(emptyRecurrence());
   }, [editing]);
 
   const canSave =
@@ -291,14 +293,17 @@ function TrainingDialog({
       toast.error("Data inválida");
       return;
     }
-    onSave({
-      title: form.title.trim(),
-      scheduled_at: parsed.toISOString(),
-      duration_min: Math.max(1, Math.round(form.duration_min)),
-      focus: form.focus.trim() || null,
-      notes: form.notes.trim() || null,
-      status: form.status,
-    });
+    onSave(
+      {
+        title: form.title.trim(),
+        scheduled_at: parsed.toISOString(),
+        duration_min: Math.max(1, Math.round(form.duration_min)),
+        focus: form.focus.trim() || null,
+        notes: form.notes.trim() || null,
+        status: form.status,
+      },
+      editing ? null : toRecurrenceRule(recurrence),
+    );
   };
 
   return (
