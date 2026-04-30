@@ -19,7 +19,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3, CheckCircle2, Repeat } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -28,6 +28,13 @@ import { VodEmbed } from "@/components/scouting/VodEmbed";
 import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
+import {
+  RecurrenceField,
+  emptyRecurrence,
+  toRecurrenceRule,
+  type RecurrenceState,
+} from "@/components/shared/RecurrenceField";
+import { expandRecurrence, describeRule, type RecurrenceRule } from "@/lib/recurrence";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
@@ -52,6 +59,8 @@ type Scrim = {
   notes: string | null;
   vod_url: string | null;
   vod_notes: string | null;
+  recurrence_group_id: string | null;
+  recurrence_rule: RecurrenceRule | null;
 };
 
 type Opponent = { id: string; name: string; tag: string | null };
@@ -96,23 +105,55 @@ function ScrimsPage() {
   const opponentMap = new Map(opponents.map((o) => [o.id, o]));
 
   const save = useMutation({
-    mutationFn: async (s: Partial<Scrim>) => {
+    mutationFn: async (payload: { values: Partial<Scrim>; recurrence: RecurrenceRule | null }) => {
       if (!teamId) throw new Error("Selecione uma equipe");
+      const { values, recurrence } = payload;
       if (editing) {
-        const { error } = await supabase.from("scrims").update(s).eq("id", editing.id);
+        const { error } = await supabase.from("scrims").update(values).eq("id", editing.id);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("scrims").insert({ ...s, team_id: teamId } as any);
-        if (error) throw error;
+        return { count: 1 };
       }
+      const baseISO = values.scheduled_at as string;
+      const dates = recurrence ? expandRecurrence(baseISO, recurrence) : [new Date(baseISO)];
+      const groupId = recurrence ? crypto.randomUUID() : null;
+      const rows = dates.map((d) => ({
+        ...values,
+        team_id: teamId,
+        scheduled_at: d.toISOString(),
+        recurrence_group_id: groupId,
+        recurrence_rule: recurrence ?? null,
+      }));
+      const { error } = await supabase.from("scrims").insert(rows as any);
+      if (error) throw error;
+      return { count: rows.length };
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); setOpen(false); setEditing(null); toast.success("Salvo"); },
+    onSuccess: ({ count }) => {
+      qc.invalidateQueries({ queryKey: ["scrims"] });
+      setOpen(false);
+      setEditing(null);
+      toast.success(count > 1 ? `${count} amistosos criados` : "Salvo");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("scrims").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Removido"); },
+  });
+
+  const removeSeries = useMutation({
+    mutationFn: async (groupId: string) => {
+      if (!teamId) return;
+      const { error } = await supabase
+        .from("scrims")
+        .delete()
+        .eq("team_id", teamId)
+        .eq("recurrence_group_id", groupId)
+        .gte("scheduled_at", new Date().toISOString());
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Série removida"); },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const complete = useMutation({
@@ -153,7 +194,7 @@ function ScrimsPage() {
               </Button>
             </DialogTrigger>
           </RequireRole>
-          <ScrimDialog editing={editing} opponents={opponents} onSave={(s) => save.mutate(s)} saving={save.isPending} />
+          <ScrimDialog editing={editing} opponents={opponents} onSave={(values, recurrence) => save.mutate({ values, recurrence })} saving={save.isPending} />
         </Dialog>
       </div>
 
@@ -167,8 +208,8 @@ function ScrimsPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onComplete={(s) => complete.mutate(s)} />
-          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onComplete={(s) => complete.mutate(s)} muted />
+          <ScrimList title="Próximos" items={upcoming} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onDeleteSeries={(gid) => removeSeries.mutate(gid)} onComplete={(s) => complete.mutate(s)} />
+          <ScrimList title="Histórico" items={past} opponentMap={opponentMap} onEdit={(s) => { setEditing(s); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onDeleteSeries={(gid) => removeSeries.mutate(gid)} onComplete={(s) => complete.mutate(s)} muted />
         </>
       )}
     </div>
@@ -189,7 +230,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
   );
 }
 
-function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; onComplete: (s: Scrim) => void; muted?: boolean }) {
+function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries, onComplete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; onDeleteSeries: (groupId: string) => void; onComplete: (s: Scrim) => void; muted?: boolean }) {
   const [perfFor, setPerfFor] = useState<Scrim | null>(null);
   return (
     <section>
@@ -227,6 +268,12 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, mu
                           <Video className="h-2.5 w-2.5 mr-1" /> VOD
                         </Badge>
                       )}
+                      {s.recurrence_group_id && (
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/40 text-primary">
+                          <Repeat className="h-2.5 w-2.5 mr-1" />
+                          {describeRule(s.recurrence_rule)}
+                        </Badge>
+                      )}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {format(new Date(s.scheduled_at), "EEE, dd MMM · HH:mm", { locale: ptBR })}
@@ -258,6 +305,11 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, mu
                         </Button>
                       )}
                       <Button size="icon" variant="ghost" onClick={() => onEdit(s)}><Pencil className="h-4 w-4" /></Button>
+                      {s.recurrence_group_id && (
+                        <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover toda a série?" description="Apaga este amistoso e todas as próximas ocorrências futuras desta recorrência." confirmLabel="Remover série" onConfirm={() => onDeleteSeries(s.recurrence_group_id!)}>
+                          <Repeat className="h-4 w-4" />
+                        </ConfirmButton>
+                      )}
                       <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover amistoso?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => onDelete(s.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </RequireRole>
                   </div>
@@ -342,15 +394,17 @@ function ScrimDialog({
 }: {
   editing: Scrim | null;
   opponents: Opponent[];
-  onSave: (s: Partial<Scrim>) => void;
+  onSave: (values: Partial<Scrim>, recurrence: RecurrenceRule | null) => void;
   saving: boolean;
 }) {
   const [form, setForm] = useState<ScrimForm>(() =>
     editing ? fromScrim(editing) : emptyScrimForm(),
   );
+  const [recurrence, setRecurrence] = useState<RecurrenceState>(() => emptyRecurrence());
 
   useEffect(() => {
     setForm(editing ? fromScrim(editing) : emptyScrimForm());
+    setRecurrence(emptyRecurrence());
   }, [editing]);
 
   const canSave =
@@ -364,19 +418,22 @@ function ScrimDialog({
       toast.error("Data inválida");
       return;
     }
-    onSave({
-      opponent: form.opponent.trim(),
-      opponent_id: form.opponent_id,
-      scheduled_at: parsed.toISOString(),
-      best_of: form.best_of,
-      result: form.result,
-      score_us: Math.max(0, Math.round(form.score_us) || 0),
-      score_them: Math.max(0, Math.round(form.score_them) || 0),
-      status: form.status,
-      notes: form.notes.trim() || null,
-      vod_url: form.vod_url.trim() || null,
-      vod_notes: form.vod_notes.trim() || null,
-    });
+    onSave(
+      {
+        opponent: form.opponent.trim(),
+        opponent_id: form.opponent_id,
+        scheduled_at: parsed.toISOString(),
+        best_of: form.best_of,
+        result: form.result,
+        score_us: Math.max(0, Math.round(form.score_us) || 0),
+        score_them: Math.max(0, Math.round(form.score_them) || 0),
+        status: form.status,
+        notes: form.notes.trim() || null,
+        vod_url: form.vod_url.trim() || null,
+        vod_notes: form.vod_notes.trim() || null,
+      },
+      editing ? null : toRecurrenceRule(recurrence),
+    );
   };
 
   return (
@@ -533,6 +590,13 @@ function ScrimDialog({
             rows={3}
           />
         </div>
+        {!editing && (
+          <RecurrenceField
+            baseDateISO={form.scheduled_at ? new Date(form.scheduled_at).toISOString() : ""}
+            state={recurrence}
+            onChange={setRecurrence}
+          />
+        )}
         <DialogFooter>
           <Button
             type="submit"

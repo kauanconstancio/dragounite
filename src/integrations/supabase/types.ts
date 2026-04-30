@@ -646,6 +646,8 @@ export type Database = {
           notes: string | null
           opponent: string
           opponent_id: string | null
+          recurrence_group_id: string | null
+          recurrence_rule: Json | null
           result: Database["public"]["Enums"]["match_result"]
           scheduled_at: string
           score_them: number
@@ -662,6 +664,8 @@ export type Database = {
           notes?: string | null
           opponent: string
           opponent_id?: string | null
+          recurrence_group_id?: string | null
+          recurrence_rule?: Json | null
           result?: Database["public"]["Enums"]["match_result"]
           scheduled_at: string
           score_them?: number
@@ -678,6 +682,8 @@ export type Database = {
           notes?: string | null
           opponent?: string
           opponent_id?: string | null
+          recurrence_group_id?: string | null
+          recurrence_rule?: Json | null
           result?: Database["public"]["Enums"]["match_result"]
           scheduled_at?: string
           score_them?: number
@@ -994,6 +1000,8 @@ export type Database = {
           focus: string | null
           id: string
           notes: string | null
+          recurrence_group_id: string | null
+          recurrence_rule: Json | null
           scheduled_at: string
           status: Database["public"]["Enums"]["event_status"]
           team_id: string
@@ -1005,6 +1013,8 @@ export type Database = {
           focus?: string | null
           id?: string
           notes?: string | null
+          recurrence_group_id?: string | null
+          recurrence_rule?: Json | null
           scheduled_at: string
           status?: Database["public"]["Enums"]["event_status"]
           team_id: string
@@ -1016,6 +1026,8 @@ export type Database = {
           focus?: string | null
           id?: string
           notes?: string | null
+          recurrence_group_id?: string | null
+          recurrence_rule?: Json | null
           scheduled_at?: string
           status?: Database["public"]["Enums"]["event_status"]
           team_id?: string

@@ -19,12 +19,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Clock, Target } from "lucide-react";
+import { Plus, Trash2, Pencil, Clock, Target, Repeat } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
+import {
+  RecurrenceField,
+  emptyRecurrence,
+  toRecurrenceRule,
+  type RecurrenceState,
+} from "@/components/shared/RecurrenceField";
+import { expandRecurrence, describeRule, type RecurrenceRule } from "@/lib/recurrence";
 
 export const Route = createFileRoute("/treinos")({
   head: () => ({
@@ -44,6 +51,8 @@ type Training = {
   focus: string | null;
   notes: string | null;
   status: "scheduled" | "completed" | "cancelled";
+  recurrence_group_id: string | null;
+  recurrence_rule: RecurrenceRule | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -71,20 +80,32 @@ function TreinosPage() {
   });
 
   const save = useMutation({
-    mutationFn: async (t: Partial<Training>) => {
+    mutationFn: async (payload: { values: Partial<Training>; recurrence: RecurrenceRule | null }) => {
       if (!teamId) throw new Error("Selecione uma equipe");
+      const { values, recurrence } = payload;
       if (editing) {
-        const { error } = await supabase.from("trainings").update(t).eq("id", editing.id);
+        const { error } = await supabase.from("trainings").update(values).eq("id", editing.id);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("trainings").insert({ ...t, team_id: teamId } as any);
-        if (error) throw error;
+        return { count: 1 };
       }
+      const baseISO = values.scheduled_at as string;
+      const dates = recurrence ? expandRecurrence(baseISO, recurrence) : [new Date(baseISO)];
+      const groupId = recurrence ? crypto.randomUUID() : null;
+      const rows = dates.map((d) => ({
+        ...values,
+        team_id: teamId,
+        scheduled_at: d.toISOString(),
+        recurrence_group_id: groupId,
+        recurrence_rule: recurrence ?? null,
+      }));
+      const { error } = await supabase.from("trainings").insert(rows as any);
+      if (error) throw error;
+      return { count: rows.length };
     },
-    onSuccess: () => {
+    onSuccess: ({ count }) => {
       qc.invalidateQueries({ queryKey: ["trainings"] });
       setOpen(false); setEditing(null);
-      toast.success("Salvo");
+      toast.success(count > 1 ? `${count} treinos criados` : "Salvo");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -95,6 +116,21 @@ function TreinosPage() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["trainings"] }); toast.success("Removido"); },
+  });
+
+  const removeSeries = useMutation({
+    mutationFn: async (groupId: string) => {
+      if (!teamId) return;
+      const { error } = await supabase
+        .from("trainings")
+        .delete()
+        .eq("team_id", teamId)
+        .eq("recurrence_group_id", groupId)
+        .gte("scheduled_at", new Date().toISOString());
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["trainings"] }); toast.success("Série removida"); },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const upcoming = trainings.filter((t) => !isPast(new Date(t.scheduled_at)) && t.status === "scheduled");
@@ -117,7 +153,7 @@ function TreinosPage() {
               <Plus className="mr-2 h-4 w-4" /> Novo treino
             </Button>
           </DialogTrigger>
-          <TrainingDialog editing={editing} onSave={(t) => save.mutate(t)} saving={save.isPending} />
+          <TrainingDialog editing={editing} onSave={(values, recurrence) => save.mutate({ values, recurrence })} saving={save.isPending} />
         </Dialog>
       </div>
 
@@ -125,15 +161,15 @@ function TreinosPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <Section title="Próximos" items={upcoming} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
-          <Section title="Histórico" items={past} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
+          <Section title="Próximos" items={upcoming} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onDeleteSeries={(gid) => removeSeries.mutate(gid)} />
+          <Section title="Histórico" items={past} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onDeleteSeries={(gid) => removeSeries.mutate(gid)} muted />
         </>
       )}
     </div>
   );
 }
 
-function Section({ title, items, onEdit, onDelete, muted }: { title: string; items: Training[]; onEdit: (t: Training) => void; onDelete: (id: string) => void; muted?: boolean }) {
+function Section({ title, items, onEdit, onDelete, onDeleteSeries, muted }: { title: string; items: Training[]; onEdit: (t: Training) => void; onDelete: (id: string) => void; onDeleteSeries: (groupId: string) => void; muted?: boolean }) {
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
@@ -163,6 +199,12 @@ function Section({ title, items, onEdit, onDelete, muted }: { title: string; ite
                         <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-gold/40 text-gold">
                           {STATUS_LABEL[t.status]}
                         </Badge>
+                        {t.recurrence_group_id && (
+                          <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/40 text-primary">
+                            <Repeat className="h-2.5 w-2.5 mr-1" />
+                            {describeRule(t.recurrence_rule)}
+                          </Badge>
+                        )}
                       </div>
                       <div className="mt-1 flex gap-4 text-xs text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {format(date, "EEE, HH:mm", { locale: ptBR })} · {t.duration_min}min</span>
@@ -172,6 +214,11 @@ function Section({ title, items, onEdit, onDelete, muted }: { title: string; ite
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button size="icon" variant="ghost" onClick={() => onEdit(t)}><Pencil className="h-4 w-4" /></Button>
+                      {t.recurrence_group_id && (
+                        <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover toda a série?" description="Apaga este treino e todas as próximas ocorrências futuras desta recorrência." confirmLabel="Remover série" onConfirm={() => onDeleteSeries(t.recurrence_group_id!)}>
+                          <Repeat className="h-4 w-4" />
+                        </ConfirmButton>
+                      )}
                       <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover treino?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => onDelete(t.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </div>
                   </div>
@@ -229,15 +276,17 @@ function TrainingDialog({
   saving,
 }: {
   editing: Training | null;
-  onSave: (t: Partial<Training>) => void;
+  onSave: (values: Partial<Training>, recurrence: RecurrenceRule | null) => void;
   saving: boolean;
 }) {
   const [form, setForm] = useState<TrainingForm>(() =>
     editing ? fromTraining(editing) : emptyTrainingForm(),
   );
+  const [recurrence, setRecurrence] = useState<RecurrenceState>(() => emptyRecurrence());
 
   useEffect(() => {
     setForm(editing ? fromTraining(editing) : emptyTrainingForm());
+    setRecurrence(emptyRecurrence());
   }, [editing]);
 
   const canSave =
@@ -255,24 +304,28 @@ function TrainingDialog({
       toast.error("Data inválida");
       return;
     }
-    onSave({
-      title: form.title.trim(),
-      scheduled_at: parsed.toISOString(),
-      duration_min: Math.max(1, Math.round(form.duration_min)),
-      focus: form.focus.trim() || null,
-      notes: form.notes.trim() || null,
-      status: form.status,
-    });
+    onSave(
+      {
+        title: form.title.trim(),
+        scheduled_at: parsed.toISOString(),
+        duration_min: Math.max(1, Math.round(form.duration_min)),
+        focus: form.focus.trim() || null,
+        notes: form.notes.trim() || null,
+        status: form.status,
+      },
+      editing ? null : toRecurrenceRule(recurrence),
+    );
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="font-display text-2xl tracking-wider">
           {editing ? "Editar treino" : "Novo treino"}
         </DialogTitle>
         <DialogDescription>
           Defina título, data, duração e foco da sessão.
+          {!editing && " Use recorrência para criar uma série semanal."}
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -344,6 +397,13 @@ function TrainingDialog({
             rows={3}
           />
         </div>
+        {!editing && (
+          <RecurrenceField
+            baseDateISO={form.scheduled_at ? new Date(form.scheduled_at).toISOString() : ""}
+            state={recurrence}
+            onChange={setRecurrence}
+          />
+        )}
         <DialogFooter>
           <Button
             type="submit"
