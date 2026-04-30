@@ -19,7 +19,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Swords, Trophy, Video, BarChart3, CheckCircle2, Repeat } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -28,6 +28,13 @@ import { VodEmbed } from "@/components/scouting/VodEmbed";
 import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
+import {
+  RecurrenceField,
+  emptyRecurrence,
+  toRecurrenceRule,
+  type RecurrenceState,
+} from "@/components/shared/RecurrenceField";
+import { expandRecurrence, describeRule, type RecurrenceRule } from "@/lib/recurrence";
 
 export const Route = createFileRoute("/amistosos")({
   head: () => ({
