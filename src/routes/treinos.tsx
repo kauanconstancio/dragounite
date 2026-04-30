@@ -386,6 +386,13 @@ function TrainingDialog({
             rows={3}
           />
         </div>
+        {!editing && (
+          <RecurrenceField
+            baseDateISO={form.scheduled_at ? new Date(form.scheduled_at).toISOString() : ""}
+            state={recurrence}
+            onChange={setRecurrence}
+          />
+        )}
         <DialogFooter>
           <Button
             type="submit"
