@@ -268,6 +268,12 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
                           <Video className="h-2.5 w-2.5 mr-1" /> VOD
                         </Badge>
                       )}
+                      {s.recurrence_group_id && (
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/40 text-primary">
+                          <Repeat className="h-2.5 w-2.5 mr-1" />
+                          {describeRule(s.recurrence_rule)}
+                        </Badge>
+                      )}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {format(new Date(s.scheduled_at), "EEE, dd MMM · HH:mm", { locale: ptBR })}
