@@ -105,23 +105,55 @@ function ScrimsPage() {
   const opponentMap = new Map(opponents.map((o) => [o.id, o]));
 
   const save = useMutation({
-    mutationFn: async (s: Partial<Scrim>) => {
+    mutationFn: async (payload: { values: Partial<Scrim>; recurrence: RecurrenceRule | null }) => {
       if (!teamId) throw new Error("Selecione uma equipe");
+      const { values, recurrence } = payload;
       if (editing) {
-        const { error } = await supabase.from("scrims").update(s).eq("id", editing.id);
+        const { error } = await supabase.from("scrims").update(values).eq("id", editing.id);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("scrims").insert({ ...s, team_id: teamId } as any);
-        if (error) throw error;
+        return { count: 1 };
       }
+      const baseISO = values.scheduled_at as string;
+      const dates = recurrence ? expandRecurrence(baseISO, recurrence) : [new Date(baseISO)];
+      const groupId = recurrence ? crypto.randomUUID() : null;
+      const rows = dates.map((d) => ({
+        ...values,
+        team_id: teamId,
+        scheduled_at: d.toISOString(),
+        recurrence_group_id: groupId,
+        recurrence_rule: recurrence ?? null,
+      }));
+      const { error } = await supabase.from("scrims").insert(rows as any);
+      if (error) throw error;
+      return { count: rows.length };
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); setOpen(false); setEditing(null); toast.success("Salvo"); },
+    onSuccess: ({ count }) => {
+      qc.invalidateQueries({ queryKey: ["scrims"] });
+      setOpen(false);
+      setEditing(null);
+      toast.success(count > 1 ? `${count} amistosos criados` : "Salvo");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("scrims").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Removido"); },
+  });
+
+  const removeSeries = useMutation({
+    mutationFn: async (groupId: string) => {
+      if (!teamId) return;
+      const { error } = await supabase
+        .from("scrims")
+        .delete()
+        .eq("team_id", teamId)
+        .eq("recurrence_group_id", groupId)
+        .gte("scheduled_at", new Date().toISOString());
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["scrims"] }); toast.success("Série removida"); },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const complete = useMutation({
