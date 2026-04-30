@@ -169,7 +169,7 @@ function TreinosPage() {
   );
 }
 
-function Section({ title, items, onEdit, onDelete, muted }: { title: string; items: Training[]; onEdit: (t: Training) => void; onDelete: (id: string) => void; muted?: boolean }) {
+function Section({ title, items, onEdit, onDelete, onDeleteSeries, muted }: { title: string; items: Training[]; onEdit: (t: Training) => void; onDelete: (id: string) => void; onDeleteSeries: (groupId: string) => void; muted?: boolean }) {
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
