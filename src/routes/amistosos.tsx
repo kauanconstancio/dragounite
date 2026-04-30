@@ -59,6 +59,8 @@ type Scrim = {
   notes: string | null;
   vod_url: string | null;
   vod_notes: string | null;
+  recurrence_group_id: string | null;
+  recurrence_rule: RecurrenceRule | null;
 };
 
 type Opponent = { id: string; name: string; tag: string | null };
