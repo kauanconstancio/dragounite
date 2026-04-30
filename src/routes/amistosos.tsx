@@ -230,7 +230,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
   );
 }
 
-function ScrimList({ title, items, opponentMap, onEdit, onDelete, onComplete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; onComplete: (s: Scrim) => void; muted?: boolean }) {
+function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries, onComplete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; onDeleteSeries: (groupId: string) => void; onComplete: (s: Scrim) => void; muted?: boolean }) {
   const [perfFor, setPerfFor] = useState<Scrim | null>(null);
   return (
     <section>
