@@ -589,6 +589,7 @@ function ScrimDialog({
             onChange={(e) => setForm((f) => ({ ...f, vod_notes: e.target.value }))}
             rows={3}
           />
+        </div>
         {!editing && (
           <RecurrenceField
             baseDateISO={form.scheduled_at ? new Date(form.scheduled_at).toISOString() : ""}
