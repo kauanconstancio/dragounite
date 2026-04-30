@@ -194,7 +194,7 @@ function ScrimsPage() {
               </Button>
             </DialogTrigger>
           </RequireRole>
-          <ScrimDialog editing={editing} opponents={opponents} onSave={(s) => save.mutate(s)} saving={save.isPending} />
+          <ScrimDialog editing={editing} opponents={opponents} onSave={(values, recurrence) => save.mutate({ values, recurrence })} saving={save.isPending} />
         </Dialog>
       </div>
 
