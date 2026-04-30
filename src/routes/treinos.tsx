@@ -199,6 +199,12 @@ function Section({ title, items, onEdit, onDelete, onDeleteSeries, muted }: { ti
                         <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-gold/40 text-gold">
                           {STATUS_LABEL[t.status]}
                         </Badge>
+                        {t.recurrence_group_id && (
+                          <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/40 text-primary">
+                            <Repeat className="h-2.5 w-2.5 mr-1" />
+                            {describeRule(t.recurrence_rule)}
+                          </Badge>
+                        )}
                       </div>
                       <div className="mt-1 flex gap-4 text-xs text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {format(date, "EEE, HH:mm", { locale: ptBR })} · {t.duration_min}min</span>
@@ -208,6 +214,11 @@ function Section({ title, items, onEdit, onDelete, onDeleteSeries, muted }: { ti
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button size="icon" variant="ghost" onClick={() => onEdit(t)}><Pencil className="h-4 w-4" /></Button>
+                      {t.recurrence_group_id && (
+                        <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover toda a série?" description="Apaga este treino e todas as próximas ocorrências futuras desta recorrência." confirmLabel="Remover série" onConfirm={() => onDeleteSeries(t.recurrence_group_id!)}>
+                          <Repeat className="h-4 w-4" />
+                        </ConfirmButton>
+                      )}
                       <ConfirmButton size="icon" variant="ghost" className="hover:text-destructive" title="Remover treino?" description="Esta ação não pode ser desfeita." confirmLabel="Remover" onConfirm={() => onDelete(t.id)}><Trash2 className="h-4 w-4" /></ConfirmButton>
                     </div>
                   </div>
