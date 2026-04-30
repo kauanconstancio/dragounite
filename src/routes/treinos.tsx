@@ -307,13 +307,14 @@ function TrainingDialog({
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="font-display text-2xl tracking-wider">
           {editing ? "Editar treino" : "Novo treino"}
         </DialogTitle>
         <DialogDescription>
           Defina título, data, duração e foco da sessão.
+          {!editing && " Use recorrência para criar uma série semanal."}
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
