@@ -19,12 +19,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Clock, Target } from "lucide-react";
+import { Plus, Trash2, Pencil, Clock, Target, Repeat } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
+import {
+  RecurrenceField,
+  emptyRecurrence,
+  toRecurrenceRule,
+  type RecurrenceState,
+} from "@/components/shared/RecurrenceField";
+import { expandRecurrence, describeRule, type RecurrenceRule } from "@/lib/recurrence";
 
 export const Route = createFileRoute("/treinos")({
   head: () => ({
