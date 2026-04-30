@@ -161,8 +161,8 @@ function TreinosPage() {
         <div className="text-center text-muted-foreground py-20">Carregando...</div>
       ) : (
         <>
-          <Section title="Próximos" items={upcoming} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} />
-          <Section title="Histórico" items={past} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} muted />
+          <Section title="Próximos" items={upcoming} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onDeleteSeries={(gid) => removeSeries.mutate(gid)} />
+          <Section title="Histórico" items={past} onEdit={(t) => { setEditing(t); setOpen(true); }} onDelete={(id) => remove.mutate(id)} onDeleteSeries={(gid) => removeSeries.mutate(gid)} muted />
         </>
       )}
     </div>
