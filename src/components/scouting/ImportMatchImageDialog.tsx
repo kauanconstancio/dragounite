@@ -328,32 +328,47 @@ export function ImportMatchImageDialog({
   const save = useMutation({
     mutationFn: async () => {
       if (!data || !teamId) return;
-      // Allies: insert only those mapped to a member
-      const allyRows = (data.ally_players || [])
-        .map((p, i) => {
-          const memberId = allyMemberIds[i];
-          if (!memberId) return null;
-          return {
-            scrim_id: scrimId,
-            team_id: teamId,
-            member_id: memberId,
-            game_number: gameNumber,
-            pokemon: p.pokemon || null,
-            kills: Number(p.kills) || 0,
-            deaths: 0,
-            assists: Number(p.assists) || 0,
-            score: Number(p.score) || 0,
-            damage_dealt: Number(p.damage_dealt) || 0,
-            damage_taken: Number(p.damage_taken) || 0,
-            healing: Number(p.healing) || 0,
-            is_mvp: !!p.is_mvp,
-          };
-        })
-        .filter(Boolean) as any[];
-      if (allyRows.length) {
+      // Allies: insert mapped roster rows AND guests (sem vínculo) com player_name
+      const mappedRows: any[] = [];
+      const guestRows: any[] = [];
+      (data.ally_players || []).forEach((p, i) => {
+        const memberId = allyMemberIds[i];
+        const base = {
+          scrim_id: scrimId,
+          team_id: teamId,
+          game_number: gameNumber,
+          pokemon: p.pokemon || null,
+          kills: Number(p.kills) || 0,
+          deaths: 0,
+          assists: Number(p.assists) || 0,
+          score: Number(p.score) || 0,
+          damage_dealt: Number(p.damage_dealt) || 0,
+          damage_taken: Number(p.damage_taken) || 0,
+          healing: Number(p.healing) || 0,
+          is_mvp: !!p.is_mvp,
+          player_name: (p.name ?? "").trim() || null,
+        };
+        if (memberId) {
+          mappedRows.push({ ...base, member_id: memberId });
+        } else if (base.player_name) {
+          guestRows.push({ ...base, member_id: null });
+        }
+      });
+      if (mappedRows.length) {
         const { error } = await supabase
           .from("match_performances")
-          .upsert(allyRows, { onConflict: "scrim_id,member_id,game_number" });
+          .upsert(mappedRows, { onConflict: "scrim_id,member_id,game_number" });
+        if (error) throw error;
+      }
+      if (guestRows.length) {
+        // Substitui convidados deste jogo para evitar duplicação em re-importações
+        await supabase
+          .from("match_performances")
+          .delete()
+          .eq("scrim_id", scrimId)
+          .eq("game_number", gameNumber)
+          .is("member_id", null);
+        const { error } = await supabase.from("match_performances").insert(guestRows);
         if (error) throw error;
       }
       // Opponents
@@ -575,13 +590,16 @@ export function ImportMatchImageDialog({
                   onChange={(patch) => updateAlly(i, patch)}
                   leading={
                     <Select
-                      value={allyMemberIds[i] ?? ""}
+                      value={allyMemberIds[i] ? allyMemberIds[i] : "__guest__"}
                       onValueChange={(v) =>
-                        setAllyMemberIds((arr) => arr.map((x, idx) => (idx === i ? v : x)))
+                        setAllyMemberIds((arr) => arr.map((x, idx) => (idx === i ? (v === "__guest__" ? "" : v) : x)))
                       }
                     >
                       <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={p.name || "Jogador"} /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="__guest__">
+                          Convidado{p.name ? ` (${p.name})` : ""}
+                        </SelectItem>
                         {members.map((m) => (
                           <SelectItem key={m.id} value={m.id}>
                             {m.name}{m.ign ? ` (${m.ign})` : ""}

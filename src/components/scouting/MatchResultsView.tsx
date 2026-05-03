@@ -173,8 +173,8 @@ export function MatchResultsView({
           {tab === "battle" && <BattleHeader side="ally" />}
           {allyGame.length === 0 && <EmptyState side="ally" />}
           {allyGame.map((r) => {
-            const m = memberMap.get(r.member_id);
-            const display = m?.ign || m?.name || "—";
+            const m = r.member_id ? memberMap.get(r.member_id) : null;
+            const display = m?.ign || m?.name || r.player_name || "Convidado";
             const isMvp = r.is_mvp || r.id === allyMvpId;
             return tab === "details" ? (
               <DetailsRow

@@ -300,8 +300,9 @@ export type Database = {
           id: string
           is_mvp: boolean
           kills: number
-          member_id: string
+          member_id: string | null
           notes: string | null
+          player_name: string | null
           pokemon: string | null
           result: Database["public"]["Enums"]["match_result"]
           score: number
@@ -319,8 +320,9 @@ export type Database = {
           id?: string
           is_mvp?: boolean
           kills?: number
-          member_id: string
+          member_id?: string | null
           notes?: string | null
+          player_name?: string | null
           pokemon?: string | null
           result?: Database["public"]["Enums"]["match_result"]
           score?: number
@@ -338,8 +340,9 @@ export type Database = {
           id?: string
           is_mvp?: boolean
           kills?: number
-          member_id?: string
+          member_id?: string | null
           notes?: string | null
+          player_name?: string | null
           pokemon?: string | null
           result?: Database["public"]["Enums"]["match_result"]
           score?: number
