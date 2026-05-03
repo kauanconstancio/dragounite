@@ -246,7 +246,7 @@ function formatCandidates(candidates: any[]) {
         `#${index + 1}`,
         p?.name ? `name=${String(p.name)}` : "",
         p?.ign ? `ign=${String(p.ign)}` : "",
-        p?.pokemon ? `pokemon=${String(p.pokemon)}` : "",
+        // NÃO incluir 'pokemon' do roster aqui — evita que a IA copie o "main" em vez de ler o sprite real do print.
       ].filter(Boolean);
       return bits.join("; ");
     })
