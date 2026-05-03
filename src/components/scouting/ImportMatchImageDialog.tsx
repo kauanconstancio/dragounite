@@ -31,7 +31,6 @@ type ExtractedPlayer = {
   name?: string;
   pokemon?: string;
   kills?: number;
-  deaths?: number;
   assists?: number;
   score?: number;
   damage_dealt?: number;
@@ -106,7 +105,7 @@ function normalizeExtracted(raw: any): Extracted {
       name: String(p.name ?? (p as any).ign ?? (p as any).player_name ?? "").trim(),
       pokemon: String(p.pokemon ?? "").trim(),
       kills: num(p.kills),
-      deaths: num(p.deaths),
+      
       assists: num(p.assists),
       score: num(p.score),
       damage_dealt: num(p.damage_dealt ?? (p as any).damageDealt ?? (p as any).dano_causado ?? (p as any).dano),
@@ -129,7 +128,7 @@ function parsePlayerString(input: string): ExtractedPlayer {
   const out: Record<string, unknown> = {};
   const keys = [
     "damage_dealt", "damage_taken", "is_mvp", "name", "ign", "player_name", "pokemon",
-    "kills", "deaths", "assists", "score", "healing", "recovery", "dano_causado",
+    "kills", "assists", "score", "healing", "recovery", "dano_causado",
     "dano_recebido", "recuperacao", "recuperação", "cura", "mvp",
   ];
   const keyPattern = keys.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
@@ -141,7 +140,7 @@ function parsePlayerString(input: string): ExtractedPlayer {
     name: String(out.name ?? out.ign ?? out.player_name ?? ""),
     pokemon: String(out.pokemon ?? ""),
     kills: num(out.kills),
-    deaths: num(out.deaths),
+    
     assists: num(out.assists),
     score: num(out.score),
     damage_dealt: num(out.damage_dealt ?? out.dano_causado),
@@ -341,7 +340,7 @@ export function ImportMatchImageDialog({
             game_number: gameNumber,
             pokemon: p.pokemon || null,
             kills: Number(p.kills) || 0,
-            deaths: Number(p.deaths) || 0,
+            deaths: 0,
             assists: Number(p.assists) || 0,
             score: Number(p.score) || 0,
             damage_dealt: Number(p.damage_dealt) || 0,
@@ -423,16 +422,34 @@ export function ImportMatchImageDialog({
   });
 
   const updateAlly = (i: number, patch: Partial<ExtractedPlayer>) => {
-    setData((d) =>
-      d ? { ...d, ally_players: d.ally_players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) } : d,
-    );
+    setData((d) => {
+      if (!d) return d;
+      const clearMvp = patch.is_mvp === true;
+      return {
+        ...d,
+        ally_players: d.ally_players.map((p, idx) =>
+          idx === i ? { ...p, ...patch } : clearMvp ? { ...p, is_mvp: false } : p,
+        ),
+        opponent_players: clearMvp
+          ? d.opponent_players.map((p) => ({ ...p, is_mvp: false }))
+          : d.opponent_players,
+      };
+    });
   };
   const updateOpp = (i: number, patch: Partial<ExtractedPlayer>) => {
-    setData((d) =>
-      d
-        ? { ...d, opponent_players: d.opponent_players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) }
-        : d,
-    );
+    setData((d) => {
+      if (!d) return d;
+      const clearMvp = patch.is_mvp === true;
+      return {
+        ...d,
+        opponent_players: d.opponent_players.map((p, idx) =>
+          idx === i ? { ...p, ...patch } : clearMvp ? { ...p, is_mvp: false } : p,
+        ),
+        ally_players: clearMvp
+          ? d.ally_players.map((p) => ({ ...p, is_mvp: false }))
+          : d.ally_players,
+      };
+    });
   };
 
   const games = useMemo(() => Array.from({ length: bestOf }, (_, i) => i + 1), [bestOf]);
@@ -616,6 +633,7 @@ export function ImportMatchImageDialog({
                     </div>
                   }
                   hint={p.name ? `Detectado: ${p.name}` : undefined}
+                  showMvp
                 />
               ))}
               {data.opponent_players.length === 0 && (
@@ -694,10 +712,9 @@ function PlayerEditor({
         )}
       </div>
       {hint && <p className="text-[10px] text-muted-foreground italic">{hint}</p>}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-6 gap-2">
         <NumField label="Score" value={player.score} onChange={(n) => onChange({ score: n })} />
         <NumField label="Kills" value={player.kills} onChange={(n) => onChange({ kills: n })} />
-        <NumField label="Deaths" value={player.deaths} onChange={(n) => onChange({ deaths: n })} />
         <NumField label="Assist." value={player.assists} onChange={(n) => onChange({ assists: n })} />
         <NumField label="Dano" value={player.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
         <NumField label="Sofrido" value={player.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />

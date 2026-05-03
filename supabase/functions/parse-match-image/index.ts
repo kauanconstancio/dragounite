@@ -12,17 +12,16 @@ const PLAYER_SCHEMA = {
   additionalProperties: false,
   properties: {
     name: { type: "string", description: "In-game name/IGN exactly as shown, or the closest roster candidate when clearly matching" },
-    pokemon: { type: "string", description: "Pokémon name in English" },
+    pokemon: { type: "string", description: "Pokémon name in English. READ the small portrait/icon next to each row — do NOT guess from the player name. Examples: Pikachu, Charizard, Lucario, Mr. Mime, Mew, Tsareena, Espeon, Gardevoir, Glaceon, Greninja, Cinderace, Decidueye, Dragapult, Mewtwo X, Mewtwo Y, Zacian, Miraidon, Ho-Oh, Suicune, Blissey, Eldegoss, Wigglytuff, Hoopa, Comfey, Sableye, Trevenant, Snorlax, Mamoswine, Crustle, Slowbro, Goodra, Greedent, Umbreon, Buzzwole, Machamp, Tyranitar, Garchomp, Blaziken, Aegislash, Scizor, Absol, Zoroark, Tinkaton, Falinks, Ceruledge, Meowscarada, Inteleon, Leafeon, Sylveon, Delphox, Venusaur, Alolan Ninetales, Duraludon, Dragonite, Metagross, A9 (Alolan Ninetales)" },
     kills: { type: "number", description: "KOs/kills shown for this player" },
-    deaths: { type: "number", description: "Deaths/faints for this player, or 0 when no deaths column exists" },
     assists: { type: "number", description: "Assists shown for this player" },
     score: { type: "number", description: "Individual points/goals scored by this player" },
     damage_dealt: { type: "number", description: "Damage dealt / dano causado as a full integer" },
     damage_taken: { type: "number", description: "Damage taken / dano recebido as a full integer" },
     healing: { type: "number", description: "Recovery/healing/recuperação as a full integer" },
-    is_mvp: { type: "boolean", description: "True only for the MVP/crown player" },
+    is_mvp: { type: "boolean", description: "TRUE ONLY for the player who has a CROWN icon (👑) drawn next to their name. Pokémon Unite shows a small golden/yellow crown above or next to the MVP's IGN. There is exactly ONE MVP per match (winning team). All other players MUST be false." },
   },
-  required: ["name", "pokemon", "kills", "deaths", "assists", "score", "damage_dealt", "damage_taken", "healing", "is_mvp"],
+  required: ["name", "pokemon", "kills", "assists", "score", "damage_dealt", "damage_taken", "healing", "is_mvp"],
 };
 
 const TOOL = {
@@ -201,21 +200,24 @@ function buildSystemPrompt(allyRoster: any[], opponentRoster: any[]) {
     "Você é um extrator OCR/visão especializado em resultados pós-partida de Pokémon Unite.",
     "Sua prioridade é extrair DADOS POR JOGADOR, não apenas o placar geral.",
     "A partida pode estar em PT-BR, EN ou ES. O usuário pode enviar 1 ou 2 prints da MESMA partida:",
-    "  • PRINT DE PLACAR / PARTIDA: contém as duas equipes, Pokémon, nome/IGN, KOs/Kills, Assists, Score/Pontos e MVP/coroa.",
+    "  • PRINT DE PLACAR / PARTIDA: contém as duas equipes, Pokémon, nome/IGN, KOs/Kills, Assists, Score/Pontos e o ícone de COROA do MVP.",
     "  • PRINT DE ESTATÍSTICAS / BATTLE PERFORMANCE: contém Damage dealt/Dano causado, Damage taken/Dano recebido e Recovery/Healing/Recuperação por jogador.",
     "COMO LER:",
-    "  1) Identifique as 10 linhas de jogadores: aliados no lado esquerdo/superior do time do usuário e oponentes no lado direito/inferior conforme a tela.",
-    "  2) Para cada linha, leia o nome/IGN próximo ao avatar/Pokémon. Use candidatos do roster somente para corrigir/selecionar nomes parecidos; não invente nomes ausentes.",
-    "  3) Extraia KOs/Kills, Assists, Score/Pontos e MVP do print de placar. Deaths/faints use 0 se não existir coluna visível.",
-    "  4) Extraia dano causado, dano recebido e recuperação do print de estatísticas. Os números podem aparecer como 72,345, 72.345, 72K ou 72k; retorne inteiro completo.",
-    "  5) Quando houver 2 prints, case/una jogadores por nome/IGN; se o nome estiver truncado, use Pokémon e posição relativa da linha para mesclar.",
-    "  6) score_us e score_them são o placar grande dos TIMES; score de cada jogador é a pontuação individual marcada.",
+    "  1) Identifique as 10 linhas de jogadores: 5 aliados (time do usuário, normalmente lado esquerdo/laranja) e 5 oponentes (lado direito/roxo).",
+    "  2) POKÉMON: leia o RETRATO/ÍCONE pequeno ao lado do nome de cada linha. Cada linha tem um sprite circular do Pokémon usado. NUNCA infira o Pokémon a partir do nome do jogador. Se não conseguir identificar com certeza, deixe vazio.",
+    "  3) Nome/IGN próximo ao avatar/Pokémon. Use candidatos do roster apenas para corrigir/selecionar nomes parecidos; não invente nomes ausentes.",
+    "  4) MVP: Pokémon Unite mostra um ícone pequeno de COROA DOURADA (👑) acima ou ao lado do IGN do MVP. Existe APENAS UM MVP por partida, sempre no time vencedor. Marque is_mvp=true SOMENTE para esse jogador. Todos os outros 9 jogadores DEVEM ter is_mvp=false. Se nenhuma coroa for visível, todos ficam false.",
+    "  5) Extraia KOs/Kills, Assists e Score/Pontos do print de placar. NÃO existe coluna de mortes/deaths no Pokémon Unite — não tente extrair.",
+    "  6) Extraia dano causado, dano recebido e recuperação do print de estatísticas. Os números podem aparecer como 72,345, 72.345, 72K ou 72k; retorne inteiro completo.",
+    "  7) Quando houver 2 prints, case/una jogadores por nome/IGN; se o nome estiver truncado, use Pokémon e posição relativa da linha para mesclar.",
+    "  8) score_us e score_them são o placar grande dos TIMES; score de cada jogador é a pontuação individual marcada.",
     "REGRAS CRÍTICAS:",
     "  • Retorne ally_players e opponent_players com todas as linhas visíveis, idealmente 5 em cada lado.",
     "  • Nunca responda só o placar se houver linhas de jogadores visíveis.",
     "  • Nunca zere todos os jogadores quando as colunas existem; leia célula por célula.",
     "  • Se um campo não estiver visível em nenhum print, use 0, mas mantenha nome, Pokémon e demais campos lidos.",
-    "  • Pokémon sempre em inglês.",
+    "  • Pokémon sempre em inglês (ex: Pikachu, Lucario, Tsareena, Mr. Mime, Alolan Ninetales).",
+    "  • Apenas UM jogador no total (entre os 10) pode ter is_mvp=true.",
     allyCandidates ? `CANDIDATOS DO NOSSO ROSTER para mapeamento de aliados:\n${allyCandidates}` : "",
     opponentCandidates ? `CANDIDATOS DE JOGADORES OPONENTES conhecidos:\n${opponentCandidates}` : "",
   ].filter(Boolean).join("\n");
@@ -224,7 +226,10 @@ function buildSystemPrompt(allyRoster: any[], opponentRoster: any[]) {
 function buildUserPrompt(imageCount: number, allyRoster: any[], opponentRoster: any[]) {
   return [
     `Foram enviados ${imageCount} print(s) da mesma partida de Pokémon Unite.`,
-    "Extraia obrigatoriamente por jogador: name, pokemon, kills, deaths, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
+    "Extraia obrigatoriamente por jogador: name, pokemon, kills, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
+    "NÃO extraia mortes/deaths — Pokémon Unite não exibe essa coluna.",
+    "Para o Pokémon, leia o RETRATO/SPRITE pequeno ao lado do nome — não invente a partir do IGN.",
+    "Para o MVP, procure pela COROA DOURADA (👑) ao lado de UM IGN — apenas esse jogador recebe is_mvp=true.",
     "Separe aliados em ally_players e adversários em opponent_players.",
     "Se houver print de estatísticas detalhadas, mescle dano/recuperação no mesmo jogador do print de placar.",
     allyRoster.length ? "Para aliados, prefira nomes que coincidam com name/ign do roster enviado quando forem claramente o mesmo jogador." : "",
@@ -252,7 +257,6 @@ type ExtractedPlayer = {
   name: string;
   pokemon: string;
   kills: number;
-  deaths: number;
   assists: number;
   score: number;
   damage_dealt: number;
@@ -276,6 +280,8 @@ function normalizeExtractedMatch(raw: any) {
           ? "draw"
           : "unknown";
 
+  enforceSingleMvp(allyPlayers, opponentPlayers, result);
+
   return {
     score_us: scoreUs,
     score_them: scoreThem,
@@ -284,6 +290,20 @@ function normalizeExtractedMatch(raw: any) {
     opponent_players: opponentPlayers,
     confidence: typeof raw?.confidence === "number" ? raw.confidence : 0.75,
   };
+}
+
+function enforceSingleMvp(ally: ExtractedPlayer[], opp: ExtractedPlayer[], result: string) {
+  const allMvps = [...ally, ...opp].filter((p) => p.is_mvp);
+  if (allMvps.length <= 1) return;
+  const winners = result === "loss" ? opp : result === "win" ? ally : [...ally, ...opp];
+  const candidates = winners.filter((p) => p.is_mvp);
+  const pool = candidates.length ? candidates : allMvps;
+  const best = pool.reduce((a, b) =>
+    (b.score + b.kills * 2 + b.assists) > (a.score + a.kills * 2 + a.assists) ? b : a,
+  );
+  for (const p of [...ally, ...opp]) {
+    p.is_mvp = p === best;
+  }
 }
 
 function normalizePlayers(value: any): ExtractedPlayer[] {
@@ -300,7 +320,6 @@ function normalizePlayer(entry: any): ExtractedPlayer {
     name: String(parsed.name ?? parsed.ign ?? parsed.player_name ?? "").trim(),
     pokemon: String(parsed.pokemon ?? "").trim(),
     kills: toNumber(parsed.kills ?? parsed.ko ?? parsed.kos ?? parsed.KO),
-    deaths: toNumber(parsed.deaths ?? parsed.faints),
     assists: toNumber(parsed.assists ?? parsed.assistencias ?? parsed.assistências),
     score: toNumber(parsed.score ?? parsed.points ?? parsed.pontos),
     damage_dealt: toNumber(parsed.damage_dealt ?? parsed.damageDealt ?? parsed.dano_causado ?? parsed.dano),
@@ -322,7 +341,6 @@ function parsePlayerString(input: string) {
     "player_name",
     "pokemon",
     "kills",
-    "deaths",
     "assists",
     "score",
     "healing",
