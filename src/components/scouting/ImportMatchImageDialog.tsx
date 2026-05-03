@@ -31,7 +31,6 @@ type ExtractedPlayer = {
   name?: string;
   pokemon?: string;
   kills?: number;
-  deaths?: number;
   assists?: number;
   score?: number;
   damage_dealt?: number;
