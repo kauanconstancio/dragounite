@@ -36,7 +36,7 @@ const PLAYER_SCHEMA = {
   additionalProperties: false,
   properties: {
     name: { type: "string", description: "In-game name/IGN exactly as shown, or the closest roster candidate when clearly matching" },
-    pokemon: { type: "string", enum: POKEMON_NAMES, description: `Choose EXACTLY one Pokémon from the enum, or EMPTY string if not visually certain. Identify ONLY by the small circular portrait/sprite on the same row as the player's name. NEVER guess from IGN, roster, main Pokémon, lane, score, level, or row position. Visual guide: ${POKEMON_VISUAL_GUIDE}` },
+    pokemon: { type: "string", description: `Pokémon name. MUST be one of this allowed list (or EMPTY string "" if not visually certain): ${POKEMON_NAMES.filter(Boolean).join(", ")}. Identify ONLY by the small circular portrait/sprite on the same row as the player's name. NEVER guess from IGN, roster, main Pokémon, lane, score, level, or row position. Visual guide: ${POKEMON_VISUAL_GUIDE}` },
     kills: { type: "number", description: "KOs/Nocautes — coluna 'KOs' do placar. Número INTEIRO pequeno, normalmente entre 0 e 20. NÃO confunda com 'Scored/Pontuação' (que costuma ser muito maior)." },
     assists: { type: "number", description: "Assistências — coluna 'Assists/Assistências' do placar. Número INTEIRO pequeno, normalmente entre 0 e 25. NÃO confunda com KOs nem com Scored." },
     score: { type: "number", description: "Pontuação individual marcada — coluna 'Scored/Pontuação' do placar (pontos depositados nos goals). Costuma ser o MAIOR dos três números (frequentemente 30-200+). NÃO confunda com KOs ou Assists." },
