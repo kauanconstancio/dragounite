@@ -341,7 +341,6 @@ function parsePlayerString(input: string) {
     "player_name",
     "pokemon",
     "kills",
-    "deaths",
     "assists",
     "score",
     "healing",
