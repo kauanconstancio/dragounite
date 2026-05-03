@@ -76,8 +76,8 @@ export function ImportMatchImageDialog({
   const qc = useQueryClient();
   const { team } = useCurrentTeam();
   const teamId = team?.id;
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Extracted | null>(null);
   const [gameNumber, setGameNumber] = useState(1);
@@ -101,8 +101,8 @@ export function ImportMatchImageDialog({
 
   useEffect(() => {
     if (!open) {
-      setFile(null);
-      setPreview(null);
+      setFiles([]);
+      setPreviews([]);
       setData(null);
       setLoading(false);
       setAllyMemberIds([]);
@@ -110,38 +110,59 @@ export function ImportMatchImageDialog({
     }
   }, [open]);
 
-  function onPick(f: File | null) {
-    setFile(f);
+  function onPick(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    const incoming = Array.from(list);
+    const merged = [...files, ...incoming].slice(0, 2);
+    for (const f of merged) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast.error(`"${f.name}" excede 5MB`);
+        return;
+      }
+    }
+    setFiles(merged);
     setData(null);
-    if (!f) {
-      setPreview(null);
-      return;
-    }
-    if (f.size > 5 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 5MB)");
-      setFile(null);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result as string);
-    reader.readAsDataURL(f);
+    Promise.all(
+      merged.map(
+        (f) =>
+          new Promise<string>((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result as string);
+            r.onerror = reject;
+            r.readAsDataURL(f);
+          }),
+      ),
+    ).then(setPreviews);
   }
 
+  function removeFile(i: number) {
+    const next = files.filter((_, idx) => idx !== i);
+    setFiles(next);
+    setPreviews((p) => p.filter((_, idx) => idx !== i));
+    setData(null);
+  }
+
+
   async function analyze() {
-    if (!file) return;
+    if (files.length === 0) return;
     setLoading(true);
     try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const s = reader.result as string;
-          resolve(s.split(",")[1] || "");
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const images = await Promise.all(
+        files.map(
+          (f) =>
+            new Promise<{ base64: string; mimeType: string }>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const s = reader.result as string;
+                resolve({ base64: s.split(",")[1] || "", mimeType: f.type || "image/png" });
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(f);
+            }),
+        ),
+      );
       const { data: res, error } = await supabase.functions.invoke("parse-match-image", {
-        body: { imageBase64: base64, mimeType: file.type || "image/png" },
+        body: { images },
       });
       if (error) throw error;
       if ((res as any)?.error) throw new Error((res as any).error);
@@ -310,24 +331,55 @@ export function ImportMatchImageDialog({
             </div>
             <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-border rounded-md p-8 cursor-pointer hover:border-primary/50 transition-colors">
               <Upload className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                {file ? file.name : "Clique para escolher um print (PNG/JPG, máx 5MB)"}
+              <span className="text-sm text-muted-foreground text-center">
+                {files.length === 0
+                  ? "Clique para escolher até 2 prints (placar e/ou estatísticas detalhadas — PNG/JPG, máx 5MB cada)"
+                  : files.length === 1
+                  ? "1 imagem selecionada — você pode adicionar mais 1 (estatísticas detalhadas)"
+                  : "2 imagens selecionadas"}
               </span>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
+                multiple
                 className="hidden"
-                onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+                disabled={files.length >= 2}
+                onChange={(e) => {
+                  onPick(e.target.files);
+                  e.currentTarget.value = "";
+                }}
               />
             </label>
-            {preview && (
-              <img src={preview} alt="preview" className="max-h-72 mx-auto rounded border border-border" />
+            {previews.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative">
+                    <img
+                      src={src}
+                      alt={`preview ${i + 1}`}
+                      className="max-h-56 w-full object-contain rounded border border-border bg-card/40"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-1 right-1 h-7 px-2 text-xs"
+                      onClick={() => removeFile(i)}
+                    >
+                      Remover
+                    </Button>
+                    <div className="absolute bottom-1 left-1 text-[10px] uppercase tracking-widest bg-background/80 px-1.5 py-0.5 rounded">
+                      Print {i + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button
                 onClick={analyze}
-                disabled={!file || loading}
+                disabled={files.length === 0 || loading}
                 className="bg-gradient-primary"
               >
                 {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Analisando...</> : <><Sparkles className="h-4 w-4 mr-2" />Analisar com IA</>}
