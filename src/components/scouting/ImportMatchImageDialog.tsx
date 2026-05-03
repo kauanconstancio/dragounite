@@ -256,14 +256,19 @@ export function ImportMatchImageDialog({
             score: Math.max(
               similarity(m.name, p.name ?? ""),
               similarity(m.ign ?? "", p.name ?? ""),
+              similarity(m.name, p.pokemon ?? "") * 0.25,
+              similarity(m.main_pokemon ?? "", p.pokemon ?? "") * 0.4,
             ),
           }))
-          .filter((c) => c.score > 0 && !used.has(c.id))
+          .filter((c) => c.score >= 0.5 && !used.has(c.id))
           .sort((a, b) => b.score - a.score);
         const top = cands[0];
         if (top) used.add(top.id);
         return top?.id ?? "";
       });
+      if ((parsed.ally_players?.length ?? 0) === 0 && (parsed.opponent_players?.length ?? 0) === 0) {
+        toast.warning("A IA não encontrou linhas de jogadores. Use prints nítidos do placar e da tela Battle Performance.");
+      }
       setAllyMemberIds(mapped);
       toast.success("Dados extraídos! Revise antes de salvar.");
     } catch (e: any) {
