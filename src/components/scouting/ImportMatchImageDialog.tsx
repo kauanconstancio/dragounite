@@ -246,6 +246,16 @@ export function ImportMatchImageDialog({
       if (error) throw error;
       if ((res as any)?.error) throw new Error((res as any).error);
       const parsed = normalizeExtracted((res as any).data as Extracted);
+      parsed.opponent_players = parsed.opponent_players.map((p) => {
+        const top = opponentKnownPlayers
+          .map((known) => ({
+            known,
+            score: Math.max(similarity(known.name, p.name ?? ""), similarity(known.pokemon ?? "", p.pokemon ?? "") * 0.35),
+          }))
+          .filter((c) => c.score >= 0.5)
+          .sort((a, b) => b.score - a.score)[0];
+        return top ? { ...p, name: top.known.name, pokemon: p.pokemon || top.known.pokemon || "" } : p;
+      });
       setData(parsed);
       // auto-map allies by name similarity
       const used = new Set<string>();
