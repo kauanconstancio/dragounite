@@ -247,3 +247,125 @@ function formatCandidates(candidates: any[]) {
     .filter(Boolean)
     .join("\n");
 }
+
+type ExtractedPlayer = {
+  name: string;
+  pokemon: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+  score: number;
+  damage_dealt: number;
+  damage_taken: number;
+  healing: number;
+  is_mvp: boolean;
+};
+
+function normalizeExtractedMatch(raw: any) {
+  const allyPlayers = normalizePlayers(raw?.ally_players);
+  const opponentPlayers = normalizePlayers(raw?.opponent_players);
+  const scoreUs = toNumber(raw?.score_us) || allyPlayers.reduce((sum, p) => sum + p.score, 0);
+  const scoreThem = toNumber(raw?.score_them) || opponentPlayers.reduce((sum, p) => sum + p.score, 0);
+  const result = raw?.result === "win" || raw?.result === "loss" || raw?.result === "draw"
+    ? raw.result
+    : scoreUs > scoreThem
+      ? "win"
+      : scoreThem > scoreUs
+        ? "loss"
+        : scoreUs === scoreThem && (scoreUs > 0 || scoreThem > 0)
+          ? "draw"
+          : "unknown";
+
+  return {
+    score_us: scoreUs,
+    score_them: scoreThem,
+    result,
+    ally_players: allyPlayers,
+    opponent_players: opponentPlayers,
+    confidence: typeof raw?.confidence === "number" ? raw.confidence : 0.75,
+  };
+}
+
+function normalizePlayers(value: any): ExtractedPlayer[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => normalizePlayer(entry))
+    .filter((p) => p.name || p.pokemon || p.kills || p.assists || p.score || p.damage_dealt || p.damage_taken || p.healing)
+    .slice(0, 5);
+}
+
+function normalizePlayer(entry: any): ExtractedPlayer {
+  const parsed = typeof entry === "string" ? parsePlayerString(entry) : entry ?? {};
+  return {
+    name: String(parsed.name ?? parsed.ign ?? parsed.player_name ?? "").trim(),
+    pokemon: String(parsed.pokemon ?? "").trim(),
+    kills: toNumber(parsed.kills ?? parsed.ko ?? parsed.kos ?? parsed.KO),
+    deaths: toNumber(parsed.deaths ?? parsed.faints),
+    assists: toNumber(parsed.assists ?? parsed.assistencias ?? parsed.assistências),
+    score: toNumber(parsed.score ?? parsed.points ?? parsed.pontos),
+    damage_dealt: toNumber(parsed.damage_dealt ?? parsed.damageDealt ?? parsed.dano_causado ?? parsed.dano),
+    damage_taken: toNumber(parsed.damage_taken ?? parsed.damageTaken ?? parsed.dano_recebido ?? parsed.sofrido),
+    healing: toNumber(parsed.healing ?? parsed.recovery ?? parsed.recuperacao ?? parsed.recuperação ?? parsed.cura),
+    is_mvp: toBoolean(parsed.is_mvp ?? parsed.mvp),
+  };
+}
+
+function parsePlayerString(input: string) {
+  const out: Record<string, unknown> = {};
+  const normalized = input.replace(/\bFalse\b/g, "false").replace(/\bTrue\b/g, "true");
+  const knownKeys = [
+    "damage_dealt",
+    "damage_taken",
+    "is_mvp",
+    "name",
+    "ign",
+    "player_name",
+    "pokemon",
+    "kills",
+    "deaths",
+    "assists",
+    "score",
+    "healing",
+    "recovery",
+    "dano_causado",
+    "dano_recebido",
+    "recuperacao",
+    "recuperação",
+    "cura",
+    "mvp",
+  ];
+  const keyPattern = knownKeys.map(escapeRegExp).join("|");
+  const regex = new RegExp(`(?:^|[,;]\\s*)(${keyPattern})\\s*=\\s*([\\s\\S]*?)(?=(?:[,;]\\s*(?:${keyPattern})\\s*=)|$)`, "gi");
+  for (const match of normalized.matchAll(regex)) {
+    const key = match[1].toLowerCase();
+    const value = match[2].trim().replace(/^['\"]|['\"]$/g, "");
+    out[key] = value;
+  }
+  return out;
+}
+
+function toNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.round(value));
+  if (typeof value !== "string") return 0;
+  const compact = value.trim().toLowerCase().replace(/\s/g, "");
+  if (!compact) return 0;
+  const multiplier = compact.endsWith("k") ? 1000 : 1;
+  const cleaned = compact
+    .replace(/k$/, "")
+    .replace(/[^0-9.,-]/g, "")
+    .replace(/[.,](?=\d{3}(\D|$))/g, "")
+    .replace(",", ".");
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed * multiplier)) : 0;
+}
+
+function toBoolean(value: unknown) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value !== "string") return false;
+  return ["true", "1", "yes", "sim", "mvp"].includes(value.trim().toLowerCase());
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
