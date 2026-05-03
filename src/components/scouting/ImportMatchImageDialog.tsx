@@ -313,8 +313,9 @@ export function ImportMatchImageDialog({
             <Sparkles className="h-5 w-5 text-primary" /> Importar print da partida (IA)
           </DialogTitle>
           <DialogDescription>
-            Envie o print da tela de resultado. A IA extrai placar e estatísticas — revise antes de
-            salvar.
+            Envie até 2 prints da MESMA partida: <strong>(1) tela de placar</strong> (KDA, pontos,
+            MVP) e <strong>(2) tela de estatísticas detalhadas</strong> (dano causado, sofrido e
+            cura). A IA combina ambas e você revisa antes de salvar.
           </DialogDescription>
         </DialogHeader>
 
