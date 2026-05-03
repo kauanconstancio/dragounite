@@ -255,7 +255,7 @@ function buildUserPrompt(imageCount: number, allyRoster: any[], opponentRoster: 
     `Foram enviados ${imageCount} print(s) da mesma partida de Pokémon Unite.`,
     "Extraia obrigatoriamente por jogador: name, pokemon, kills, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
     "NÃO extraia mortes/deaths — Pokémon Unite não exibe essa coluna.",
-    "Para o Pokémon, leia o RETRATO/SPRITE pequeno ao lado do nome — não invente a partir do IGN.",
+    "Para o Pokémon, faça uma leitura visual cuidadosa do RETRATO/SPRITE circular ao lado do nome, linha por linha. Retorne apenas nomes da lista permitida; se não tiver certeza visual, deixe pokemon como string vazia. Não copie o main do roster e não invente a partir do IGN.",
     "Para o MVP, procure pela COROA DOURADA (👑) ao lado de UM IGN — apenas esse jogador recebe is_mvp=true.",
     "Separe aliados em ally_players e adversários em opponent_players.",
     "Se houver print de estatísticas detalhadas, mescle dano/recuperação no mesmo jogador do print de placar.",
@@ -345,7 +345,7 @@ function normalizePlayer(entry: any): ExtractedPlayer {
   const parsed = typeof entry === "string" ? parsePlayerString(entry) : entry ?? {};
   return {
     name: String(parsed.name ?? parsed.ign ?? parsed.player_name ?? "").trim(),
-    pokemon: String(parsed.pokemon ?? "").trim(),
+    pokemon: normalizePokemonName(parsed.pokemon),
     kills: toNumber(parsed.kills ?? parsed.ko ?? parsed.kos ?? parsed.KO),
     assists: toNumber(parsed.assists ?? parsed.assistencias ?? parsed.assistências),
     score: toNumber(parsed.score ?? parsed.points ?? parsed.pontos),
@@ -354,6 +354,40 @@ function normalizePlayer(entry: any): ExtractedPlayer {
     healing: toNumber(parsed.healing ?? parsed.recovery ?? parsed.recuperacao ?? parsed.recuperação ?? parsed.cura),
     is_mvp: toBoolean(parsed.is_mvp ?? parsed.mvp),
   };
+}
+
+function normalizePokemonName(value: unknown) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  const normalized = normalizeKey(raw.replace(/^alolan\s+/i, ""));
+  const aliases: Record<string, string> = {
+    a9: "Ninetales",
+    alolanninetales: "Ninetales",
+    ninetails: "Ninetales",
+    mrmime: "Mr. Mime",
+    mr.mime: "Mr. Mime",
+    mime: "Mr. Mime",
+    mewtwox: "Mewtwo X",
+    mewtwoy: "Mewtwo Y",
+    megacharizardx: "Mega Charizard X",
+    megacharizardy: "Mega Charizard Y",
+    megagyarados: "Mega Gyarados",
+    megalucario: "Mega Lucario",
+    sirfetchd: "Sirfetch'd",
+    sirfetch: "Sirfetch'd",
+    hooh: "Ho-Oh",
+  };
+  if (aliases[normalized]) return aliases[normalized];
+  const exact = POKEMON_NAMES.find((name) => normalizeKey(name) === normalized);
+  return exact ?? "";
+}
+
+function normalizeKey(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function parsePlayerString(input: string) {
