@@ -590,13 +590,16 @@ export function ImportMatchImageDialog({
                   onChange={(patch) => updateAlly(i, patch)}
                   leading={
                     <Select
-                      value={allyMemberIds[i] ?? ""}
+                      value={allyMemberIds[i] ? allyMemberIds[i] : "__guest__"}
                       onValueChange={(v) =>
-                        setAllyMemberIds((arr) => arr.map((x, idx) => (idx === i ? v : x)))
+                        setAllyMemberIds((arr) => arr.map((x, idx) => (idx === i ? (v === "__guest__" ? "" : v) : x)))
                       }
                     >
                       <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={p.name || "Jogador"} /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="__guest__">
+                          Convidado{p.name ? ` (${p.name})` : ""}
+                        </SelectItem>
                         {members.map((m) => (
                           <SelectItem key={m.id} value={m.id}>
                             {m.name}{m.ign ? ` (${m.ign})` : ""}
