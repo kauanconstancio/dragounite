@@ -105,7 +105,7 @@ function normalizeExtracted(raw: any): Extracted {
       name: String(p.name ?? (p as any).ign ?? (p as any).player_name ?? "").trim(),
       pokemon: String(p.pokemon ?? "").trim(),
       kills: num(p.kills),
-      deaths: num(p.deaths),
+      
       assists: num(p.assists),
       score: num(p.score),
       damage_dealt: num(p.damage_dealt ?? (p as any).damageDealt ?? (p as any).dano_causado ?? (p as any).dano),
