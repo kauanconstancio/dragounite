@@ -1,1 +1,4 @@
 project_id = "zmnmtrjuflwtnjuvtfdb"
+
+[functions.parse-match-image]
+verify_jwt = true

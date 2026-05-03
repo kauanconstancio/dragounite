@@ -1,0 +1,526 @@
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PokemonPicker } from "@/components/PokemonPicker";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
+import { Sparkles, Upload, Crown, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+type ExtractedPlayer = {
+  name?: string;
+  pokemon?: string;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  score?: number;
+  damage_dealt?: number;
+  damage_taken?: number;
+  healing?: number;
+  is_mvp?: boolean;
+};
+
+type Extracted = {
+  score_us: number;
+  score_them: number;
+  result: "win" | "loss" | "draw" | "unknown";
+  ally_players: ExtractedPlayer[];
+  opponent_players: ExtractedPlayer[];
+  confidence?: number;
+};
+
+type Member = { id: string; name: string; ign: string | null };
+
+function similarity(a: string, b: string) {
+  const x = a.toLowerCase().trim();
+  const y = b.toLowerCase().trim();
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  if (x.includes(y) || y.includes(x)) return 0.75;
+  return 0;
+}
+
+export function ImportMatchImageDialog({
+  open,
+  onOpenChange,
+  scrimId,
+  opponentId,
+  bestOf,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  scrimId: string;
+  opponentId: string | null;
+  bestOf: number;
+}) {
+  const qc = useQueryClient();
+  const { team } = useCurrentTeam();
+  const teamId = team?.id;
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<Extracted | null>(null);
+  const [gameNumber, setGameNumber] = useState(1);
+  const [allyMemberIds, setAllyMemberIds] = useState<string[]>([]);
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["members-import", teamId],
+    queryFn: async () => {
+      if (!teamId) return [] as Member[];
+      const { data, error } = await supabase
+        .from("members")
+        .select("id, name, ign, role")
+        .eq("team_id", teamId)
+        .eq("role", "player")
+        .order("name");
+      if (error) throw error;
+      return data as Member[];
+    },
+    enabled: open && !!teamId,
+  });
+
+  useEffect(() => {
+    if (!open) {
+      setFile(null);
+      setPreview(null);
+      setData(null);
+      setLoading(false);
+      setAllyMemberIds([]);
+      setGameNumber(1);
+    }
+  }, [open]);
+
+  function onPick(f: File | null) {
+    setFile(f);
+    setData(null);
+    if (!f) {
+      setPreview(null);
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx 5MB)");
+      setFile(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPreview(reader.result as string);
+    reader.readAsDataURL(f);
+  }
+
+  async function analyze() {
+    if (!file) return;
+    setLoading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const s = reader.result as string;
+          resolve(s.split(",")[1] || "");
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data: res, error } = await supabase.functions.invoke("parse-match-image", {
+        body: { imageBase64: base64, mimeType: file.type || "image/png" },
+      });
+      if (error) throw error;
+      if ((res as any)?.error) throw new Error((res as any).error);
+      const parsed = (res as any).data as Extracted;
+      setData(parsed);
+      // auto-map allies by name similarity
+      const used = new Set<string>();
+      const mapped = (parsed.ally_players || []).map((p) => {
+        const cands = members
+          .map((m) => ({
+            id: m.id,
+            score: Math.max(
+              similarity(m.name, p.name ?? ""),
+              similarity(m.ign ?? "", p.name ?? ""),
+            ),
+          }))
+          .filter((c) => c.score > 0 && !used.has(c.id))
+          .sort((a, b) => b.score - a.score);
+        const top = cands[0];
+        if (top) used.add(top.id);
+        return top?.id ?? "";
+      });
+      setAllyMemberIds(mapped);
+      toast.success("Dados extraídos! Revise antes de salvar.");
+    } catch (e: any) {
+      toast.error(e.message || "Falha ao analisar imagem");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!data || !teamId) return;
+      // Allies: insert only those mapped to a member
+      const allyRows = (data.ally_players || [])
+        .map((p, i) => {
+          const memberId = allyMemberIds[i];
+          if (!memberId) return null;
+          return {
+            scrim_id: scrimId,
+            team_id: teamId,
+            member_id: memberId,
+            game_number: gameNumber,
+            pokemon: p.pokemon || null,
+            kills: Number(p.kills) || 0,
+            deaths: Number(p.deaths) || 0,
+            assists: Number(p.assists) || 0,
+            score: Number(p.score) || 0,
+            damage_dealt: Number(p.damage_dealt) || 0,
+            damage_taken: Number(p.damage_taken) || 0,
+            healing: Number(p.healing) || 0,
+            is_mvp: !!p.is_mvp,
+          };
+        })
+        .filter(Boolean) as any[];
+      if (allyRows.length) {
+        const { error } = await supabase
+          .from("match_performances")
+          .upsert(allyRows, { onConflict: "scrim_id,member_id,game_number" });
+        if (error) throw error;
+      }
+      // Opponents
+      const oppRows = (data.opponent_players || [])
+        .filter((p) => (p.name ?? "").trim())
+        .map((p) => ({
+          scrim_id: scrimId,
+          team_id: teamId,
+          opponent_id: opponentId,
+          game_number: gameNumber,
+          player_name: (p.name ?? "").trim(),
+          pokemon: p.pokemon || null,
+          kills: Number(p.kills) || 0,
+          assists: Number(p.assists) || 0,
+          score: Number(p.score) || 0,
+          damage_dealt: Number(p.damage_dealt) || 0,
+          damage_taken: Number(p.damage_taken) || 0,
+          healing: Number(p.healing) || 0,
+        }));
+      if (oppRows.length) {
+        // Replace existing rows for this game
+        await supabase
+          .from("opponent_performances")
+          .delete()
+          .eq("scrim_id", scrimId)
+          .eq("game_number", gameNumber);
+        const { error } = await supabase.from("opponent_performances").insert(oppRows);
+        if (error) throw error;
+      }
+      // Recalculate scrim score
+      const [{ data: a }, { data: o }] = await Promise.all([
+        supabase.from("match_performances").select("game_number, score").eq("scrim_id", scrimId),
+        supabase.from("opponent_performances").select("game_number, score").eq("scrim_id", scrimId),
+      ]);
+      const allyByGame = new Map<number, number>();
+      const oppByGame = new Map<number, number>();
+      (a ?? []).forEach((r: any) =>
+        allyByGame.set(r.game_number, (allyByGame.get(r.game_number) ?? 0) + (r.score ?? 0)),
+      );
+      (o ?? []).forEach((r: any) =>
+        oppByGame.set(r.game_number, (oppByGame.get(r.game_number) ?? 0) + (r.score ?? 0)),
+      );
+      let usWins = 0;
+      let themWins = 0;
+      const allGames = new Set<number>([...allyByGame.keys(), ...oppByGame.keys()]);
+      allGames.forEach((g) => {
+        const av = allyByGame.get(g) ?? 0;
+        const ov = oppByGame.get(g) ?? 0;
+        if (av > ov) usWins++;
+        else if (ov > av) themWins++;
+      });
+      await supabase
+        .from("scrims")
+        .update({ score_us: usWins, score_them: themWins })
+        .eq("id", scrimId);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["perfs-scrim", scrimId] });
+      qc.invalidateQueries({ queryKey: ["opp-perfs-scrim", scrimId] });
+      qc.invalidateQueries({ queryKey: ["scrims"] });
+      qc.invalidateQueries({ queryKey: ["perfs"] });
+      toast.success(`Jogo ${gameNumber} importado`);
+      onOpenChange(false);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const updateAlly = (i: number, patch: Partial<ExtractedPlayer>) => {
+    setData((d) =>
+      d ? { ...d, ally_players: d.ally_players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) } : d,
+    );
+  };
+  const updateOpp = (i: number, patch: Partial<ExtractedPlayer>) => {
+    setData((d) =>
+      d
+        ? { ...d, opponent_players: d.opponent_players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) }
+        : d,
+    );
+  };
+
+  const games = useMemo(() => Array.from({ length: bestOf }, (_, i) => i + 1), [bestOf]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 font-display tracking-wider">
+            <Sparkles className="h-5 w-5 text-primary" /> Importar print da partida (IA)
+          </DialogTitle>
+          <DialogDescription>
+            Envie o print da tela de resultado. A IA extrai placar e estatísticas — revise antes de
+            salvar.
+          </DialogDescription>
+        </DialogHeader>
+
+        {!data && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-xs uppercase tracking-widest">Jogo</Label>
+              <Select value={String(gameNumber)} onValueChange={(v) => setGameNumber(Number(v))}>
+                <SelectTrigger className="w-32 h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {games.map((g) => <SelectItem key={g} value={String(g)}>Jogo {g}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-border rounded-md p-8 cursor-pointer hover:border-primary/50 transition-colors">
+              <Upload className="h-8 w-8 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                {file ? file.name : "Clique para escolher um print (PNG/JPG, máx 5MB)"}
+              </span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {preview && (
+              <img src={preview} alt="preview" className="max-h-72 mx-auto rounded border border-border" />
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+              <Button
+                onClick={analyze}
+                disabled={!file || loading}
+                className="bg-gradient-primary"
+              >
+                {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Analisando...</> : <><Sparkles className="h-4 w-4 mr-2" />Analisar com IA</>}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {data && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2 grid grid-cols-2 gap-2 items-center">
+                <Card className="p-3 text-center">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Nosso time</div>
+                  <div className="font-display text-3xl text-primary tabular-nums">{data.score_us}</div>
+                </Card>
+                <Card className="p-3 text-center">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Oponente</div>
+                  <div className="font-display text-3xl text-destructive tabular-nums">{data.score_them}</div>
+                </Card>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label className="text-xs uppercase tracking-widest">Jogo</Label>
+                <Select value={String(gameNumber)} onValueChange={(v) => setGameNumber(Number(v))}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {games.map((g) => <SelectItem key={g} value={String(g)}>Jogo {g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {data.confidence != null && (
+                  <div className="text-[10px] text-muted-foreground">
+                    Confiança IA: {Math.round((data.confidence ?? 0) * 100)}%
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Section title="Nosso time" accent="primary">
+              {data.ally_players.map((p, i) => (
+                <PlayerEditor
+                  key={`a-${i}`}
+                  player={p}
+                  onChange={(patch) => updateAlly(i, patch)}
+                  leading={
+                    <Select
+                      value={allyMemberIds[i] ?? ""}
+                      onValueChange={(v) =>
+                        setAllyMemberIds((arr) => arr.map((x, idx) => (idx === i ? v : x)))
+                      }
+                    >
+                      <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={p.name || "Jogador"} /></SelectTrigger>
+                      <SelectContent>
+                        {members.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.name}{m.ign ? ` (${m.ign})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  }
+                  hint={p.name ? `Detectado: ${p.name}` : undefined}
+                  showMvp
+                />
+              ))}
+              {data.ally_players.length === 0 && (
+                <p className="text-xs text-muted-foreground italic">Nenhum jogador aliado detectado.</p>
+              )}
+            </Section>
+
+            <Section title="Oponente" accent="destructive">
+              {data.opponent_players.map((p, i) => (
+                <PlayerEditor
+                  key={`o-${i}`}
+                  player={p}
+                  onChange={(patch) => updateOpp(i, patch)}
+                  leading={
+                    <Input
+                      value={p.name ?? ""}
+                      onChange={(e) => updateOpp(i, { name: e.target.value })}
+                      placeholder="Nome do oponente"
+                      className="h-9 text-sm"
+                    />
+                  }
+                />
+              ))}
+              {data.opponent_players.length === 0 && (
+                <p className="text-xs text-muted-foreground italic">Nenhum oponente detectado.</p>
+              )}
+            </Section>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setData(null)}>Voltar</Button>
+              <Button onClick={() => save.mutate()} disabled={save.isPending} className="bg-gradient-primary">
+                {save.isPending ? "Salvando..." : `Salvar Jogo ${gameNumber}`}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Section({
+  title,
+  accent,
+  children,
+}: {
+  title: string;
+  accent: "primary" | "destructive";
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-md border border-border overflow-hidden">
+      <div
+        className={cn(
+          "px-3 py-2 text-xs uppercase tracking-widest font-display",
+          accent === "primary" ? "bg-primary/15 text-primary" : "bg-destructive/15 text-destructive",
+        )}
+      >
+        {title}
+      </div>
+      <div className="p-2 space-y-2 bg-card/40">{children}</div>
+    </div>
+  );
+}
+
+function PlayerEditor({
+  player,
+  leading,
+  onChange,
+  showMvp,
+  hint,
+}: {
+  player: ExtractedPlayer;
+  leading: React.ReactNode;
+  onChange: (patch: Partial<ExtractedPlayer>) => void;
+  showMvp?: boolean;
+  hint?: string;
+}) {
+  return (
+    <Card className="p-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">{leading}</div>
+        <div className="w-[200px] shrink-0">
+          <PokemonPicker
+            value={player.pokemon || null}
+            onChange={(name) => onChange({ pokemon: name ?? "" })}
+          />
+        </div>
+        {showMvp && (
+          <label className="flex items-center gap-1.5 px-2 cursor-pointer shrink-0">
+            <Checkbox
+              checked={!!player.is_mvp}
+              onCheckedChange={(v) => onChange({ is_mvp: !!v })}
+            />
+            <Crown className={cn("h-4 w-4", player.is_mvp ? "text-gold" : "text-muted-foreground")} />
+          </label>
+        )}
+      </div>
+      {hint && <p className="text-[10px] text-muted-foreground italic">{hint}</p>}
+      <div className="grid grid-cols-7 gap-2">
+        <NumField label="Score" value={player.score} onChange={(n) => onChange({ score: n })} />
+        <NumField label="Kills" value={player.kills} onChange={(n) => onChange({ kills: n })} />
+        <NumField label="Deaths" value={player.deaths} onChange={(n) => onChange({ deaths: n })} />
+        <NumField label="Assist." value={player.assists} onChange={(n) => onChange({ assists: n })} />
+        <NumField label="Dano" value={player.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
+        <NumField label="Sofrido" value={player.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />
+        <NumField label="Cura" value={player.healing} onChange={(n) => onChange({ healing: n })} />
+      </div>
+    </Card>
+  );
+}
+
+function NumField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | undefined;
+  onChange: (n: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Label className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</Label>
+      <Input
+        type="number"
+        min={0}
+        value={value ?? 0}
+        onChange={(e) => onChange(Number(e.target.value) || 0)}
+        className="h-9 text-sm tabular-nums px-2"
+      />
+    </div>
+  );
+}
