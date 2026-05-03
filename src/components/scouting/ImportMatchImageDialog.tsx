@@ -331,24 +331,55 @@ export function ImportMatchImageDialog({
             </div>
             <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-border rounded-md p-8 cursor-pointer hover:border-primary/50 transition-colors">
               <Upload className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                {file ? file.name : "Clique para escolher um print (PNG/JPG, máx 5MB)"}
+              <span className="text-sm text-muted-foreground text-center">
+                {files.length === 0
+                  ? "Clique para escolher até 2 prints (placar e/ou estatísticas detalhadas — PNG/JPG, máx 5MB cada)"
+                  : files.length === 1
+                  ? "1 imagem selecionada — você pode adicionar mais 1 (estatísticas detalhadas)"
+                  : "2 imagens selecionadas"}
               </span>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
+                multiple
                 className="hidden"
-                onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+                disabled={files.length >= 2}
+                onChange={(e) => {
+                  onPick(e.target.files);
+                  e.currentTarget.value = "";
+                }}
               />
             </label>
-            {preview && (
-              <img src={preview} alt="preview" className="max-h-72 mx-auto rounded border border-border" />
+            {previews.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative">
+                    <img
+                      src={src}
+                      alt={`preview ${i + 1}`}
+                      className="max-h-56 w-full object-contain rounded border border-border bg-card/40"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-1 right-1 h-7 px-2 text-xs"
+                      onClick={() => removeFile(i)}
+                    >
+                      Remover
+                    </Button>
+                    <div className="absolute bottom-1 left-1 text-[10px] uppercase tracking-widest bg-background/80 px-1.5 py-0.5 rounded">
+                      Print {i + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button
                 onClick={analyze}
-                disabled={!file || loading}
+                disabled={files.length === 0 || loading}
                 className="bg-gradient-primary"
               >
                 {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Analisando...</> : <><Sparkles className="h-4 w-4 mr-2" />Analisar com IA</>}
