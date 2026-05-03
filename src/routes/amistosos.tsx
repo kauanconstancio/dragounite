@@ -343,6 +343,15 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
           onOpenChange={(v) => { if (!v) setPerfFor(null); }}
         />
       )}
+      {importFor && (
+        <ImportMatchImageDialog
+          scrimId={importFor.id}
+          opponentId={importFor.opponent_id}
+          bestOf={importFor.best_of}
+          open={!!importFor}
+          onOpenChange={(v) => { if (!v) setImportFor(null); }}
+        />
+      )}
     </section>
   );
 }
