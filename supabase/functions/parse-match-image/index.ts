@@ -1,4 +1,4 @@
-// Edge function: extract Pokémon Unite match scoreboard data from a screenshot
+// Edge function: extract Pokémon Unite match data from Pokémon Unite screenshots
 // using Lovable AI Gateway (multimodal + tool calling).
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,7 @@ const TOOL = {
   function: {
     name: "extract_match_data",
     description:
-      "Extract structured Pokémon Unite scoreboard data from a screenshot of the post-match results screen.",
+      "Extract structured Pokémon Unite player-by-player match data from one or more post-match screenshots.",
     parameters: {
       type: "object",
       properties: {
@@ -31,12 +31,12 @@ const TOOL = {
         },
         ally_players: {
           type: "array",
-          description: "Up to 5 ally players (left side / your team)",
+          description: "Exactly the ally players visible in the screenshots, normally 5 players on the left/ally side.",
           items: { $ref: "#/$defs/player" },
         },
         opponent_players: {
           type: "array",
-          description: "Up to 5 opponent players (right side / enemy team)",
+          description: "Exactly the opponent players visible in the screenshots, normally 5 players on the right/enemy side.",
           items: { $ref: "#/$defs/player" },
         },
         confidence: {
@@ -49,18 +49,18 @@ const TOOL = {
         player: {
           type: "object",
           properties: {
-            name: { type: "string", description: "In-game name (IGN) shown on screen" },
+            name: { type: "string", description: "In-game name (IGN) shown on screen or best match from the provided candidate list" },
             pokemon: { type: "string", description: "Pokémon name in English (e.g. Pikachu, Mr. Mime)" },
-            kills: { type: "number" },
-            deaths: { type: "number" },
-            assists: { type: "number" },
+            kills: { type: "number", description: "KOs/kills shown for this player" },
+            deaths: { type: "number", description: "Deaths/faints shown for this player, or 0 if not visible" },
+            assists: { type: "number", description: "Assists shown for this player" },
             score: { type: "number", description: "Goals/points scored by this player" },
-            damage_dealt: { type: "number" },
-            damage_taken: { type: "number" },
-            healing: { type: "number" },
-            is_mvp: { type: "boolean" },
+            damage_dealt: { type: "number", description: "Damage dealt / dano causado / DMG dealt. Convert K notation to full integer." },
+            damage_taken: { type: "number", description: "Damage taken / dano recebido / DMG taken. Convert K notation to full integer." },
+            healing: { type: "number", description: "Recovery / recuperação / healing. Convert K notation to full integer." },
+            is_mvp: { type: "boolean", description: "True only for the player marked with the MVP/crown badge" },
           },
-          required: ["name", "kills", "deaths", "assists", "score"],
+          required: ["name", "pokemon", "kills", "deaths", "assists", "score", "damage_dealt", "damage_taken", "healing", "is_mvp"],
         },
       },
     },
@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
+    const allyRoster = Array.isArray(body?.allyRoster) ? body.allyRoster : [];
+    const opponentRoster = Array.isArray(body?.opponentRoster) ? body.opponentRoster : [];
     // Accept either { images: [{base64, mimeType}, ...] } or legacy { imageBase64, mimeType }
     let images: { base64: string; mimeType: string }[] = [];
     if (Array.isArray(body?.images) && body.images.length > 0) {
@@ -128,29 +130,14 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: [
-              "Você é um extrator preciso de placar pós-partida de Pokémon Unite.",
-              "A tela pode estar em PT-BR ou EN. O usuário envia 1 ou 2 prints da MESMA partida:",
-              "  • TELA 1 (placar/resultado): mostra o pokémon de cada jogador, seu NOME/IGN, KOs (kills), Assists, e os PONTOS marcados (score) por jogador. O ícone de coroa indica MVP.",
-              "  • TELA 2 (estatísticas detalhadas / 'Battle performance'): mostra colunas como Dano causado (Damage dealt), Dano sofrido (Damage taken) e Cura (Healing) por jogador.",
-              "REGRAS CRÍTICAS:",
-              "  1) SEMPRE retorne uma linha por jogador visível — 5 aliados (esquerda/laranja) e 5 oponentes (direita/roxo), mesmo que algum campo esteja faltando.",
-              "  2) NUNCA retorne todos os campos zerados se houver linhas visíveis — leia coluna por coluna.",
-              "  3) score_us / score_them são as somas grandes do topo (placar do time). score por jogador é os pontos marcados pelo jogador individual.",
-              "  4) Se houver 2 imagens, CASE os jogadores entre as telas pelo nome/IGN ou pelo pokémon e MESCLE os campos (KDA da tela 1 + dano/cura da tela 2).",
-              "  5) Se um campo realmente não está visível em nenhuma tela, use 0. Não invente.",
-              "  6) Pokémon sempre em inglês (Pikachu, Mr. Mime, Tsareena, etc.).",
-            ].join("\n"),
+            content: buildSystemPrompt(allyRoster, opponentRoster),
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text:
-                  images.length > 1
-                    ? `Foram enviados ${images.length} prints da MESMA partida (placar + estatísticas detalhadas). Combine ambos e devolva todos os jogadores com KDA, score, dano causado, dano sofrido, cura e MVP.`
-                    : "Extraia TODOS os jogadores visíveis com nome/IGN, pokémon, KDA e score. Se a tela de estatísticas detalhadas (dano/cura) não estiver presente, deixe esses campos como 0 — mas NÃO zere KDA/score se eles estiverem visíveis.",
+                text: buildUserPrompt(images.length, allyRoster, opponentRoster),
               },
               ...imageParts,
             ],
@@ -197,4 +184,58 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function buildSystemPrompt(allyRoster: any[], opponentRoster: any[]) {
+  const allyCandidates = formatCandidates(allyRoster);
+  const opponentCandidates = formatCandidates(opponentRoster);
+  return [
+    "Você é um extrator OCR/visão especializado em resultados pós-partida de Pokémon Unite.",
+    "Sua prioridade é extrair DADOS POR JOGADOR, não apenas o placar geral.",
+    "A partida pode estar em PT-BR, EN ou ES. O usuário pode enviar 1 ou 2 prints da MESMA partida:",
+    "  • PRINT DE PLACAR / PARTIDA: contém as duas equipes, Pokémon, nome/IGN, KOs/Kills, Assists, Score/Pontos e MVP/coroa.",
+    "  • PRINT DE ESTATÍSTICAS / BATTLE PERFORMANCE: contém Damage dealt/Dano causado, Damage taken/Dano recebido e Recovery/Healing/Recuperação por jogador.",
+    "COMO LER:",
+    "  1) Identifique as 10 linhas de jogadores: aliados no lado esquerdo/superior do time do usuário e oponentes no lado direito/inferior conforme a tela.",
+    "  2) Para cada linha, leia o nome/IGN próximo ao avatar/Pokémon. Use candidatos do roster somente para corrigir/selecionar nomes parecidos; não invente nomes ausentes.",
+    "  3) Extraia KOs/Kills, Assists, Score/Pontos e MVP do print de placar. Deaths/faints use 0 se não existir coluna visível.",
+    "  4) Extraia dano causado, dano recebido e recuperação do print de estatísticas. Os números podem aparecer como 72,345, 72.345, 72K ou 72k; retorne inteiro completo.",
+    "  5) Quando houver 2 prints, case/una jogadores por nome/IGN; se o nome estiver truncado, use Pokémon e posição relativa da linha para mesclar.",
+    "  6) score_us e score_them são o placar grande dos TIMES; score de cada jogador é a pontuação individual marcada.",
+    "REGRAS CRÍTICAS:",
+    "  • Retorne ally_players e opponent_players com todas as linhas visíveis, idealmente 5 em cada lado.",
+    "  • Nunca responda só o placar se houver linhas de jogadores visíveis.",
+    "  • Nunca zere todos os jogadores quando as colunas existem; leia célula por célula.",
+    "  • Se um campo não estiver visível em nenhum print, use 0, mas mantenha nome, Pokémon e demais campos lidos.",
+    "  • Pokémon sempre em inglês.",
+    allyCandidates ? `CANDIDATOS DO NOSSO ROSTER para mapeamento de aliados:\n${allyCandidates}` : "",
+    opponentCandidates ? `CANDIDATOS DE JOGADORES OPONENTES conhecidos:\n${opponentCandidates}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+function buildUserPrompt(imageCount: number, allyRoster: any[], opponentRoster: any[]) {
+  return [
+    `Foram enviados ${imageCount} print(s) da mesma partida de Pokémon Unite.`,
+    "Extraia obrigatoriamente por jogador: name, pokemon, kills, deaths, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
+    "Separe aliados em ally_players e adversários em opponent_players.",
+    "Se houver print de estatísticas detalhadas, mescle dano/recuperação no mesmo jogador do print de placar.",
+    allyRoster.length ? "Para aliados, prefira nomes que coincidam com name/ign do roster enviado quando forem claramente o mesmo jogador." : "",
+    opponentRoster.length ? "Para oponentes, prefira nomes conhecidos quando coincidirem com o print." : "",
+  ].filter(Boolean).join("\n");
+}
+
+function formatCandidates(candidates: any[]) {
+  return candidates
+    .slice(0, 20)
+    .map((p, index) => {
+      const bits = [
+        `#${index + 1}`,
+        p?.name ? `name=${String(p.name)}` : "",
+        p?.ign ? `ign=${String(p.ign)}` : "",
+        p?.pokemon ? `pokemon=${String(p.pokemon)}` : "",
+      ].filter(Boolean);
+      return bits.join("; ");
+    })
+    .filter(Boolean)
+    .join("\n");
 }
