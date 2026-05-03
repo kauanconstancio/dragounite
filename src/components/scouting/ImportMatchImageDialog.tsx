@@ -633,6 +633,7 @@ export function ImportMatchImageDialog({
                     </div>
                   }
                   hint={p.name ? `Detectado: ${p.name}` : undefined}
+                  showMvp
                 />
               ))}
               {data.opponent_players.length === 0 && (
