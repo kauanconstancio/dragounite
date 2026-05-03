@@ -12,17 +12,16 @@ const PLAYER_SCHEMA = {
   additionalProperties: false,
   properties: {
     name: { type: "string", description: "In-game name/IGN exactly as shown, or the closest roster candidate when clearly matching" },
-    pokemon: { type: "string", description: "Pokémon name in English" },
+    pokemon: { type: "string", description: "Pokémon name in English. READ the small portrait/icon next to each row — do NOT guess from the player name. Examples: Pikachu, Charizard, Lucario, Mr. Mime, Mew, Tsareena, Espeon, Gardevoir, Glaceon, Greninja, Cinderace, Decidueye, Dragapult, Mewtwo X, Mewtwo Y, Zacian, Miraidon, Ho-Oh, Suicune, Blissey, Eldegoss, Wigglytuff, Hoopa, Comfey, Sableye, Trevenant, Snorlax, Mamoswine, Crustle, Slowbro, Goodra, Greedent, Umbreon, Buzzwole, Machamp, Tyranitar, Garchomp, Blaziken, Aegislash, Scizor, Absol, Zoroark, Tinkaton, Falinks, Ceruledge, Meowscarada, Inteleon, Leafeon, Sylveon, Delphox, Venusaur, Alolan Ninetales, Duraludon, Dragonite, Metagross, A9 (Alolan Ninetales)" },
     kills: { type: "number", description: "KOs/kills shown for this player" },
-    deaths: { type: "number", description: "Deaths/faints for this player, or 0 when no deaths column exists" },
     assists: { type: "number", description: "Assists shown for this player" },
     score: { type: "number", description: "Individual points/goals scored by this player" },
     damage_dealt: { type: "number", description: "Damage dealt / dano causado as a full integer" },
     damage_taken: { type: "number", description: "Damage taken / dano recebido as a full integer" },
     healing: { type: "number", description: "Recovery/healing/recuperação as a full integer" },
-    is_mvp: { type: "boolean", description: "True only for the MVP/crown player" },
+    is_mvp: { type: "boolean", description: "TRUE ONLY for the player who has a CROWN icon (👑) drawn next to their name. Pokémon Unite shows a small golden/yellow crown above or next to the MVP's IGN. There is exactly ONE MVP per match (winning team). All other players MUST be false." },
   },
-  required: ["name", "pokemon", "kills", "deaths", "assists", "score", "damage_dealt", "damage_taken", "healing", "is_mvp"],
+  required: ["name", "pokemon", "kills", "assists", "score", "damage_dealt", "damage_taken", "healing", "is_mvp"],
 };
 
 const TOOL = {
