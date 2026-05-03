@@ -257,7 +257,6 @@ type ExtractedPlayer = {
   name: string;
   pokemon: string;
   kills: number;
-  deaths: number;
   assists: number;
   score: number;
   damage_dealt: number;
@@ -281,6 +280,8 @@ function normalizeExtractedMatch(raw: any) {
           ? "draw"
           : "unknown";
 
+  enforceSingleMvp(allyPlayers, opponentPlayers, result);
+
   return {
     score_us: scoreUs,
     score_them: scoreThem,
@@ -289,6 +290,20 @@ function normalizeExtractedMatch(raw: any) {
     opponent_players: opponentPlayers,
     confidence: typeof raw?.confidence === "number" ? raw.confidence : 0.75,
   };
+}
+
+function enforceSingleMvp(ally: ExtractedPlayer[], opp: ExtractedPlayer[], result: string) {
+  const allMvps = [...ally, ...opp].filter((p) => p.is_mvp);
+  if (allMvps.length <= 1) return;
+  const winners = result === "loss" ? opp : result === "win" ? ally : [...ally, ...opp];
+  const candidates = winners.filter((p) => p.is_mvp);
+  const pool = candidates.length ? candidates : allMvps;
+  const best = pool.reduce((a, b) =>
+    (b.score + b.kills * 2 + b.assists) > (a.score + a.kills * 2 + a.assists) ? b : a,
+  );
+  for (const p of [...ally, ...opp]) {
+    p.is_mvp = p === best;
+  }
 }
 
 function normalizePlayers(value: any): ExtractedPlayer[] {
@@ -305,7 +320,6 @@ function normalizePlayer(entry: any): ExtractedPlayer {
     name: String(parsed.name ?? parsed.ign ?? parsed.player_name ?? "").trim(),
     pokemon: String(parsed.pokemon ?? "").trim(),
     kills: toNumber(parsed.kills ?? parsed.ko ?? parsed.kos ?? parsed.KO),
-    deaths: toNumber(parsed.deaths ?? parsed.faints),
     assists: toNumber(parsed.assists ?? parsed.assistencias ?? parsed.assistências),
     score: toNumber(parsed.score ?? parsed.points ?? parsed.pontos),
     damage_dealt: toNumber(parsed.damage_dealt ?? parsed.damageDealt ?? parsed.dano_causado ?? parsed.dano),
