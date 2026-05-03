@@ -46,8 +46,8 @@ type Extracted = {
   score_us: number;
   score_them: number;
   result: "win" | "loss" | "draw" | "unknown";
-  ally_players: RawExtractedPlayer[];
-  opponent_players: RawExtractedPlayer[];
+  ally_players: ExtractedPlayer[];
+  opponent_players: ExtractedPlayer[];
   confidence?: number;
 };
 
@@ -99,7 +99,7 @@ function num(value: unknown) {
   return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed * multiplier)) : 0;
 }
 
-function normalizeExtracted(raw: Extracted): Extracted {
+function normalizeExtracted(raw: any): Extracted {
   const player = (entry: RawExtractedPlayer): ExtractedPlayer => {
     const p = typeof entry === "string" ? parsePlayerString(entry) : entry ?? {};
     return {
