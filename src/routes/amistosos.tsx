@@ -296,6 +296,17 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
                       <BarChart3 className="h-4 w-4 mr-1.5" /> Stats
                     </Button>
                     <RequireRole roles={["coach"]}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setImportFor(s)}
+                        className="border-accent/40 text-accent hover:bg-accent/10 uppercase tracking-wider text-xs"
+                        title="Importar print da partida com IA"
+                      >
+                        <Sparkles className="h-4 w-4 mr-1.5" /> IA
+                      </Button>
+                    </RequireRole>
+                    <RequireRole roles={["coach"]}>
                       {s.status !== "completed" && (
                         <Button
                           size="sm"
