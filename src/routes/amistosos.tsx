@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { VodEmbed } from "@/components/scouting/VodEmbed";
 import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
+import { ImportMatchImageDialog } from "@/components/scouting/ImportMatchImageDialog";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import {
