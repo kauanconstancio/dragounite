@@ -128,7 +128,7 @@ function parsePlayerString(input: string): ExtractedPlayer {
   const out: Record<string, unknown> = {};
   const keys = [
     "damage_dealt", "damage_taken", "is_mvp", "name", "ign", "player_name", "pokemon",
-    "kills", "deaths", "assists", "score", "healing", "recovery", "dano_causado",
+    "kills", "assists", "score", "healing", "recovery", "dano_causado",
     "dano_recebido", "recuperacao", "recuperação", "cura", "mvp",
   ];
   const keyPattern = keys.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
