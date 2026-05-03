@@ -422,16 +422,34 @@ export function ImportMatchImageDialog({
   });
 
   const updateAlly = (i: number, patch: Partial<ExtractedPlayer>) => {
-    setData((d) =>
-      d ? { ...d, ally_players: d.ally_players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) } : d,
-    );
+    setData((d) => {
+      if (!d) return d;
+      const clearMvp = patch.is_mvp === true;
+      return {
+        ...d,
+        ally_players: d.ally_players.map((p, idx) =>
+          idx === i ? { ...p, ...patch } : clearMvp ? { ...p, is_mvp: false } : p,
+        ),
+        opponent_players: clearMvp
+          ? d.opponent_players.map((p) => ({ ...p, is_mvp: false }))
+          : d.opponent_players,
+      };
+    });
   };
   const updateOpp = (i: number, patch: Partial<ExtractedPlayer>) => {
-    setData((d) =>
-      d
-        ? { ...d, opponent_players: d.opponent_players.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) }
-        : d,
-    );
+    setData((d) => {
+      if (!d) return d;
+      const clearMvp = patch.is_mvp === true;
+      return {
+        ...d,
+        opponent_players: d.opponent_players.map((p, idx) =>
+          idx === i ? { ...p, ...patch } : clearMvp ? { ...p, is_mvp: false } : p,
+        ),
+        ally_players: clearMvp
+          ? d.ally_players.map((p) => ({ ...p, is_mvp: false }))
+          : d.ally_players,
+      };
+    });
   };
 
   const games = useMemo(() => Array.from({ length: bestOf }, (_, i) => i + 1), [bestOf]);
