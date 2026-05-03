@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
+    const allyRoster = Array.isArray(body?.allyRoster) ? body.allyRoster : [];
+    const opponentRoster = Array.isArray(body?.opponentRoster) ? body.opponentRoster : [];
     // Accept either { images: [{base64, mimeType}, ...] } or legacy { imageBase64, mimeType }
     let images: { base64: string; mimeType: string }[] = [];
     if (Array.isArray(body?.images) && body.images.length > 0) {
@@ -128,29 +130,14 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: [
-              "Você é um extrator preciso de placar pós-partida de Pokémon Unite.",
-              "A tela pode estar em PT-BR ou EN. O usuário envia 1 ou 2 prints da MESMA partida:",
-              "  • TELA 1 (placar/resultado): mostra o pokémon de cada jogador, seu NOME/IGN, KOs (kills), Assists, e os PONTOS marcados (score) por jogador. O ícone de coroa indica MVP.",
-              "  • TELA 2 (estatísticas detalhadas / 'Battle performance'): mostra colunas como Dano causado (Damage dealt), Dano sofrido (Damage taken) e Cura (Healing) por jogador.",
-              "REGRAS CRÍTICAS:",
-              "  1) SEMPRE retorne uma linha por jogador visível — 5 aliados (esquerda/laranja) e 5 oponentes (direita/roxo), mesmo que algum campo esteja faltando.",
-              "  2) NUNCA retorne todos os campos zerados se houver linhas visíveis — leia coluna por coluna.",
-              "  3) score_us / score_them são as somas grandes do topo (placar do time). score por jogador é os pontos marcados pelo jogador individual.",
-              "  4) Se houver 2 imagens, CASE os jogadores entre as telas pelo nome/IGN ou pelo pokémon e MESCLE os campos (KDA da tela 1 + dano/cura da tela 2).",
-              "  5) Se um campo realmente não está visível em nenhuma tela, use 0. Não invente.",
-              "  6) Pokémon sempre em inglês (Pikachu, Mr. Mime, Tsareena, etc.).",
-            ].join("\n"),
+            content: buildSystemPrompt(allyRoster, opponentRoster),
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text:
-                  images.length > 1
-                    ? `Foram enviados ${images.length} prints da MESMA partida (placar + estatísticas detalhadas). Combine ambos e devolva todos os jogadores com KDA, score, dano causado, dano sofrido, cura e MVP.`
-                    : "Extraia TODOS os jogadores visíveis com nome/IGN, pokémon, KDA e score. Se a tela de estatísticas detalhadas (dano/cura) não estiver presente, deixe esses campos como 0 — mas NÃO zere KDA/score se eles estiverem visíveis.",
+                text: buildUserPrompt(images.length, allyRoster, opponentRoster),
               },
               ...imageParts,
             ],
