@@ -3,7 +3,8 @@ import { getPokemonRole, UNITE_ROLE_LABEL, type UniteRole } from "@/lib/pokemon"
 export type PerfRow = {
   id: string;
   scrim_id: string;
-  member_id: string;
+  member_id: string | null;
+  player_name?: string | null;
   game_number: number;
   pokemon: string | null;
   kills: number;
