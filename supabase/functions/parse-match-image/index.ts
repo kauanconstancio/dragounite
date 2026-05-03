@@ -1,4 +1,4 @@
-// Edge function: extract Pokémon Unite match scoreboard data from a screenshot
+// Edge function: extract Pokémon Unite match data from Pokémon Unite screenshots
 // using Lovable AI Gateway (multimodal + tool calling).
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,7 @@ const TOOL = {
   function: {
     name: "extract_match_data",
     description:
-      "Extract structured Pokémon Unite scoreboard data from a screenshot of the post-match results screen.",
+      "Extract structured Pokémon Unite player-by-player match data from one or more post-match screenshots.",
     parameters: {
       type: "object",
       properties: {
@@ -31,12 +31,12 @@ const TOOL = {
         },
         ally_players: {
           type: "array",
-          description: "Up to 5 ally players (left side / your team)",
+          description: "Exactly the ally players visible in the screenshots, normally 5 players on the left/ally side.",
           items: { $ref: "#/$defs/player" },
         },
         opponent_players: {
           type: "array",
-          description: "Up to 5 opponent players (right side / enemy team)",
+          description: "Exactly the opponent players visible in the screenshots, normally 5 players on the right/enemy side.",
           items: { $ref: "#/$defs/player" },
         },
         confidence: {
@@ -49,18 +49,18 @@ const TOOL = {
         player: {
           type: "object",
           properties: {
-            name: { type: "string", description: "In-game name (IGN) shown on screen" },
+            name: { type: "string", description: "In-game name (IGN) shown on screen or best match from the provided candidate list" },
             pokemon: { type: "string", description: "Pokémon name in English (e.g. Pikachu, Mr. Mime)" },
-            kills: { type: "number" },
-            deaths: { type: "number" },
-            assists: { type: "number" },
+            kills: { type: "number", description: "KOs/kills shown for this player" },
+            deaths: { type: "number", description: "Deaths/faints shown for this player, or 0 if not visible" },
+            assists: { type: "number", description: "Assists shown for this player" },
             score: { type: "number", description: "Goals/points scored by this player" },
-            damage_dealt: { type: "number" },
-            damage_taken: { type: "number" },
-            healing: { type: "number" },
-            is_mvp: { type: "boolean" },
+            damage_dealt: { type: "number", description: "Damage dealt / dano causado / DMG dealt. Convert K notation to full integer." },
+            damage_taken: { type: "number", description: "Damage taken / dano recebido / DMG taken. Convert K notation to full integer." },
+            healing: { type: "number", description: "Recovery / recuperação / healing. Convert K notation to full integer." },
+            is_mvp: { type: "boolean", description: "True only for the player marked with the MVP/crown badge" },
           },
-          required: ["name", "kills", "deaths", "assists", "score"],
+          required: ["name", "pokemon", "kills", "deaths", "assists", "score", "damage_dealt", "damage_taken", "healing", "is_mvp"],
         },
       },
     },
