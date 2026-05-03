@@ -185,3 +185,57 @@ function json(body: unknown, status = 200) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+function buildSystemPrompt(allyRoster: any[], opponentRoster: any[]) {
+  const allyCandidates = formatCandidates(allyRoster);
+  const opponentCandidates = formatCandidates(opponentRoster);
+  return [
+    "Você é um extrator OCR/visão especializado em resultados pós-partida de Pokémon Unite.",
+    "Sua prioridade é extrair DADOS POR JOGADOR, não apenas o placar geral.",
+    "A partida pode estar em PT-BR, EN ou ES. O usuário pode enviar 1 ou 2 prints da MESMA partida:",
+    "  • PRINT DE PLACAR / PARTIDA: contém as duas equipes, Pokémon, nome/IGN, KOs/Kills, Assists, Score/Pontos e MVP/coroa.",
+    "  • PRINT DE ESTATÍSTICAS / BATTLE PERFORMANCE: contém Damage dealt/Dano causado, Damage taken/Dano recebido e Recovery/Healing/Recuperação por jogador.",
+    "COMO LER:",
+    "  1) Identifique as 10 linhas de jogadores: aliados no lado esquerdo/superior do time do usuário e oponentes no lado direito/inferior conforme a tela.",
+    "  2) Para cada linha, leia o nome/IGN próximo ao avatar/Pokémon. Use candidatos do roster somente para corrigir/selecionar nomes parecidos; não invente nomes ausentes.",
+    "  3) Extraia KOs/Kills, Assists, Score/Pontos e MVP do print de placar. Deaths/faints use 0 se não existir coluna visível.",
+    "  4) Extraia dano causado, dano recebido e recuperação do print de estatísticas. Os números podem aparecer como 72,345, 72.345, 72K ou 72k; retorne inteiro completo.",
+    "  5) Quando houver 2 prints, case/una jogadores por nome/IGN; se o nome estiver truncado, use Pokémon e posição relativa da linha para mesclar.",
+    "  6) score_us e score_them são o placar grande dos TIMES; score de cada jogador é a pontuação individual marcada.",
+    "REGRAS CRÍTICAS:",
+    "  • Retorne ally_players e opponent_players com todas as linhas visíveis, idealmente 5 em cada lado.",
+    "  • Nunca responda só o placar se houver linhas de jogadores visíveis.",
+    "  • Nunca zere todos os jogadores quando as colunas existem; leia célula por célula.",
+    "  • Se um campo não estiver visível em nenhum print, use 0, mas mantenha nome, Pokémon e demais campos lidos.",
+    "  • Pokémon sempre em inglês.",
+    allyCandidates ? `CANDIDATOS DO NOSSO ROSTER para mapeamento de aliados:\n${allyCandidates}` : "",
+    opponentCandidates ? `CANDIDATOS DE JOGADORES OPONENTES conhecidos:\n${opponentCandidates}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+function buildUserPrompt(imageCount: number, allyRoster: any[], opponentRoster: any[]) {
+  return [
+    `Foram enviados ${imageCount} print(s) da mesma partida de Pokémon Unite.`,
+    "Extraia obrigatoriamente por jogador: name, pokemon, kills, deaths, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
+    "Separe aliados em ally_players e adversários em opponent_players.",
+    "Se houver print de estatísticas detalhadas, mescle dano/recuperação no mesmo jogador do print de placar.",
+    allyRoster.length ? "Para aliados, prefira nomes que coincidam com name/ign do roster enviado quando forem claramente o mesmo jogador." : "",
+    opponentRoster.length ? "Para oponentes, prefira nomes conhecidos quando coincidirem com o print." : "",
+  ].filter(Boolean).join("\n");
+}
+
+function formatCandidates(candidates: any[]) {
+  return candidates
+    .slice(0, 20)
+    .map((p, index) => {
+      const bits = [
+        `#${index + 1}`,
+        p?.name ? `name=${String(p.name)}` : "",
+        p?.ign ? `ign=${String(p.ign)}` : "",
+        p?.pokemon ? `pokemon=${String(p.pokemon)}` : "",
+      ].filter(Boolean);
+      return bits.join("; ");
+    })
+    .filter(Boolean)
+    .join("\n");
+}
