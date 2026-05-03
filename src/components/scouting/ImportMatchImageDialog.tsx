@@ -40,12 +40,14 @@ type ExtractedPlayer = {
   is_mvp?: boolean;
 };
 
+type RawExtractedPlayer = ExtractedPlayer | string;
+
 type Extracted = {
   score_us: number;
   score_them: number;
   result: "win" | "loss" | "draw" | "unknown";
-  ally_players: ExtractedPlayer[];
-  opponent_players: ExtractedPlayer[];
+  ally_players: RawExtractedPlayer[];
+  opponent_players: RawExtractedPlayer[];
   confidence?: number;
 };
 
@@ -98,18 +100,21 @@ function num(value: unknown) {
 }
 
 function normalizeExtracted(raw: Extracted): Extracted {
-  const player = (p: ExtractedPlayer): ExtractedPlayer => ({
-    name: (p.name ?? "").trim(),
-    pokemon: (p.pokemon ?? "").trim(),
-    kills: num(p.kills),
-    deaths: num(p.deaths),
-    assists: num(p.assists),
-    score: num(p.score),
-    damage_dealt: num(p.damage_dealt),
-    damage_taken: num(p.damage_taken),
-    healing: num(p.healing),
-    is_mvp: !!p.is_mvp,
-  });
+  const player = (entry: RawExtractedPlayer): ExtractedPlayer => {
+    const p = typeof entry === "string" ? parsePlayerString(entry) : entry ?? {};
+    return {
+      name: String(p.name ?? "").trim(),
+      pokemon: String(p.pokemon ?? "").trim(),
+      kills: num(p.kills),
+      deaths: num(p.deaths),
+      assists: num(p.assists),
+      score: num(p.score),
+      damage_dealt: num(p.damage_dealt),
+      damage_taken: num(p.damage_taken),
+      healing: num(p.healing),
+      is_mvp: bool(p.is_mvp),
+    };
+  };
   return {
     score_us: num(raw.score_us),
     score_them: num(raw.score_them),
@@ -118,6 +123,39 @@ function normalizeExtracted(raw: Extracted): Extracted {
     opponent_players: Array.isArray(raw.opponent_players) ? raw.opponent_players.map(player) : [],
     confidence: raw.confidence,
   };
+}
+
+function parsePlayerString(input: string): ExtractedPlayer {
+  const out: Record<string, unknown> = {};
+  const keys = [
+    "damage_dealt", "damage_taken", "is_mvp", "name", "ign", "player_name", "pokemon",
+    "kills", "deaths", "assists", "score", "healing", "recovery", "dano_causado",
+    "dano_recebido", "recuperacao", "recuperação", "cura", "mvp",
+  ];
+  const keyPattern = keys.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const regex = new RegExp(`(?:^|[,;]\\s*)(${keyPattern})\\s*=\\s*([\\s\\S]*?)(?=(?:[,;]\\s*(?:${keyPattern})\\s*=)|$)`, "gi");
+  for (const match of input.replace(/\bFalse\b/g, "false").replace(/\bTrue\b/g, "true").matchAll(regex)) {
+    out[match[1].toLowerCase()] = match[2].trim().replace(/^[ '"]+|[ '"]+$/g, "");
+  }
+  return {
+    name: String(out.name ?? out.ign ?? out.player_name ?? ""),
+    pokemon: String(out.pokemon ?? ""),
+    kills: num(out.kills),
+    deaths: num(out.deaths),
+    assists: num(out.assists),
+    score: num(out.score),
+    damage_dealt: num(out.damage_dealt ?? out.dano_causado),
+    damage_taken: num(out.damage_taken ?? out.dano_recebido),
+    healing: num(out.healing ?? out.recovery ?? out.recuperacao ?? out.recuperação ?? out.cura),
+    is_mvp: bool(out.is_mvp ?? out.mvp),
+  };
+}
+
+function bool(value: unknown) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value !== "string") return false;
+  return ["true", "1", "yes", "sim", "mvp"].includes(value.trim().toLowerCase());
 }
 
 export function ImportMatchImageDialog({
