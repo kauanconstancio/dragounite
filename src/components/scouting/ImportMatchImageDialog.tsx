@@ -340,7 +340,7 @@ export function ImportMatchImageDialog({
             game_number: gameNumber,
             pokemon: p.pokemon || null,
             kills: Number(p.kills) || 0,
-            deaths: Number(p.deaths) || 0,
+            deaths: 0,
             assists: Number(p.assists) || 0,
             score: Number(p.score) || 0,
             damage_dealt: Number(p.damage_dealt) || 0,
