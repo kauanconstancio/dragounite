@@ -365,7 +365,7 @@ function normalizePokemonName(value: unknown) {
     alolanninetales: "Ninetales",
     ninetails: "Ninetales",
     mrmime: "Mr. Mime",
-    mr.mime: "Mr. Mime",
+    "mr.mime": "Mr. Mime",
     mime: "Mr. Mime",
     mewtwox: "Mewtwo X",
     mewtwoy: "Mewtwo Y",
