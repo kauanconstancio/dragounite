@@ -233,6 +233,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
 
 function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries, onComplete, muted }: { title: string; items: Scrim[]; opponentMap: Map<string, Opponent>; onEdit: (s: Scrim) => void; onDelete: (id: string) => void; onDeleteSeries: (groupId: string) => void; onComplete: (s: Scrim) => void; muted?: boolean }) {
   const [perfFor, setPerfFor] = useState<Scrim | null>(null);
+  const [importFor, setImportFor] = useState<Scrim | null>(null);
   return (
     <section>
       <div className="flex items-center gap-3 mb-5">
