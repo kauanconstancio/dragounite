@@ -166,8 +166,8 @@ export function PerformanceDialog({
     const existing = allyExisting.filter((e) => e.game_number === game);
     if (existing.length > 0) {
       setAllies(
-        existing.map((e) => ({
-          id: e.id, member_id: e.member_id, game_number: e.game_number,
+        existing.filter((e) => !!e.member_id).map((e) => ({
+          id: e.id, member_id: e.member_id as string, game_number: e.game_number,
           pokemon: e.pokemon ?? "",
           kills: e.kills, deaths: e.deaths, assists: e.assists,
           score: e.score, damage_dealt: e.damage_dealt,
