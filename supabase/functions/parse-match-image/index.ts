@@ -13,9 +13,9 @@ const PLAYER_SCHEMA = {
   properties: {
     name: { type: "string", description: "In-game name/IGN exactly as shown, or the closest roster candidate when clearly matching" },
     pokemon: { type: "string", description: "Pokémon name in English. READ the small portrait/icon next to each row — do NOT guess from the player name. Examples: Pikachu, Charizard, Lucario, Mr. Mime, Mew, Tsareena, Espeon, Gardevoir, Glaceon, Greninja, Cinderace, Decidueye, Dragapult, Mewtwo X, Mewtwo Y, Zacian, Miraidon, Ho-Oh, Suicune, Blissey, Eldegoss, Wigglytuff, Hoopa, Comfey, Sableye, Trevenant, Snorlax, Mamoswine, Crustle, Slowbro, Goodra, Greedent, Umbreon, Buzzwole, Machamp, Tyranitar, Garchomp, Blaziken, Aegislash, Scizor, Absol, Zoroark, Tinkaton, Falinks, Ceruledge, Meowscarada, Inteleon, Leafeon, Sylveon, Delphox, Venusaur, Alolan Ninetales, Duraludon, Dragonite, Metagross, A9 (Alolan Ninetales)" },
-    kills: { type: "number", description: "KOs/kills shown for this player" },
-    assists: { type: "number", description: "Assists shown for this player" },
-    score: { type: "number", description: "Individual points/goals scored by this player" },
+    kills: { type: "number", description: "KOs/Nocautes — coluna 'KOs' do placar. Número INTEIRO pequeno, normalmente entre 0 e 20. NÃO confunda com 'Scored/Pontuação' (que costuma ser muito maior)." },
+    assists: { type: "number", description: "Assistências — coluna 'Assists/Assistências' do placar. Número INTEIRO pequeno, normalmente entre 0 e 25. NÃO confunda com KOs nem com Scored." },
+    score: { type: "number", description: "Pontuação individual marcada — coluna 'Scored/Pontuação' do placar (pontos depositados nos goals). Costuma ser o MAIOR dos três números (frequentemente 30-200+). NÃO confunda com KOs ou Assists." },
     damage_dealt: { type: "number", description: "Damage dealt / dano causado as a full integer" },
     damage_taken: { type: "number", description: "Damage taken / dano recebido as a full integer" },
     healing: { type: "number", description: "Recovery/healing/recuperação as a full integer" },
