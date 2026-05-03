@@ -77,16 +77,45 @@ Deno.serve(async (req) => {
       return json({ error: "LOVABLE_API_KEY ausente" }, 500);
     }
 
-    const { imageBase64, mimeType } = await req.json();
-    if (!imageBase64 || typeof imageBase64 !== "string") {
-      return json({ error: "imageBase64 obrigatório" }, 400);
+    const body = await req.json();
+    // Accept either { images: [{base64, mimeType}, ...] } or legacy { imageBase64, mimeType }
+    let images: { base64: string; mimeType: string }[] = [];
+    if (Array.isArray(body?.images) && body.images.length > 0) {
+      images = body.images
+        .filter((i: any) => i && typeof i.base64 === "string")
+        .map((i: any) => ({
+          base64: i.base64,
+          mimeType:
+            typeof i.mimeType === "string" && i.mimeType.startsWith("image/")
+              ? i.mimeType
+              : "image/png",
+        }));
+    } else if (typeof body?.imageBase64 === "string") {
+      images = [
+        {
+          base64: body.imageBase64,
+          mimeType:
+            typeof body.mimeType === "string" && body.mimeType.startsWith("image/")
+              ? body.mimeType
+              : "image/png",
+        },
+      ];
     }
-    // ~7MB base64 ≈ 5MB binary
-    if (imageBase64.length > 7_500_000) {
-      return json({ error: "Imagem muito grande (máx ~5MB)" }, 413);
+    if (images.length === 0) {
+      return json({ error: "Envie ao menos uma imagem" }, 400);
     }
-    const mt = typeof mimeType === "string" && mimeType.startsWith("image/") ? mimeType : "image/png";
-    const dataUrl = `data:${mt};base64,${imageBase64}`;
+    if (images.length > 3) {
+      return json({ error: "Máximo de 3 imagens por chamada" }, 400);
+    }
+    for (const img of images) {
+      if (img.base64.length > 7_500_000) {
+        return json({ error: "Uma das imagens é muito grande (máx ~5MB cada)" }, 413);
+      }
+    }
+    const imageParts = images.map((img) => ({
+      type: "image_url" as const,
+      image_url: { url: `data:${img.mimeType};base64,${img.base64}` },
+    }));
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
