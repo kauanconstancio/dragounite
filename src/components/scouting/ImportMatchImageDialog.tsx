@@ -693,10 +693,9 @@ function PlayerEditor({
         )}
       </div>
       {hint && <p className="text-[10px] text-muted-foreground italic">{hint}</p>}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-6 gap-2">
         <NumField label="Score" value={player.score} onChange={(n) => onChange({ score: n })} />
         <NumField label="Kills" value={player.kills} onChange={(n) => onChange({ kills: n })} />
-        <NumField label="Deaths" value={player.deaths} onChange={(n) => onChange({ deaths: n })} />
         <NumField label="Assist." value={player.assists} onChange={(n) => onChange({ assists: n })} />
         <NumField label="Dano" value={player.damage_dealt} onChange={(n) => onChange({ damage_dealt: n })} />
         <NumField label="Sofrido" value={player.damage_taken} onChange={(n) => onChange({ damage_taken: n })} />
