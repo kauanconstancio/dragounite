@@ -226,7 +226,10 @@ function buildSystemPrompt(allyRoster: any[], opponentRoster: any[]) {
 function buildUserPrompt(imageCount: number, allyRoster: any[], opponentRoster: any[]) {
   return [
     `Foram enviados ${imageCount} print(s) da mesma partida de Pokémon Unite.`,
-    "Extraia obrigatoriamente por jogador: name, pokemon, kills, deaths, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
+    "Extraia obrigatoriamente por jogador: name, pokemon, kills, assists, score, damage_dealt, damage_taken, healing e is_mvp.",
+    "NÃO extraia mortes/deaths — Pokémon Unite não exibe essa coluna.",
+    "Para o Pokémon, leia o RETRATO/SPRITE pequeno ao lado do nome — não invente a partir do IGN.",
+    "Para o MVP, procure pela COROA DOURADA (👑) ao lado de UM IGN — apenas esse jogador recebe is_mvp=true.",
     "Separe aliados em ally_players e adversários em opponent_players.",
     "Se houver print de estatísticas detalhadas, mescle dano/recuperação no mesmo jogador do print de placar.",
     allyRoster.length ? "Para aliados, prefira nomes que coincidam com name/ign do roster enviado quando forem claramente o mesmo jogador." : "",
