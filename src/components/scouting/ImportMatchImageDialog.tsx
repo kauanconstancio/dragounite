@@ -140,7 +140,7 @@ function parsePlayerString(input: string): ExtractedPlayer {
     name: String(out.name ?? out.ign ?? out.player_name ?? ""),
     pokemon: String(out.pokemon ?? ""),
     kills: num(out.kills),
-    deaths: num(out.deaths),
+    
     assists: num(out.assists),
     score: num(out.score),
     damage_dealt: num(out.damage_dealt ?? out.dano_causado),
