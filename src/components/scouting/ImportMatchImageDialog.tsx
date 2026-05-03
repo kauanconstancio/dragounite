@@ -49,15 +49,75 @@ type Extracted = {
   confidence?: number;
 };
 
-type Member = { id: string; name: string; ign: string | null };
+type Member = { id: string; name: string; ign: string | null; main_pokemon?: string | null };
+type KnownOpponentPlayer = { name: string; pokemon?: string | null; lane?: string | null; notes?: string | null };
+
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+}
 
 function similarity(a: string, b: string) {
-  const x = a.toLowerCase().trim();
-  const y = b.toLowerCase().trim();
+  const x = normalizeText(a);
+  const y = normalizeText(b);
   if (!x || !y) return 0;
   if (x === y) return 1;
-  if (x.includes(y) || y.includes(x)) return 0.75;
+  if (x.includes(y) || y.includes(x)) return 0.85;
+  const min = Math.min(x.length, y.length);
+  let samePrefix = 0;
+  while (samePrefix < min && x[samePrefix] === y[samePrefix]) samePrefix += 1;
+  if (samePrefix >= 4) return 0.55;
   return 0;
+}
+
+function normalizeKnownPlayers(raw: any[] | null | undefined): KnownOpponentPlayer[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((p) => {
+      if (typeof p === "string") return { name: p };
+      if (p && typeof p === "object" && p.name) {
+        return { name: String(p.name), pokemon: p.pokemon ?? p.main_pokemon ?? null, lane: p.lane ?? null, notes: p.notes ?? null };
+      }
+      return null;
+    })
+    .filter(Boolean) as KnownOpponentPlayer[];
+}
+
+function num(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.round(value));
+  if (typeof value !== "string") return 0;
+  const compact = value.trim().toLowerCase().replace(/\s/g, "");
+  const multiplier = compact.endsWith("k") ? 1000 : 1;
+  const cleaned = compact.replace(/k$/, "").replace(/[^0-9.,]/g, "").replace(/[.,](?=\d{3}(\D|$))/g, "").replace(",", ".");
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed * multiplier)) : 0;
+}
+
+function normalizeExtracted(raw: Extracted): Extracted {
+  const player = (p: ExtractedPlayer): ExtractedPlayer => ({
+    name: (p.name ?? "").trim(),
+    pokemon: (p.pokemon ?? "").trim(),
+    kills: num(p.kills),
+    deaths: num(p.deaths),
+    assists: num(p.assists),
+    score: num(p.score),
+    damage_dealt: num(p.damage_dealt),
+    damage_taken: num(p.damage_taken),
+    healing: num(p.healing),
+    is_mvp: !!p.is_mvp,
+  });
+  return {
+    score_us: num(raw.score_us),
+    score_them: num(raw.score_them),
+    result: raw.result ?? "unknown",
+    ally_players: Array.isArray(raw.ally_players) ? raw.ally_players.map(player) : [],
+    opponent_players: Array.isArray(raw.opponent_players) ? raw.opponent_players.map(player) : [],
+    confidence: raw.confidence,
+  };
 }
 
 export function ImportMatchImageDialog({
@@ -89,7 +149,7 @@ export function ImportMatchImageDialog({
       if (!teamId) return [] as Member[];
       const { data, error } = await supabase
         .from("members")
-        .select("id, name, ign, role")
+          .select("id, name, ign, role, main_pokemon")
         .eq("team_id", teamId)
         .eq("role", "player")
         .order("name");
@@ -97,6 +157,21 @@ export function ImportMatchImageDialog({
       return data as Member[];
     },
     enabled: open && !!teamId,
+  });
+
+  const { data: opponentKnownPlayers = [] } = useQuery({
+    queryKey: ["opponent-known-import", opponentId],
+    queryFn: async () => {
+      if (!opponentId) return [] as KnownOpponentPlayer[];
+      const { data, error } = await supabase
+        .from("opponents")
+        .select("known_players")
+        .eq("id", opponentId)
+        .maybeSingle();
+      if (error) throw error;
+      return normalizeKnownPlayers(data?.known_players as any[] | null);
+    },
+    enabled: open && !!opponentId,
   });
 
   useEffect(() => {
@@ -162,11 +237,15 @@ export function ImportMatchImageDialog({
         ),
       );
       const { data: res, error } = await supabase.functions.invoke("parse-match-image", {
-        body: { images },
+        body: {
+          images,
+          allyRoster: members.map((m) => ({ name: m.name, ign: m.ign, pokemon: m.main_pokemon })),
+          opponentRoster: opponentKnownPlayers.map((p) => ({ name: p.name, pokemon: p.pokemon })),
+        },
       });
       if (error) throw error;
       if ((res as any)?.error) throw new Error((res as any).error);
-      const parsed = (res as any).data as Extracted;
+      const parsed = normalizeExtracted((res as any).data as Extracted);
       setData(parsed);
       // auto-map allies by name similarity
       const used = new Set<string>();
