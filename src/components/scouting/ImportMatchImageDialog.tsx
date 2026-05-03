@@ -536,13 +536,33 @@ export function ImportMatchImageDialog({
                   player={p}
                   onChange={(patch) => updateOpp(i, patch)}
                   leading={
-                    <Input
-                      value={p.name ?? ""}
-                      onChange={(e) => updateOpp(i, { name: e.target.value })}
-                      placeholder="Nome do oponente"
-                      className="h-9 text-sm"
-                    />
+                    <div className="grid gap-1.5">
+                      {opponentKnownPlayers.length > 0 && (
+                        <Select
+                          value={opponentKnownPlayers.some((known) => known.name === p.name) ? p.name : undefined}
+                          onValueChange={(v) => updateOpp(i, { name: v })}
+                        >
+                          <SelectTrigger className="h-9 text-sm">
+                            <SelectValue placeholder="Selecionar oponente" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {opponentKnownPlayers.map((known) => (
+                              <SelectItem key={known.name} value={known.name}>
+                                {known.name}{known.pokemon ? ` (${known.pokemon})` : ""}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Input
+                        value={p.name ?? ""}
+                        onChange={(e) => updateOpp(i, { name: e.target.value })}
+                        placeholder="Nome detectado do oponente"
+                        className="h-9 text-sm"
+                      />
+                    </div>
                   }
+                  hint={p.name ? `Detectado: ${p.name}` : undefined}
                 />
               ))}
               {data.opponent_players.length === 0 && (
