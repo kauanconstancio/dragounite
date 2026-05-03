@@ -144,20 +144,25 @@ export function ImportMatchImageDialog({
 
 
   async function analyze() {
-    if (!file) return;
+    if (files.length === 0) return;
     setLoading(true);
     try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const s = reader.result as string;
-          resolve(s.split(",")[1] || "");
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const images = await Promise.all(
+        files.map(
+          (f) =>
+            new Promise<{ base64: string; mimeType: string }>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const s = reader.result as string;
+                resolve({ base64: s.split(",")[1] || "", mimeType: f.type || "image/png" });
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(f);
+            }),
+        ),
+      );
       const { data: res, error } = await supabase.functions.invoke("parse-match-image", {
-        body: { imageBase64: base64, mimeType: file.type || "image/png" },
+        body: { images },
       });
       if (error) throw error;
       if ((res as any)?.error) throw new Error((res as any).error);
