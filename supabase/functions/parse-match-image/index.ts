@@ -130,8 +130,10 @@ Deno.serve(async (req) => {
             role: "system",
             content:
               "Você é um extrator preciso de placar pós-partida de Pokémon Unite. " +
-              "A tela pode estar em PT-BR ou EN. Extraia exatamente o que está visível. " +
-              "Não invente. Se um campo não estiver visível, use 0 ou string vazia. " +
+              "A tela pode estar em PT-BR ou EN. O usuário pode enviar 1 ou 2 prints da MESMA partida: " +
+              "(1) tela de placar com pontos/kills/assists/MVP e (2) tela de estatísticas detalhadas (dano causado, dano sofrido, cura). " +
+              "Combine as informações de TODAS as imagens em um único resultado consistente, " +
+              "casando os jogadores pelo nome/IGN/pokémon. Não invente. Campos não visíveis = 0 ou string vazia. " +
               "O time aliado é geralmente o time da esquerda (laranja). Pokémon em inglês.",
           },
           {
@@ -139,9 +141,12 @@ Deno.serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Extraia o placar e estatísticas de todos os jogadores deste resultado de partida.",
+                text:
+                  images.length > 1
+                    ? `Foram enviados ${images.length} prints da mesma partida (placar + estatísticas detalhadas). Combine tudo e extraia placar e estatísticas completas de todos os jogadores.`
+                    : "Extraia o placar e estatísticas de todos os jogadores deste resultado de partida.",
               },
-              { type: "image_url", image_url: { url: dataUrl } },
+              ...imageParts,
             ],
           },
         ],
