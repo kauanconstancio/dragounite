@@ -76,8 +76,8 @@ export function ImportMatchImageDialog({
   const qc = useQueryClient();
   const { team } = useCurrentTeam();
   const teamId = team?.id;
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Extracted | null>(null);
   const [gameNumber, setGameNumber] = useState(1);
@@ -101,8 +101,8 @@ export function ImportMatchImageDialog({
 
   useEffect(() => {
     if (!open) {
-      setFile(null);
-      setPreview(null);
+      setFiles([]);
+      setPreviews([]);
       setData(null);
       setLoading(false);
       setAllyMemberIds([]);
@@ -110,22 +110,38 @@ export function ImportMatchImageDialog({
     }
   }, [open]);
 
-  function onPick(f: File | null) {
-    setFile(f);
+  function onPick(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    const incoming = Array.from(list);
+    const merged = [...files, ...incoming].slice(0, 2);
+    for (const f of merged) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast.error(`"${f.name}" excede 5MB`);
+        return;
+      }
+    }
+    setFiles(merged);
     setData(null);
-    if (!f) {
-      setPreview(null);
-      return;
-    }
-    if (f.size > 5 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 5MB)");
-      setFile(null);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result as string);
-    reader.readAsDataURL(f);
+    Promise.all(
+      merged.map(
+        (f) =>
+          new Promise<string>((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result as string);
+            r.onerror = reject;
+            r.readAsDataURL(f);
+          }),
+      ),
+    ).then(setPreviews);
   }
+
+  function removeFile(i: number) {
+    const next = files.filter((_, idx) => idx !== i);
+    setFiles(next);
+    setPreviews((p) => p.filter((_, idx) => idx !== i));
+    setData(null);
+  }
+
 
   async function analyze() {
     if (!file) return;
