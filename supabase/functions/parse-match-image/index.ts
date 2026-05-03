@@ -150,6 +150,8 @@ Deno.serve(async (req) => {
         ],
         tools: [TOOL],
         tool_choice: { type: "function", function: { name: "extract_match_data" } },
+        temperature: 0.1,
+        max_tokens: 8192,
       }),
     });
 
@@ -177,7 +179,8 @@ Deno.serve(async (req) => {
       return json({ error: "Resposta inválida da IA" }, 502);
     }
 
-    return json({ data: parsed });
+    const normalized = normalizeExtractedMatch(parsed);
+    return json({ data: normalized });
   } catch (e) {
     console.error("parse-match-image error:", e);
     return json({ error: e instanceof Error ? e.message : "Erro desconhecido" }, 500);
