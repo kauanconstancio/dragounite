@@ -339,7 +339,8 @@ export const completeOnboarding = createServerFn({ method: "POST" })
     await supabaseAdmin
       .from("profiles")
       .update({ member_id: coachMember.id })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .is("member_id", null);
 
     // Create roster members
     if (data.roster && data.roster.length > 0) {
