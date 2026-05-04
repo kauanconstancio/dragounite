@@ -178,19 +178,19 @@ function ScrimsPage() {
 
   return (
     <div className="space-y-10">
-      <div className="flex items-end justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-5xl tracking-wider">
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl tracking-wider">
             AMISTOSOS & <span className="text-gold">SCRIMS</span>
           </h1>
-          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">
+          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-[10px] sm:text-xs">
             {wins}V · {losses}D · {upcoming.length} agendados
           </p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
           <RequireRole roles={["coach"]}>
             <DialogTrigger asChild>
-              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Novo amistoso
               </Button>
             </DialogTrigger>
@@ -247,20 +247,22 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
         <div className="grid gap-3">
           {items.map((s, i) => (
             <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card className={`p-5 border-border hover:border-primary/50 shadow-card group ${muted ? "opacity-70" : ""}`}>
-                <div className="flex items-center gap-5 flex-wrap">
-                  <div className="text-center shrink-0">
-                    <div className="font-display text-3xl text-gold leading-none">{s.score_us}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Nós</div>
+              <Card className={`p-4 sm:p-5 border-border hover:border-primary/50 shadow-card group ${muted ? "opacity-70" : ""}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+                  <div className="flex items-center gap-4 sm:gap-5 shrink-0 self-start sm:self-auto">
+                    <div className="text-center">
+                      <div className="font-display text-2xl sm:text-3xl text-gold leading-none">{s.score_us}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Nós</div>
+                    </div>
+                    <div className="text-muted-foreground font-display text-lg sm:text-xl">VS</div>
+                    <div className="text-center">
+                      <div className="font-display text-2xl sm:text-3xl text-foreground leading-none">{s.score_them}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Eles</div>
+                    </div>
                   </div>
-                  <div className="text-muted-foreground font-display text-xl">VS</div>
-                  <div className="text-center shrink-0">
-                    <div className="font-display text-3xl text-foreground leading-none">{s.score_them}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Eles</div>
-                  </div>
-                  <div className="flex-1 min-w-[200px]">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-display text-xl tracking-wider">
+                      <h3 className="font-display text-base sm:text-xl tracking-wider break-words">
                         {s.opponent_id && opponentMap.get(s.opponent_id)?.name ? opponentMap.get(s.opponent_id)!.name : s.opponent}
                       </h3>
                       <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${RESULT_STYLES[s.result]}`}>{RESULT_LABEL[s.result]}</Badge>
@@ -286,7 +288,7 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
                     )}
                     {s.vod_notes && <p className="mt-2 text-xs text-muted-foreground italic whitespace-pre-wrap">{s.vod_notes}</p>}
                   </div>
-                  <div className="flex gap-1 items-center">
+                  <div className="flex flex-wrap gap-1 items-center sm:justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                     <Button
                       size="sm"
                       variant="outline"
