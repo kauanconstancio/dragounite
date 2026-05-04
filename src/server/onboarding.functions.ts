@@ -282,16 +282,6 @@ export const completeOnboarding = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const userId = context.userId;
 
-    // Refuse if user already has a team membership (avoid duplicate orgs)
-    const { data: existing } = await supabaseAdmin
-      .from("team_memberships")
-      .select("id")
-      .eq("user_id", userId)
-      .limit(1);
-    if (existing && existing.length > 0) {
-      throw new Error("Você já pertence a uma equipe.");
-    }
-
     // Generate a unique slug
     const baseSlug = slugify(data.team_name);
     let slug = baseSlug;
@@ -349,7 +339,8 @@ export const completeOnboarding = createServerFn({ method: "POST" })
     await supabaseAdmin
       .from("profiles")
       .update({ member_id: coachMember.id })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .is("member_id", null);
 
     // Create roster members
     if (data.roster && data.roster.length > 0) {

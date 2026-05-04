@@ -55,12 +55,8 @@ function OnboardingPage() {
     if (!authLoading && !user) navigate({ to: "/auth", replace: true });
   }, [authLoading, user, navigate]);
 
-  useEffect(() => {
-    if (!authLoading && !teamsLoading && user && teams.length > 0) {
-      setActiveTeam(teams[0].team.id);
-      navigate({ to: "/dashboard", replace: true });
-    }
-  }, [authLoading, teamsLoading, user, teams, navigate, setActiveTeam]);
+  // Note: do not auto-redirect users with existing teams — they may be
+  // creating an additional team via the "Nova equipe" button.
 
   async function handleLogoUpload(file: File) {
     if (!user) return;
