@@ -33,14 +33,10 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <div
-      className="dragounite-landing min-h-screen overflow-x-hidden bg-black text-white antialiased"
-      style={{ fontFamily: '"Inter", system-ui, sans-serif' }}
-    >
+    <div className="dragounite-landing min-h-screen overflow-x-hidden bg-black text-white antialiased font-sans">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&family=Oswald:wght@500;600;700;800&display=swap');
         .dragounite-landing h1, .dragounite-landing h2, .dragounite-landing h3 {
-          font-family: "Oswald", "Bebas Neue", system-ui, sans-serif;
+          font-family: var(--font-display);
           letter-spacing: -0.02em;
         }
         .dragounite-landing { color-scheme: dark; }
