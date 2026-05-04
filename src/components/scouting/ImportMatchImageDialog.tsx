@@ -430,18 +430,13 @@ export function ImportMatchImageDialog({
       });
       // Atualiza o result de cada match_performance/opponent_performance por jogo
       await Promise.all(
-        [...gameResults.entries()].map(async ([g, res]) => {
-          await supabase
+        [...gameResults.entries()].map(([g, res]) =>
+          supabase
             .from("match_performances")
             .update({ result: res })
             .eq("scrim_id", scrimId)
-            .eq("game_number", g);
-          await supabase
-            .from("opponent_performances")
-            .update({ result: res === "win" ? "loss" : res === "loss" ? "win" : "draw" })
-            .eq("scrim_id", scrimId)
-            .eq("game_number", g);
-        }),
+            .eq("game_number", g),
+        ),
       );
       // Resultado geral da scrim
       const overall: "win" | "loss" | "draw" | "pending" =
