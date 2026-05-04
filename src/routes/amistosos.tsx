@@ -247,18 +247,20 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
         <div className="grid gap-3">
           {items.map((s, i) => (
             <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card className={`p-5 border-border hover:border-primary/50 shadow-card group ${muted ? "opacity-70" : ""}`}>
-                <div className="flex items-center gap-5 flex-wrap">
-                  <div className="text-center shrink-0">
-                    <div className="font-display text-3xl text-gold leading-none">{s.score_us}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Nós</div>
+              <Card className={`p-4 sm:p-5 border-border hover:border-primary/50 shadow-card group ${muted ? "opacity-70" : ""}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+                  <div className="flex items-center gap-4 sm:gap-5 shrink-0 self-start sm:self-auto">
+                    <div className="text-center">
+                      <div className="font-display text-2xl sm:text-3xl text-gold leading-none">{s.score_us}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Nós</div>
+                    </div>
+                    <div className="text-muted-foreground font-display text-lg sm:text-xl">VS</div>
+                    <div className="text-center">
+                      <div className="font-display text-2xl sm:text-3xl text-foreground leading-none">{s.score_them}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Eles</div>
+                    </div>
                   </div>
-                  <div className="text-muted-foreground font-display text-xl">VS</div>
-                  <div className="text-center shrink-0">
-                    <div className="font-display text-3xl text-foreground leading-none">{s.score_them}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Eles</div>
-                  </div>
-                  <div className="flex-1 min-w-[200px]">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-display text-xl tracking-wider">
                         {s.opponent_id && opponentMap.get(s.opponent_id)?.name ? opponentMap.get(s.opponent_id)!.name : s.opponent}
