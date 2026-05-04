@@ -554,7 +554,7 @@ function AllyRow({
         </Button>
       </div>
       {/* Stats grid — all visible at once */}
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         <StatField label="Score">
           <NumInput value={row.score} onChange={(n) => onChange({ score: n })} />
         </StatField>
@@ -623,7 +623,7 @@ function OppRow({
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         <StatField label="Score">
           <NumInput value={row.score} onChange={(n) => onChange({ score: n })} />
         </StatField>
