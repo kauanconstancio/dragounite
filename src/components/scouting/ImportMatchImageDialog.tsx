@@ -414,15 +414,41 @@ export function ImportMatchImageDialog({
       let usWins = 0;
       let themWins = 0;
       const allGames = new Set<number>([...allyByGame.keys(), ...oppByGame.keys()]);
+      const gameResults = new Map<number, "win" | "loss" | "draw">();
       allGames.forEach((g) => {
         const av = allyByGame.get(g) ?? 0;
         const ov = oppByGame.get(g) ?? 0;
-        if (av > ov) usWins++;
-        else if (ov > av) themWins++;
+        if (av > ov) {
+          usWins++;
+          gameResults.set(g, "win");
+        } else if (ov > av) {
+          themWins++;
+          gameResults.set(g, "loss");
+        } else if (av > 0 || ov > 0) {
+          gameResults.set(g, "draw");
+        }
       });
+      // Atualiza o result de cada match_performance/opponent_performance por jogo
+      await Promise.all(
+        [...gameResults.entries()].map(async ([g, res]) => {
+          await supabase
+            .from("match_performances")
+            .update({ result: res })
+            .eq("scrim_id", scrimId)
+            .eq("game_number", g);
+          await supabase
+            .from("opponent_performances")
+            .update({ result: res === "win" ? "loss" : res === "loss" ? "win" : "draw" })
+            .eq("scrim_id", scrimId)
+            .eq("game_number", g);
+        }),
+      );
+      // Resultado geral da scrim
+      const overall: "win" | "loss" | "draw" | "pending" =
+        usWins > themWins ? "win" : themWins > usWins ? "loss" : usWins + themWins > 0 ? "draw" : "pending";
       await supabase
         .from("scrims")
-        .update({ score_us: usWins, score_them: themWins })
+        .update({ score_us: usWins, score_them: themWins, result: overall })
         .eq("id", scrimId);
     },
     onSuccess: () => {
