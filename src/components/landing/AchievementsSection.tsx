@@ -37,7 +37,7 @@ export function AchievementsSection() {
             return (
               <div
                 key={a.title}
-                className="group relative rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-950 to-black p-6 hover:border-red-600/50 transition-all hover:-translate-y-1"
+                className="group relative rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-6 hover:border-red-600/50 transition-all hover:-translate-y-1"
               >
                 <div className="absolute top-0 left-0 h-0.5 w-12 bg-red-600 group-hover:w-full transition-all duration-500" />
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-red-600/10 border border-red-600/30 mb-4">

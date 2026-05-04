@@ -49,7 +49,7 @@ export function RoadmapSection() {
                 key={m.title}
                 className={`relative overflow-hidden rounded-xl border p-6 ${
                   isLive
-                    ? "border-red-500/50 bg-gradient-to-br from-red-950/40 to-black shadow-[0_0_30px_rgba(220,38,38,0.2)]"
+                    ? "border-red-500/50 bg-gradient-to-br from-red-950/30 to-zinc-900 shadow-[0_0_30px_rgba(220,38,38,0.2)]"
                     : "border-zinc-800 bg-zinc-900/40"
                 }`}
               >
