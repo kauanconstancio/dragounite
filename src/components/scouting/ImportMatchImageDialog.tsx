@@ -576,8 +576,8 @@ export function ImportMatchImageDialog({
 
         {data && (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2 grid grid-cols-2 gap-2 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="md:col-span-2 grid grid-cols-2 gap-2 items-center">
                 <Card className="p-3 text-center">
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Nosso time</div>
                   <div className="font-display text-3xl text-primary tabular-nums">{data.score_us}</div>
@@ -751,7 +751,7 @@ function PlayerEditor({
         )}
       </div>
       {hint && <p className="text-[10px] text-muted-foreground italic">{hint}</p>}
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         <NumField label="Score" value={player.score} onChange={(n) => onChange({ score: n })} />
         <NumField label="Kills" value={player.kills} onChange={(n) => onChange({ kills: n })} />
         <NumField label="Assist." value={player.assists} onChange={(n) => onChange({ assists: n })} />
