@@ -161,3 +161,98 @@ body.presentation-mode { font-size: 110%; }
     background: transparent;
   }
 }
+
+/* ===========================================
+   GLOBAL RESPONSIVE FIXES (mobile + tablet)
+   Aplica melhorias em todo o sistema sem
+   tocar componente por componente.
+   =========================================== */
+
+@layer base {
+  /* Evita estouro horizontal causado por elementos largos (charts, imagens, tabelas, etc) */
+  html, body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Imagens, vídeos, canvas e SVGs nunca estouram o container pai */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Quebra palavras longas (URLs, IDs, slugs) em vez de empurrar layout */
+  p, span, a, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Tabelas viram scroll horizontal em telas pequenas em vez de espremer */
+  @media (max-width: 768px) {
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+    }
+
+    /* Reduz padding excessivo em containers/sections em mobile */
+    .container, [class*="max-w-"][class*="px-8"] {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+  }
+
+  /* Tipografia fluida: títulos enormes (text-6xl..text-9xl) escalam suavemente
+     em mobile/tablet sem precisar refatorar cada componente */
+  @media (max-width: 640px) {
+    .text-5xl { font-size: clamp(1.875rem, 8vw, 3rem) !important; line-height: 1.05 !important; }
+    .text-6xl { font-size: clamp(2.25rem, 10vw, 3.75rem) !important; line-height: 1.05 !important; }
+    .text-7xl { font-size: clamp(2.75rem, 11vw, 4.5rem) !important; line-height: 1.02 !important; }
+    .text-8xl { font-size: clamp(3rem, 12vw, 6rem) !important; line-height: 1 !important; }
+    .text-9xl { font-size: clamp(3.5rem, 14vw, 8rem) !important; line-height: 1 !important; }
+
+    /* Hero strips de stats com 3 colunas grudadas: deixa respirar */
+    .text-4xl { font-size: clamp(1.75rem, 7vw, 2.25rem) !important; }
+  }
+
+  /* Dialogs/Sheets: garantem altura confortável e scroll interno em mobile */
+  [role="dialog"] {
+    max-height: 92vh;
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  @media (max-width: 640px) {
+    [role="dialog"] {
+      max-width: calc(100vw - 1rem) !important;
+      width: calc(100vw - 1rem) !important;
+    }
+  }
+
+  /* Inputs em iOS: evita zoom automático ao focar */
+  @media (max-width: 640px) {
+    input, select, textarea {
+      font-size: max(16px, 0.875rem) !important;
+    }
+  }
+
+  /* Botões/links menores ganham área de toque mínima em mobile (acessibilidade) */
+  @media (max-width: 640px) and (pointer: coarse) {
+    button:not([class*="h-"]),
+    a[role="button"]:not([class*="h-"]) {
+      min-height: 40px;
+    }
+  }
+
+  /* Charts (recharts) sempre adaptam ao container */
+  .recharts-responsive-container,
+  .recharts-wrapper {
+    max-width: 100% !important;
+  }
+
+  /* Code/pre com scroll horizontal em vez de quebrar layout */
+  pre, code {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
