@@ -1,12 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { FeaturesSection } from "@/components/landing/FeaturesSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { RoadmapSection } from "@/components/landing/RoadmapSection";
+import { AboutSection } from "@/components/landing/AboutSection";
 import { GamesShowcaseSection } from "@/components/landing/GamesShowcaseSection";
-import { WaitlistSection } from "@/components/landing/WaitlistSection";
-import { FaqSection } from "@/components/landing/FaqSection";
+import { AchievementsSection } from "@/components/landing/AchievementsSection";
+import { ContactSection } from "@/components/landing/ContactSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export const Route = createFileRoute("/")({
@@ -16,13 +14,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Dragounite: time competitivo em Pokémon Unite, Rematch, Pokémon GO, TCG, VGC e One Piece TCG. Plataforma de gestão all-in-one para roster, scrims, drafts e scouting.",
+          "Dragounite é um time competitivo brasileiro disputando Pokémon Unite, Rematch, Pokémon GO, TCG, VGC e One Piece TCG. Conheça o time, nossa trajetória e acompanhe nossas partidas.",
       },
       { property: "og:title", content: "Dragounite — Time competitivo de esports & TCG" },
       {
         property: "og:description",
         content:
-          "Plataforma oficial do Time Dragounite. Roster, scrims, draft, scouting e dashboards para 6 jogos competitivos.",
+          "Time competitivo brasileiro em 6 modalidades: Pokémon Unite, Rematch, Pokémon GO, TCG, VGC e One Piece TCG.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -45,12 +43,10 @@ function LandingPage() {
       <LandingNav />
       <main>
         <HeroSection />
+        <AboutSection />
         <GamesShowcaseSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <RoadmapSection />
-        <WaitlistSection />
-        <FaqSection />
+        <AchievementsSection />
+        <ContactSection />
       </main>
       <LandingFooter />
     </div>

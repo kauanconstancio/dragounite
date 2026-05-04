@@ -15,11 +15,10 @@ export function LandingNav() {
         </a>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300 uppercase tracking-wide">
-          <a href="#games" className="hover:text-white transition-colors">Jogos</a>
-          <a href="#features" className="hover:text-white transition-colors">Arsenal</a>
-          <a href="#how" className="hover:text-white transition-colors">Como funciona</a>
-          <a href="#roadmap" className="hover:text-white transition-colors">Roadmap</a>
-          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+          <a href="#sobre" className="hover:text-white transition-colors">Sobre</a>
+          <a href="#jogos" className="hover:text-white transition-colors">Jogos</a>
+          <a href="#conquistas" className="hover:text-white transition-colors">Trajetória</a>
+          <a href="#contato" className="hover:text-white transition-colors">Contato</a>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -27,14 +26,8 @@ export function LandingNav() {
             to="/auth"
             className="hidden sm:inline-flex text-sm font-medium text-zinc-300 hover:text-white transition-colors uppercase tracking-wide"
           >
-            Entrar
+            Área do time
           </Link>
-          <a
-            href="#waitlist"
-            className="inline-flex items-center gap-1.5 rounded-md bg-red-600 hover:bg-red-500 px-4 py-2 text-sm font-bold uppercase tracking-wider text-white shadow-[0_0_20px_rgba(220,38,38,0.5)] hover:shadow-[0_0_30px_rgba(220,38,38,0.8)] transition-all"
-          >
-            Junte-se
-          </a>
         </div>
       </div>
     </header>

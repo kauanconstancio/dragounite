@@ -19,11 +19,11 @@ export function LandingFooter() {
           </div>
 
           <nav className="flex items-center gap-6 text-sm text-zinc-400 uppercase tracking-wide">
-            <a href="#games" className="hover:text-red-400 transition-colors">Jogos</a>
-            <a href="#features" className="hover:text-red-400 transition-colors">Arsenal</a>
-            <a href="#roadmap" className="hover:text-red-400 transition-colors">Roadmap</a>
-            <a href="#faq" className="hover:text-red-400 transition-colors">FAQ</a>
-            <Link to="/auth" className="hover:text-red-400 transition-colors">Entrar</Link>
+            <a href="#sobre" className="hover:text-red-400 transition-colors">Sobre</a>
+            <a href="#jogos" className="hover:text-red-400 transition-colors">Jogos</a>
+            <a href="#conquistas" className="hover:text-red-400 transition-colors">Trajetória</a>
+            <a href="#contato" className="hover:text-red-400 transition-colors">Contato</a>
+            <Link to="/auth" className="hover:text-red-400 transition-colors">Área do time</Link>
           </nav>
         </div>
 
