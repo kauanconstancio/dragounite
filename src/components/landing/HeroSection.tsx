@@ -29,14 +29,10 @@ export function HeroSection() {
             <span>Time competitivo brasileiro</span>
           </div>
 
-          <h1 className="max-w-3xl text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tighter text-white leading-[0.92] uppercase">
-            Somos
-            <br />
-            <span className="relative inline-block">
-              <span className="bg-gradient-to-br from-red-400 via-red-500 to-red-700 bg-clip-text text-transparent">
-                Dragounite
-              </span>
-              <span className="absolute -bottom-2 left-0 h-[6px] w-full bg-gradient-to-r from-red-600 via-red-500 to-transparent rounded-full" />
+          <h1 className="max-w-3xl text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tighter text-white leading-[1.02] uppercase">
+            Somos{" "}
+            <span className="bg-gradient-to-br from-red-400 via-red-500 to-red-700 bg-clip-text text-transparent">
+              Dragounite
             </span>
             <br />
             <span className="text-zinc-300">Forjados para vencer.</span>
