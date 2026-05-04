@@ -178,19 +178,19 @@ function ScrimsPage() {
 
   return (
     <div className="space-y-10">
-      <div className="flex items-end justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-5xl tracking-wider">
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl tracking-wider">
             AMISTOSOS & <span className="text-gold">SCRIMS</span>
           </h1>
-          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">
+          <p className="mt-2 text-muted-foreground uppercase tracking-widest text-[10px] sm:text-xs">
             {wins}V · {losses}D · {upcoming.length} agendados
           </p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
           <RequireRole roles={["coach"]}>
             <DialogTrigger asChild>
-              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+              <Button size="lg" className="bg-gradient-primary shadow-glow uppercase tracking-wider w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Novo amistoso
               </Button>
             </DialogTrigger>
