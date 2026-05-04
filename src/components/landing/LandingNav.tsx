@@ -3,7 +3,7 @@ import { Flame } from "lucide-react";
 
 export function LandingNav() {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/70 border-b border-red-600/20">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#0f0d0e]/80 border-b border-red-600/20">
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
         <a href="#top" className="flex items-center gap-2.5 group">
           <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.6)] group-hover:shadow-[0_0_30px_rgba(220,38,38,0.9)] transition-shadow">

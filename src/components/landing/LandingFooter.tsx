@@ -3,7 +3,7 @@ import { Flame } from "lucide-react";
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-red-600/20 py-12 bg-black">
+    <footer className="border-t border-red-600/20 py-12 bg-[#0f0d0e]">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">

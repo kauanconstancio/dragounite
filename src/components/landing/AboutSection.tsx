@@ -13,7 +13,7 @@ export function AboutSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-xl border border-zinc-800 bg-black/50 p-8 hover:border-red-600/40 transition-colors">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-8 hover:border-red-600/40 transition-colors">
             <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">
               Nossa missão
             </h3>
@@ -23,7 +23,7 @@ export function AboutSection() {
               respeito.
             </p>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-black/50 p-8 hover:border-red-600/40 transition-colors">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-8 hover:border-red-600/40 transition-colors">
             <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">
               Nossos valores
             </h3>
@@ -40,7 +40,7 @@ export function AboutSection() {
             { v: "20+", l: "Atletas no roster" },
             { v: "BR", l: "Origem brasileira" },
           ].map((s) => (
-            <div key={s.l} className="bg-black/80 px-4 py-6 text-center">
+            <div key={s.l} className="bg-zinc-900/60 px-4 py-6 text-center">
               <div className="text-4xl font-black text-red-500">{s.v}</div>
               <div className="text-[11px] uppercase tracking-widest text-zinc-500 mt-1">
                 {s.l}
