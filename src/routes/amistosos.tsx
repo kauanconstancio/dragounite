@@ -262,7 +262,7 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-display text-xl tracking-wider">
+                      <h3 className="font-display text-base sm:text-xl tracking-wider break-words">
                         {s.opponent_id && opponentMap.get(s.opponent_id)?.name ? opponentMap.get(s.opponent_id)!.name : s.opponent}
                       </h3>
                       <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${RESULT_STYLES[s.result]}`}>{RESULT_LABEL[s.result]}</Badge>
@@ -288,7 +288,7 @@ function ScrimList({ title, items, opponentMap, onEdit, onDelete, onDeleteSeries
                     )}
                     {s.vod_notes && <p className="mt-2 text-xs text-muted-foreground italic whitespace-pre-wrap">{s.vod_notes}</p>}
                   </div>
-                  <div className="flex gap-1 items-center">
+                  <div className="flex flex-wrap gap-1 items-center sm:justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                     <Button
                       size="sm"
                       variant="outline"
