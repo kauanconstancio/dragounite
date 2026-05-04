@@ -2,28 +2,28 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const faqs = [
   {
-    q: "O que é o GymLy?",
-    a: "GymLy é uma plataforma SaaS de gestão competitiva para times de esports. Centralizamos roster, scrims, drafts, scouting e dashboards de performance — tudo guiado por dados. Começamos com Pokémon Unite e expandiremos para outros jogos.",
+    q: "O que é o Dragounite?",
+    a: "Dragounite é um time competitivo de esports e card games — e também o nome da plataforma que construímos para gerenciar nosso roster, scrims, drafts, scouting e estatísticas. Competimos oficialmente em Pokémon Unite, Rematch, Pokémon GO, Pokémon TCG, VGC e One Piece TCG.",
   },
   {
-    q: "Preciso pagar para usar?",
-    a: "Durante o early access, o acesso é gratuito para times selecionados da waitlist. Quando lançarmos oficialmente, teremos planos free e pago — quem entrar agora terá benefícios exclusivos.",
+    q: "Posso usar a plataforma se não sou do Dragounite?",
+    a: "Sim. A plataforma é multi-time. Durante o early access liberamos acesso para times convidados via waitlist. Cada organização tem dados isolados e seguros.",
+  },
+  {
+    q: "Quais jogos a plataforma suporta hoje?",
+    a: "Pokémon Unite está totalmente em produção. Os módulos para Rematch, Pokémon GO, TCG, VGC e One Piece TCG estão sendo lançados em ondas — veja o roadmap acima.",
+  },
+  {
+    q: "Preciso pagar?",
+    a: "Durante o early access o acesso é gratuito para times selecionados. Quando lançarmos oficialmente teremos planos free e pago, e quem entrar agora terá benefícios vitalícios.",
   },
   {
     q: "Como meu time se cadastra?",
-    a: "Entre na waitlist com seu email e nome do time. Vamos liberar acessos em ondas, priorizando times competitivos ativos. Assim que sua vaga for liberada, você cria sua organização e adiciona os jogadores.",
-  },
-  {
-    q: "Vocês vão suportar outros jogos?",
-    a: "Sim. Nosso roadmap inclui League of Legends, Honor Of Kings, Mobile Legends: Bang Bang e Arena Of Valor. A arquitetura do GymLy foi pensada desde o início para múltiplos esports.",
+    a: "Entre na waitlist com seu email e nome do time. Liberamos acessos em ondas, priorizando times competitivos ativos. Assim que sua vaga for aprovada, você cria sua organização e adiciona os jogadores.",
   },
   {
     q: "Meus dados estão seguros?",
-    a: "Sim. Usamos infraestrutura enterprise-grade com criptografia, controle de acesso por papel (coach, jogador, viewer) e Row-Level Security no banco. Cada time só enxerga os próprios dados.",
-  },
-  {
-    q: "Posso usar para um time amador ou só profissional?",
-    a: "Para qualquer time competitivo — amador, semi-pro, profissional, acadêmico. Se vocês fazem scrims e querem evoluir, GymLy serve.",
+    a: "Sim. Infraestrutura enterprise-grade com criptografia, controle de acesso por papel (coach, jogador, viewer) e Row-Level Security no banco. Cada time só enxerga os próprios dados.",
   },
 ];
 
@@ -32,8 +32,10 @@ export function FaqSection() {
     <section id="faq" className="py-24">
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.3em] text-indigo-400 mb-3">FAQ</div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">Perguntas frequentes</h2>
+          <div className="text-xs uppercase tracking-[0.3em] text-red-500 mb-3 font-bold">FAQ</div>
+          <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tighter uppercase">
+            Perguntas frequentes
+          </h2>
         </div>
 
         <Accordion type="single" collapsible className="space-y-3">
@@ -41,10 +43,14 @@ export function FaqSection() {
             <AccordionItem
               key={i}
               value={`item-${i}`}
-              className="rounded-xl border border-slate-800 bg-slate-900/40 px-6 !border-b"
+              className="rounded-lg border border-zinc-800 bg-zinc-950/60 px-6 !border-b hover:border-red-600/40 transition-colors"
             >
-              <AccordionTrigger className="text-left text-white hover:no-underline py-5">{faq.q}</AccordionTrigger>
-              <AccordionContent className="text-slate-400 leading-relaxed pb-5">{faq.a}</AccordionContent>
+              <AccordionTrigger className="text-left text-white hover:no-underline py-5 font-bold uppercase tracking-tight">
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent className="text-zinc-400 leading-relaxed pb-5">
+                {faq.a}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
