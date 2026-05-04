@@ -386,13 +386,16 @@ function MobileNav({ pathname }: { pathname: string }) {
           <Menu className="h-4 w-4" />
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[85vw] max-w-sm overflow-y-auto p-0">
-        <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/60">
-          <SheetTitle className="font-display text-xl tracking-wider uppercase">
+      <SheetContent
+        side="right"
+        className="w-[88vw] max-w-[340px] sm:max-w-sm overflow-y-auto p-0 flex flex-col"
+      >
+        <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/60 shrink-0">
+          <SheetTitle className="font-display text-xl tracking-wider uppercase text-left">
             <MobileTeamTitle />
           </SheetTitle>
         </SheetHeader>
-        <nav className="flex flex-col gap-6 px-5 py-5">
+        <nav className="flex flex-col gap-5 px-4 py-5 overflow-y-auto pb-[max(env(safe-area-inset-bottom),1.25rem)]">
           {sections.map((section) => (
             <div key={section.label}>
               <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2 px-1">
@@ -406,14 +409,14 @@ function MobileNav({ pathname }: { pathname: string }) {
                     <SheetClose asChild key={item.to}>
                       <Link
                         to={item.to}
-                        className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium uppercase tracking-wider transition-all ${
+                        className={`flex items-center gap-3 rounded-md px-3 py-3 text-[13px] font-medium uppercase tracking-wider transition-all ${
                           active
                             ? "bg-primary text-primary-foreground shadow-glow"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground active:bg-accent"
                         }`}
                       >
-                        <Icon className="h-4 w-4" />
-                        {item.label}
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
                       </Link>
                     </SheetClose>
                   );
