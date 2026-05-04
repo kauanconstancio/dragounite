@@ -12,17 +12,17 @@ import { LandingFooter } from "@/components/landing/LandingFooter";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "GymLy — Gestão competitiva para times de esports" },
+      { title: "Dragounite — Time competitivo de esports & TCG" },
       {
         name: "description",
         content:
-          "Plataforma all-in-one para roster, scrims, draft e scouting de Pokémon Unite. Eleve seu time com decisões guiadas por dados. Entre na waitlist.",
+          "Dragounite: time competitivo em Pokémon Unite, Rematch, Pokémon GO, TCG, VGC e One Piece TCG. Plataforma de gestão all-in-one para roster, scrims, drafts e scouting.",
       },
-      { property: "og:title", content: "GymLy — Gestão competitiva para times de esports" },
+      { property: "og:title", content: "Dragounite — Time competitivo de esports & TCG" },
       {
         property: "og:description",
         content:
-          "Plataforma all-in-one para roster, scrims, draft e scouting. Eleve seu time com decisões guiadas por dados.",
+          "Plataforma oficial do Time Dragounite. Roster, scrims, draft, scouting e dashboards para 6 jogos competitivos.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -34,16 +34,17 @@ export const Route = createFileRoute("/")({
 function LandingPage() {
   return (
     <div
-      className="gymly-landing min-h-screen overflow-x-hidden bg-[#0a0a1a] text-white antialiased"
-      style={{ fontFamily: '"Manrope", system-ui, sans-serif' }}
+      className="dragounite-landing min-h-screen overflow-x-hidden bg-black text-white antialiased"
+      style={{ fontFamily: '"Inter", system-ui, sans-serif' }}
     >
       <style>{`
-        .gymly-landing h1, .gymly-landing h2, .gymly-landing h3 {
-          font-family: "Sora", system-ui, sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&family=Oswald:wght@500;600;700;800&display=swap');
+        .dragounite-landing h1, .dragounite-landing h2, .dragounite-landing h3 {
+          font-family: "Oswald", "Bebas Neue", system-ui, sans-serif;
           letter-spacing: -0.02em;
         }
-        .gymly-landing { color-scheme: dark; }
-        .gymly-landing, .gymly-landing main, .gymly-landing section { max-width: 100vw; overflow-x: clip; }
+        .dragounite-landing { color-scheme: dark; }
+        .dragounite-landing, .dragounite-landing main, .dragounite-landing section { max-width: 100vw; overflow-x: clip; }
       `}</style>
       <LandingNav />
       <main>

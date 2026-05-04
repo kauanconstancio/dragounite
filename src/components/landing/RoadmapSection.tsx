@@ -1,40 +1,26 @@
-import { Check, Clock } from "lucide-react";
-import uniteChar from "@/assets/games/char-unite.webp";
-import hokChar from "@/assets/games/char-hok.webp";
-import lolChar from "@/assets/games/char-lol.webp";
-import mlbbChar from "@/assets/games/char-mlbb.webp";
-import aovChar from "@/assets/games/char-aov.webp";
+import { Check, Clock, Rocket } from "lucide-react";
 
-const games = [
+const milestones = [
   {
-    name: "Pokémon Unite",
-    img: uniteChar,
+    phase: "Agora",
+    title: "Pokémon Unite em produção",
+    desc: "Plataforma completa rodando: roster, scrims, draft, scouting e dashboards.",
+    icon: Check,
     status: "live" as const,
-    desc: "Disponível em early access",
   },
   {
-    name: "Honor of Kings (HOK)",
-    img: hokChar,
+    phase: "Próximo",
+    title: "Módulos para TCG, GO e VGC",
+    desc: "Tracking de torneios, deck builder, IV calculator e ladder histórico.",
+    icon: Clock,
     status: "soon" as const,
-    desc: "Em desenvolvimento",
   },
   {
-    name: "League of Legends (LOL)",
-    img: lolChar,
-    status: "soon" as const,
-    desc: "Em desenvolvimento",
-  },
-  {
-    name: "Mobile Legends: Bang Bang (MLBB)",
-    img: mlbbChar,
-    status: "soon" as const,
-    desc: "Em planejamento",
-  },
-  {
-    name: "Arena of Valor (AOV)",
-    img: aovChar,
-    status: "soon" as const,
-    desc: "Em planejamento",
+    phase: "Em breve",
+    title: "Hub multi-modalidade",
+    desc: "Rematch + One Piece TCG integrados — calendário, resultados e estatísticas unificadas.",
+    icon: Rocket,
+    status: "planned" as const,
   },
 ];
 
@@ -43,56 +29,53 @@ export function RoadmapSection() {
     <section id="roadmap" className="py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="text-center mb-16">
-          <div className="text-xs uppercase tracking-[0.3em] text-indigo-400 mb-3">Roadmap</div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
-            Multi-esports é o futuro
+          <div className="text-xs uppercase tracking-[0.3em] text-red-500 mb-3 font-bold">
+            Roadmap
+          </div>
+          <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tighter uppercase">
+            O que vem <span className="text-red-500">por aí</span>
           </h2>
-          <p className="mt-4 text-slate-400 max-w-xl mx-auto">
-            Começamos com Pokémon Unite. Em breve, GymLy será o hub para qualquer esports
-            competitivo.
+          <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+            Construímos a plataforma que o próprio Dragounite usa — e ela cresce com o time.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {games.map((g) => (
-            <div
-              key={g.name}
-              className={`relative overflow-hidden rounded-2xl border p-6 ${
-                g.status === "live"
-                  ? "border-indigo-500/40 bg-indigo-500/10 shadow-[0_0_30px_rgba(79,70,229,0.2)]"
-                  : "border-slate-800 bg-slate-900/30"
-              }`}
-            >
-              {/* Game character as decorative background */}
-              <img
-                src={g.img}
-                alt=""
-                aria-hidden="true"
-                width={768}
-                height={1024}
-                loading="lazy"
-                className="absolute -right-8 -bottom-8 w-36 opacity-30 select-none pointer-events-none"
-              />
-
-              <div className="relative">
-                <div
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${
-                    g.status === "live"
-                      ? "bg-indigo-500 text-white"
-                      : "bg-slate-800 text-slate-400"
-                  }`}
-                >
-                  {g.status === "live" ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Clock className="h-4 w-4" />
-                  )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {milestones.map((m) => {
+            const Icon = m.icon;
+            const isLive = m.status === "live";
+            return (
+              <div
+                key={m.title}
+                className={`relative overflow-hidden rounded-xl border p-6 ${
+                  isLive
+                    ? "border-red-500/50 bg-gradient-to-br from-red-950/40 to-black shadow-[0_0_30px_rgba(220,38,38,0.2)]"
+                    : "border-zinc-800 bg-black/40"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-md ${
+                      isLive ? "bg-red-600 text-white" : "bg-zinc-900 text-zinc-500 border border-zinc-800"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" strokeWidth={2.5} />
+                  </div>
+                  <span
+                    className={`text-[10px] uppercase tracking-[0.25em] font-bold ${
+                      isLive ? "text-red-300" : "text-zinc-500"
+                    }`}
+                  >
+                    {m.phase}
+                  </span>
                 </div>
-                <h3 className="mt-4 font-semibold text-white text-sm leading-tight">{g.name}</h3>
-                <p className="text-xs text-slate-500 mt-1">{g.desc}</p>
+                <h3 className="font-black text-white text-lg mb-2 uppercase tracking-tight leading-tight">
+                  {m.title}
+                </h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">{m.desc}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
