@@ -19,7 +19,7 @@ export function WaitlistSection() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-red-600/30 bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl p-8 sm:p-10 shadow-[0_0_60px_rgba(220,38,38,0.15)]">
+        <div className="rounded-2xl border border-red-600/30 bg-gradient-to-br from-zinc-900 to-zinc-950 backdrop-blur-xl p-8 sm:p-10 shadow-[0_0_60px_rgba(220,38,38,0.15)]">
           <WaitlistForm />
         </div>
       </div>

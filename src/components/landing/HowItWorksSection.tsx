@@ -34,7 +34,7 @@ export function HowItWorksSection() {
           {steps.map((s) => (
             <div
               key={s.n}
-              className="relative rounded-xl border border-zinc-800 bg-black/40 p-8 hover:border-red-600/40 transition-colors"
+              className="relative rounded-xl border border-zinc-800 bg-zinc-900/40 p-8 hover:border-red-600/40 transition-colors"
             >
               <div className="text-7xl font-black bg-gradient-to-b from-red-500 to-red-900 bg-clip-text text-transparent mb-4 leading-none">
                 {s.n}

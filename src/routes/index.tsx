@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <div className="dragounite-landing min-h-screen overflow-x-hidden bg-black text-white antialiased font-sans">
+    <div className="dragounite-landing min-h-screen overflow-x-hidden bg-[#0f0d0e] text-zinc-100 antialiased font-sans">
       <style>{`
         .dragounite-landing h1, .dragounite-landing h2, .dragounite-landing h3 {
           font-family: var(--font-display);

@@ -74,8 +74,8 @@ export function GamesShowcaseSection() {
                 key={g.short}
                 className={`group relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 ${
                   isCore
-                    ? "border-red-500/60 bg-gradient-to-br from-red-950/40 via-black to-black shadow-[0_0_40px_rgba(220,38,38,0.25)]"
-                    : "border-zinc-800 bg-gradient-to-br from-zinc-950 to-black hover:border-red-500/40"
+                    ? "border-red-500/60 bg-gradient-to-br from-red-950/30 via-zinc-950 to-zinc-900 shadow-[0_0_40px_rgba(220,38,38,0.25)]"
+                    : "border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 hover:border-red-500/40"
                 }`}
               >
                 {/* Diagonal accent */}

@@ -33,7 +33,7 @@ export function ContactSection() {
               <a
                 key={s.name}
                 href={s.href}
-                className="group rounded-xl border border-zinc-800 bg-black/60 p-6 text-center hover:border-red-600/50 transition-all hover:-translate-y-1"
+                className="group rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-center hover:border-red-600/50 transition-all hover:-translate-y-1"
               >
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-red-600/10 border border-red-600/30 mb-3 group-hover:bg-red-600/20 transition-colors">
                   <Icon className="h-5 w-5 text-red-500" strokeWidth={2.5} />
@@ -47,7 +47,7 @@ export function ContactSection() {
           })}
         </div>
 
-        <div className="rounded-xl border border-red-600/30 bg-gradient-to-br from-zinc-950 to-black p-8 text-center">
+        <div className="rounded-xl border border-red-600/30 bg-gradient-to-br from-zinc-900 to-zinc-950 p-8 text-center">
           <Mail className="h-6 w-6 text-red-500 mx-auto mb-3" strokeWidth={2.5} />
           <h3 className="text-lg font-black text-white uppercase tracking-tight mb-2">
             Parcerias & Patrocínios
