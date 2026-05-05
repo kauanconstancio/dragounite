@@ -408,26 +408,26 @@ function OnboardingPage() {
                 {roster.map((r, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-12 gap-2 items-center rounded-lg border border-indigo-500/10 bg-[#0a0a1a]/40 p-2"
+                    className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-center rounded-lg border border-indigo-500/10 bg-[#0a0a1a]/40 p-2"
                   >
                     <Input
                       value={r.name}
                       onChange={(e) => updateRoster(idx, { name: e.target.value })}
                       placeholder="Nome"
-                      className="col-span-4 bg-[#0a0a1a]/60 border-indigo-500/20 text-white h-10 text-sm"
+                      className="col-span-2 sm:col-span-4 bg-[#0a0a1a]/60 border-indigo-500/20 text-white h-10 text-sm"
                     />
                     <Input
                       value={r.ign}
                       onChange={(e) => updateRoster(idx, { ign: e.target.value })}
                       placeholder="IGN"
-                      className="col-span-4 bg-[#0a0a1a]/60 border-indigo-500/20 text-white h-10 text-sm"
+                      className="col-span-2 sm:col-span-4 bg-[#0a0a1a]/60 border-indigo-500/20 text-white h-10 text-sm"
                     />
                     <select
                       value={r.lane}
                       onChange={(e) =>
                         updateRoster(idx, { lane: e.target.value as Lane | "" })
                       }
-                      className="col-span-3 h-10 rounded-md bg-[#0a0a1a]/60 border border-indigo-500/20 text-white text-sm px-2 capitalize"
+                      className="col-span-1 sm:col-span-3 h-10 rounded-md bg-[#0a0a1a]/60 border border-indigo-500/20 text-white text-sm px-2 capitalize min-w-0"
                     >
                       <option value="">— rota —</option>
                       {LANES.map((l) => (
@@ -439,7 +439,7 @@ function OnboardingPage() {
                     <button
                       type="button"
                       onClick={() => removeRosterRow(idx)}
-                      className="col-span-1 h-10 rounded-md text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-colors"
+                      className="col-span-1 sm:col-span-1 h-10 rounded-md text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-colors"
                       aria-label="Remover"
                     >
                       <Trash2 className="h-4 w-4" />
