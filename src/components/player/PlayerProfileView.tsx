@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PokemonImage } from "@/components/PokemonImage";
+import { PerformanceDialog } from "@/components/scouting/PerformanceDialog";
 import { LANE_LABEL, ROLE_COLORS, ROLE_LABEL } from "@/lib/pokemon";
 import {
   aggregatePlayer,
