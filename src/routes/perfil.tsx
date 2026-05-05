@@ -104,6 +104,7 @@ function PerfilPage() {
   const timeline = useMemo(() => kdaTimeline(perfs, dateMap), [perfs, dateMap]);
 
   const [form, setForm] = useState<Partial<Member>>({});
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (memberQ.data) setForm(memberQ.data);
