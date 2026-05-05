@@ -13,6 +13,7 @@ import { Route as TreinosRouteImport } from './routes/treinos'
 import { Route as TierListRouteImport } from './routes/tier-list'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as RosterRouteImport } from './routes/roster'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -69,6 +70,11 @@ const StaffRoute = StaffRouteImport.update({
 const RosterRoute = RosterRouteImport.update({
   id: '/roster',
   path: '/roster',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanosRoute = PlanosRouteImport.update({
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/planos': typeof PlanosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/roster': typeof RosterRoute
   '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
@@ -322,6 +329,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/planos': typeof PlanosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/roster': typeof RosterRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
@@ -365,6 +373,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/planner': typeof PlannerRoute
   '/planos': typeof PlanosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/roster': typeof RosterRoute
   '/staff': typeof StaffRouteWithChildren
   '/tier-list': typeof TierListRoute
@@ -410,6 +419,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/planos'
+    | '/reset-password'
     | '/roster'
     | '/staff'
     | '/tier-list'
@@ -451,6 +461,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/planos'
+    | '/reset-password'
     | '/roster'
     | '/tier-list'
     | '/treinos'
@@ -493,6 +504,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/planner'
     | '/planos'
+    | '/reset-password'
     | '/roster'
     | '/staff'
     | '/tier-list'
@@ -537,6 +549,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   PlannerRoute: typeof PlannerRoute
   PlanosRoute: typeof PlanosRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RosterRoute: typeof RosterRoute
   StaffRoute: typeof StaffRouteWithChildren
   TierListRoute: typeof TierListRoute
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/roster'
       fullPath: '/roster'
       preLoaderRoute: typeof RosterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planos': {
@@ -911,6 +931,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   PlannerRoute: PlannerRoute,
   PlanosRoute: PlanosRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RosterRoute: RosterRoute,
   StaffRoute: StaffRouteWithChildren,
   TierListRoute: TierListRoute,
