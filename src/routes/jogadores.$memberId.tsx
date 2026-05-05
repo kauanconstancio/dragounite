@@ -34,9 +34,9 @@ function PlayerPage() {
   const { data: scrims = [] } = useQuery({
     queryKey: ["scrims-for-perf"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result, opponent");
+      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result, opponent, best_of, opponent_id, status");
       if (error) throw error;
-      return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending"; opponent: string }[];
+      return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending"; opponent: string; best_of: number; opponent_id: string | null; status: "scheduled" | "completed" | "cancelled" }[];
     },
   });
 
