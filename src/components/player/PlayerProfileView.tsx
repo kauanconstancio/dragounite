@@ -358,8 +358,6 @@ export function PlayerProfileView({
                         <KdaCell label="KO" value={r.kills} />
                         <span className="text-muted-foreground/40 text-sm">/</span>
                         <KdaCell label="AST" value={r.assists} />
-                        <span className="text-muted-foreground/40 text-sm">/</span>
-                        <KdaCell label="DTH" value={r.deaths} />
                       </div>
 
                       <div className="shrink-0 ml-auto flex items-center gap-4 sm:gap-5">
@@ -367,7 +365,7 @@ export function PlayerProfileView({
                         {r.damageTaken > 0 && <StatCell label="TKN" value={r.damageTaken} color="text-purple-400" />}
                         {r.healing > 0 && <StatCell label="HEAL" value={r.healing} color="text-emerald-400" />}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
