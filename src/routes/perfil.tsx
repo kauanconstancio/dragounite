@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { PokemonPicker } from "@/components/PokemonPicker";
 import { PokemonImage } from "@/components/PokemonImage";
 import { Badge } from "@/components/ui/badge";
 import { LANE_LABEL, ROLE_COLORS, ROLE_LABEL } from "@/lib/pokemon";
-import { UserCircle, Save, BarChart3, Crosshair, Trophy, Star, TrendingUp } from "lucide-react";
+import { UserCircle, Save, BarChart3, Crosshair, Trophy, Star, TrendingUp, Pencil, Gamepad2, MessageSquare, Hash, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
 
@@ -103,6 +104,7 @@ function PerfilPage() {
   const timeline = useMemo(() => kdaTimeline(perfs, dateMap), [perfs, dateMap]);
 
   const [form, setForm] = useState<Partial<Member>>({});
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (memberQ.data) setForm(memberQ.data);
@@ -139,6 +141,7 @@ function PerfilPage() {
       qc.invalidateQueries({ queryKey: ["members"] });
       qc.invalidateQueries({ queryKey: ["profile-complete-check"] });
       toast.success("Perfil atualizado");
+      setEditOpen(false);
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -166,138 +169,189 @@ function PerfilPage() {
   const isIncomplete = !m.ign || !m.lane || !m.main_pokemon;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      <header>
-        <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Conta</div>
-        <h1 className="font-display text-2xl sm:text-4xl tracking-wider">
-          MEU <span className="text-gold">PERFIL</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Edite suas informações pessoais que aparecem no Roster do time.
-        </p>
-      </header>
-
+    <div className="max-w-5xl mx-auto space-y-6">
       {isIncomplete && (
         <Card className="p-4 border-gold/40 bg-gold/5 flex items-start gap-3">
           <UserCircle className="h-5 w-5 text-gold shrink-0 mt-0.5" />
           <div className="flex-1">
             <div className="font-display text-sm tracking-wider text-gold uppercase">Complete seu perfil</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Antes de navegar pelo sistema, preencha seu <strong className="text-foreground">IGN</strong>,{" "}
+              Preencha seu <strong className="text-foreground">IGN</strong>,{" "}
               <strong className="text-foreground">rota preferida</strong> e{" "}
-              <strong className="text-foreground">Pokémon main</strong>. Essas informações são essenciais para o time.
+              <strong className="text-foreground">Pokémon main</strong> para o time.
             </p>
           </div>
+          <Button size="sm" onClick={() => setEditOpen(true)} className="bg-gradient-primary shadow-glow uppercase tracking-wider">
+            <Pencil className="h-3.5 w-3.5 mr-1.5" /> Editar
+          </Button>
         </Card>
       )}
 
-      <Card className="p-6 border-border bg-card">
-        <div className="flex items-center gap-4 pb-5 border-b border-border/60">
-          <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gradient-primary text-primary-foreground font-display text-3xl shadow-glow">
-            {(form.name ?? m.name).charAt(0).toUpperCase()}
+      {/* HERO CARD */}
+      <Card className="relative overflow-hidden border-border bg-gradient-to-br from-card via-card to-muted/30 p-6 sm:p-8">
+        <div className="absolute inset-0 -z-0 opacity-20 pointer-events-none">
+          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gold/20 blur-3xl" />
+        </div>
+
+        <div className="relative flex flex-col sm:flex-row items-start gap-6">
+          {/* Avatar / Pokemon main */}
+          <div className="relative shrink-0">
+            {m.main_pokemon ? (
+              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden ring-2 ring-gold/40 shadow-glow">
+                <PokemonImage name={m.main_pokemon} withRoleBg />
+              </div>
+            ) : (
+              <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground font-display text-5xl shadow-glow ring-2 ring-gold/40">
+                {m.name.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <div className="font-display text-2xl tracking-wider">{form.name ?? m.name}</div>
-            <div className="text-xs text-muted-foreground">{user?.email}</div>
-            <div className="flex gap-2 mt-2">
+
+          {/* Identity */}
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">DU · Dragounite</div>
+            <h1 className="font-display text-3xl sm:text-5xl tracking-wider leading-tight mt-1 break-words">
+              {m.ign || m.name}
+            </h1>
+            <div className="text-sm text-muted-foreground mt-1">{m.name}</div>
+
+            <div className="flex flex-wrap gap-2 mt-3">
               <Badge className={`uppercase tracking-wider text-[10px] ${ROLE_COLORS[m.role]}`} variant="outline">
                 {ROLE_LABEL[m.role]}
               </Badge>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground self-center">
-                Função é gerenciada pela gestão
-              </span>
+              {m.lane && (
+                <Badge variant="outline" className="uppercase tracking-wider text-[10px] border-gold/40 text-gold">
+                  <MapIcon className="h-3 w-3 mr-1" />
+                  {LANE_LABEL[m.lane]}
+                </Badge>
+              )}
+              {m.main_pokemon && (
+                <Badge variant="outline" className="uppercase tracking-wider text-[10px] border-primary/40 text-primary">
+                  <Star className="h-3 w-3 mr-1" />
+                  Main: {m.main_pokemon}
+                </Badge>
+              )}
             </div>
           </div>
-          {form.main_pokemon && (
-            <div className="h-20 w-20 shrink-0">
-              <PokemonImage name={form.main_pokemon} withRoleBg />
-            </div>
-          )}
-        </div>
 
-        <div className="grid gap-4 mt-6 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label>Nome de exibição</Label>
-            <Input
-              value={form.name ?? ""}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ex: Pikachu"
-            />
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
-              Aparece no Roster e no sistema todo
-            </p>
-          </div>
-          <div>
-            <Label>IGN (Nick no jogo)</Label>
-            <Input
-              value={form.ign ?? ""}
-              onChange={(e) => setForm({ ...form, ign: e.target.value })}
-              placeholder="Ex: Nkyy!"
-            />
-          </div>
-          <div>
-            <Label>ID da conta no jogo</Label>
-            <Input
-              value={form.game_id ?? ""}
-              onChange={(e) => setForm({ ...form, game_id: e.target.value })}
-              placeholder="Ex: 1234-5678-9012"
-              maxLength={64}
-            />
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
-              Friend code / ID usado para adicionar no jogo
-            </p>
-          </div>
-          <div>
-            <Label>Discord</Label>
-            <Input
-              value={form.discord ?? ""}
-              onChange={(e) => setForm({ ...form, discord: e.target.value })}
-              placeholder="Ex: nkyy#0001"
-            />
-          </div>
-          <div>
-            <Label>Rota preferida</Label>
-            <Select
-              value={form.lane ?? "flex"}
-              onValueChange={(v) => setForm({ ...form, lane: v as Member["lane"] })}
-            >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {Object.entries(LANE_LABEL).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Pokémon Main</Label>
-            <PokemonPicker
-              value={form.main_pokemon ?? null}
-              onChange={(v) => setForm({ ...form, main_pokemon: v })}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Label>Notas pessoais</Label>
-            <Textarea
-              rows={4}
-              value={form.notes ?? ""}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Estilo de jogo, horários, observações..."
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-6">
           <Button
-            onClick={() => saveMut.mutate()}
-            disabled={saveMut.isPending}
-            className="bg-gradient-primary shadow-glow uppercase tracking-wider"
+            onClick={() => setEditOpen(true)}
+            className="bg-gradient-primary shadow-glow uppercase tracking-wider w-full sm:w-auto"
           >
-            <Save className="h-4 w-4 mr-2" />
-            {saveMut.isPending ? "Salvando..." : "Salvar perfil"}
+            <Pencil className="h-4 w-4 mr-2" /> Editar perfil
           </Button>
         </div>
+
+        {/* Info grid */}
+        <div className="relative mt-6 pt-6 border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <InfoItem icon={UserCircle} label="Email" value={user?.email ?? "—"} />
+          <InfoItem icon={Gamepad2} label="ID do jogo" value={m.game_id || "—"} mono />
+          <InfoItem icon={MessageSquare} label="Discord" value={m.discord || "—"} />
+          <InfoItem icon={Hash} label="IGN" value={m.ign || "—"} />
+        </div>
+
+        {m.notes && (
+          <div className="relative mt-4 pt-4 border-t border-border/60">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Notas pessoais</div>
+            <p className="text-sm text-foreground/90 whitespace-pre-wrap">{m.notes}</p>
+          </div>
+        )}
       </Card>
+
+      {/* EDIT DIALOG */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl tracking-wider uppercase">
+              Editar <span className="text-gold">Perfil</span>
+            </DialogTitle>
+            <DialogDescription>
+              Suas informações aparecem no Roster e em todo o sistema.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Label>Nome de exibição</Label>
+              <Input
+                value={form.name ?? ""}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Ex: Pikachu"
+              />
+            </div>
+            <div>
+              <Label>IGN (Nick no jogo)</Label>
+              <Input
+                value={form.ign ?? ""}
+                onChange={(e) => setForm({ ...form, ign: e.target.value })}
+                placeholder="Ex: Nkyy!"
+              />
+            </div>
+            <div>
+              <Label>ID da conta no jogo</Label>
+              <Input
+                value={form.game_id ?? ""}
+                onChange={(e) => setForm({ ...form, game_id: e.target.value })}
+                placeholder="Ex: 1234-5678-9012"
+                maxLength={64}
+              />
+            </div>
+            <div>
+              <Label>Discord</Label>
+              <Input
+                value={form.discord ?? ""}
+                onChange={(e) => setForm({ ...form, discord: e.target.value })}
+                placeholder="Ex: nkyy#0001"
+              />
+            </div>
+            <div>
+              <Label>Rota preferida</Label>
+              <Select
+                value={form.lane ?? "flex"}
+                onValueChange={(v) => setForm({ ...form, lane: v as Member["lane"] })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LANE_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Pokémon Main</Label>
+              <PokemonPicker
+                value={form.main_pokemon ?? null}
+                onChange={(v) => setForm({ ...form, main_pokemon: v })}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Notas pessoais</Label>
+              <Textarea
+                rows={4}
+                value={form.notes ?? ""}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Estilo de jogo, horários, observações..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setForm(m); setEditOpen(false); }}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => saveMut.mutate()}
+              disabled={saveMut.isPending}
+              className="bg-gradient-primary shadow-glow uppercase tracking-wider"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveMut.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <section className="space-y-4">
         <div className="flex items-end justify-between flex-wrap gap-2">
@@ -409,5 +463,17 @@ function MiniStat({
         <Icon className={`h-5 w-5 opacity-50 ${color}`} />
       </div>
     </Card>
+  );
+}
+
+function InfoItem({ icon: Icon, label, value, mono }: { icon: any; label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+      <div className={`mt-1 text-sm text-foreground/90 truncate ${mono ? "font-mono" : ""}`}>{value}</div>
+    </div>
   );
 }
