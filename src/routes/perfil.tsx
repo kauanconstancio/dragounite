@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { PokemonPicker } from "@/components/PokemonPicker";
 import { PokemonImage } from "@/components/PokemonImage";
 import { Badge } from "@/components/ui/badge";
 import { LANE_LABEL, ROLE_COLORS, ROLE_LABEL } from "@/lib/pokemon";
-import { UserCircle, Save, BarChart3, Crosshair, Trophy, Star, TrendingUp } from "lucide-react";
+import { UserCircle, Save, BarChart3, Crosshair, Trophy, Star, TrendingUp, Pencil, Gamepad2, MessageSquare, Hash, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { aggregatePlayer, kdaTimeline, playerWinRate, topPokemon, type PerfRow } from "@/lib/player-stats";
 
