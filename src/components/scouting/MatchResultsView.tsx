@@ -236,15 +236,15 @@ function TeamBlock({
         </div>
       ) : (
         <div className="overflow-x-auto bg-card/40">
-          <table className="w-full text-sm sm:min-w-0">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border/40">
                 <th className="text-left font-medium px-3 py-2">Player</th>
                 <th className="text-center font-medium px-2 py-2">KOs</th>
                 <th className="text-center font-medium px-2 py-2">AST</th>
-                <th className="text-center font-medium px-2 py-2 hidden sm:table-cell">DMG</th>
-                <th className="text-center font-medium px-2 py-2 hidden sm:table-cell">TKN</th>
-                <th className="text-center font-medium px-2 py-2 hidden sm:table-cell">HEAL</th>
+                <th className="text-center font-medium px-2 py-2">DMG</th>
+                <th className="text-center font-medium px-2 py-2">TKN</th>
+                <th className="text-center font-medium px-2 py-2">HEAL</th>
                 <th className="text-center font-medium px-2 py-2">PTS</th>
                 <th className="text-center font-medium px-2 py-2">MVP</th>
               </tr>
@@ -266,9 +266,9 @@ function TeamBlock({
                   </td>
                   <td className="px-2 py-2 text-center font-display tabular-nums">{r.kills}</td>
                   <td className="px-2 py-2 text-center font-display tabular-nums">{r.assists}</td>
-                  <td className="px-2 py-2 text-center font-display tabular-nums hidden sm:table-cell text-rose-400">{fmtK(r.damage_dealt)}</td>
-                  <td className="px-2 py-2 text-center font-display tabular-nums hidden sm:table-cell text-sky-400">{fmtK(r.damage_taken)}</td>
-                  <td className="px-2 py-2 text-center font-display tabular-nums hidden sm:table-cell text-emerald-400">{fmtK(r.healing)}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums text-rose-400">{fmtK(r.damage_dealt)}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums text-sky-400">{fmtK(r.damage_taken)}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums text-emerald-400">{fmtK(r.healing)}</td>
                   <td className={cn(
                     "px-2 py-2 text-center font-display tabular-nums font-semibold",
                     side === "ally" ? "text-primary" : "text-destructive",
