@@ -337,7 +337,7 @@ function PlannerPage() {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="font-display text-5xl tracking-wider">
+        <h1 className="font-display text-3xl sm:text-5xl tracking-wider">
           BATTLE <span className="text-gold">PLANNER</span>
         </h1>
         <p className="text-muted-foreground text-sm max-w-2xl mx-auto leading-relaxed">

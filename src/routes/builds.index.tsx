@@ -70,7 +70,7 @@ function BuildsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-5xl tracking-wider">
+        <h1 className="font-display text-3xl sm:text-5xl tracking-wider">
           BUILDS & <span className="text-gold">GUIAS</span>
         </h1>
         <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">

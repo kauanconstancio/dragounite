@@ -356,7 +356,7 @@ function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-5xl tracking-wider">
+        <h1 className="font-display text-3xl sm:text-5xl tracking-wider">
           BATTLE <span className="text-gold">DASHBOARD</span>
         </h1>
         <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">
