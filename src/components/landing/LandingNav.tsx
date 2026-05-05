@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Flame } from "lucide-react";
+import dragouniteLogo from "@/assets/dragounite-logo.png";
 
 export function LandingNav() {
   return (
