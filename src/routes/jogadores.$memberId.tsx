@@ -113,7 +113,7 @@ function PlayerPage() {
             )}
           </div>
           <div className="flex-1">
-            <h1 className="font-display text-4xl tracking-wider">{member?.name ?? "—"}</h1>
+            <h1 className="font-display text-2xl sm:text-4xl tracking-wider">{member?.name ?? "—"}</h1>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               {member?.ign && <Badge variant="outline" className="border-border">@{member.ign}</Badge>}
               {member?.lane && <Badge variant="outline" className="border-primary/40 text-primary uppercase tracking-wider">{LANE_LABEL[member.lane as keyof typeof LANE_LABEL]}</Badge>}

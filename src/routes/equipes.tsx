@@ -57,7 +57,7 @@ function EquipesPage() {
           <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
             Organização
           </div>
-          <h1 className="font-display text-4xl tracking-wider">
+          <h1 className="font-display text-2xl sm:text-4xl tracking-wider">
             MINHAS <span className="text-gold">EQUIPES</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-2">

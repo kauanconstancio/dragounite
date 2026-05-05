@@ -169,7 +169,7 @@ function PerfilPage() {
     <div className="max-w-3xl mx-auto space-y-8">
       <header>
         <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Conta</div>
-        <h1 className="font-display text-4xl tracking-wider">
+        <h1 className="font-display text-2xl sm:text-4xl tracking-wider">
           MEU <span className="text-gold">PERFIL</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
