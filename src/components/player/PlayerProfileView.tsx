@@ -423,3 +423,22 @@ function InfoItem({ icon: Icon, label, value, mono }: { icon: any; label: string
     </div>
   );
 }
+
+function KdaCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-center min-w-[28px]">
+      <div className="font-display text-base sm:text-lg leading-none tabular-nums">{value}</div>
+      <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+function StatCell({ label, value, color }: { label: string; value: number; color: string }) {
+  const formatted = value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k` : value.toString();
+  return (
+    <div className="text-center min-w-[40px]">
+      <div className={`font-display text-base sm:text-lg leading-none tabular-nums ${color}`}>{formatted}</div>
+      <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">{label}</div>
+    </div>
+  );
+}
