@@ -141,6 +141,7 @@ function PerfilPage() {
       qc.invalidateQueries({ queryKey: ["members"] });
       qc.invalidateQueries({ queryKey: ["profile-complete-check"] });
       toast.success("Perfil atualizado");
+      setEditOpen(false);
     },
     onError: (e: any) => toast.error(e.message),
   });
