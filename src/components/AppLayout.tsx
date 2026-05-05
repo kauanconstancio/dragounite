@@ -333,11 +333,22 @@ function MobileTeamTitle() {
 
 function MobileNav({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
+  const { user, roles, signOut, isSuperAdmin } = useAuth();
   const sections: { label: string; items: { to: string; label: string; icon: any }[] }[] = [
     { label: "Principal", items: main },
     { label: "Operação", items: operacao },
     { label: "Estratégia", items: estrategia },
   ];
+  const accountItems: { to: string; label: string; icon: any }[] = [
+    { to: "/perfil", label: "Meu perfil", icon: UserCircle },
+    { to: "/equipes", label: "Minhas equipes", icon: Shield },
+  ];
+  if (roles.includes("coach") || isSuperAdmin) {
+    accountItems.push({ to: "/admin", label: "Admin equipe", icon: Shield });
+  }
+  if (isSuperAdmin) {
+    accountItems.push({ to: "/staff", label: "Staff Console", icon: Shield });
+  }
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
