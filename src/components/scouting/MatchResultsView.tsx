@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { type PerfRow } from "@/lib/player-stats";
 import { PokemonImage } from "@/components/PokemonImage";
-import { Crown, Swords, HandHeart, Trophy, ThumbsUp, UserPlus, UserMinus, AlertCircle } from "lucide-react";
+import { Crown, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Member = { id: string; name: string; ign: string | null };
@@ -27,7 +27,23 @@ type OppRow = {
   notes: string | null;
 };
 
-type Tab = "details" | "battle";
+type NormalizedRow = {
+  id: string;
+  name: string;
+  pokemon: string | null;
+  kills: number;
+  assists: number;
+  score: number;
+  damage_dealt: number;
+  damage_taken: number;
+  healing: number;
+  isMvp: boolean;
+};
+
+function fmtK(n: number) {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return n.toLocaleString("pt-BR");
+}
 
 export function MatchResultsView({
   scrimId,
@@ -39,7 +55,6 @@ export function MatchResultsView({
   opponentName: string;
 }) {
   const [game, setGame] = useState(1);
-  const [tab, setTab] = useState<Tab>("details");
   const { team } = useCurrentTeam();
   const teamId = team?.id;
 
@@ -85,15 +100,6 @@ export function MatchResultsView({
   const allyWon = allyTotal > oppTotal && (allyTotal > 0 || oppTotal > 0);
   const oppWon = oppTotal > allyTotal && (allyTotal > 0 || oppTotal > 0);
 
-  // Totals for percentage bars on battle tab
-  const allyDmgTotal = allyGame.reduce((s, r) => s + (r.damage_dealt || 0), 0);
-  const allyTakenTotal = allyGame.reduce((s, r) => s + (r.damage_taken || 0), 0);
-  const allyHealTotal = allyGame.reduce((s, r) => s + (r.healing || 0), 0);
-  const oppDmgTotal = oppGame.reduce((s, r) => s + (r.damage_dealt || 0), 0);
-  const oppTakenTotal = oppGame.reduce((s, r) => s + (r.damage_taken || 0), 0);
-  const oppHealTotal = oppGame.reduce((s, r) => s + (r.healing || 0), 0);
-
-  // MVP: highest score on each side
   const allyMvpId = allyGame.reduce<string | null>((best, r) => {
     if (!best) return r.id;
     const cur = allyGame.find((x) => x.id === best);
@@ -104,6 +110,35 @@ export function MatchResultsView({
     const cur = oppGame.find((x) => x.id === best);
     return r.score > (cur?.score ?? 0) ? r.id : best;
   }, null);
+
+  const allyRows: NormalizedRow[] = allyGame.map((r) => {
+    const m = r.member_id ? memberMap.get(r.member_id) : null;
+    return {
+      id: r.id,
+      name: m?.ign || m?.name || r.player_name || "Convidado",
+      pokemon: r.pokemon,
+      kills: r.kills,
+      assists: r.assists,
+      score: r.score,
+      damage_dealt: r.damage_dealt,
+      damage_taken: r.damage_taken,
+      healing: r.healing,
+      isMvp: r.is_mvp || r.id === allyMvpId,
+    };
+  });
+
+  const oppRows: NormalizedRow[] = oppGame.map((r) => ({
+    id: r.id,
+    name: r.player_name,
+    pokemon: r.pokemon,
+    kills: r.kills,
+    assists: r.assists,
+    score: r.score,
+    damage_dealt: r.damage_dealt,
+    damage_taken: r.damage_taken,
+    healing: r.healing,
+    isMvp: r.id === oppMvpId,
+  }));
 
   return (
     <div className="space-y-4">
@@ -124,248 +159,135 @@ export function MatchResultsView({
             Jogo {g}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-1 rounded-md border border-border p-1">
-          <TabButton active={tab === "details"} onClick={() => setTab("details")}>Detalhes</TabButton>
-          <TabButton active={tab === "battle"} onClick={() => setTab("battle")}>Dados de batalha</TabButton>
-        </div>
       </div>
 
-      {/* Header banner */}
-      <div className="grid grid-cols-2 gap-px bg-border rounded-lg overflow-hidden border border-border">
-        <div className={cn(
-          "px-5 py-3 flex items-center justify-between",
-          allyWon ? "bg-gradient-to-r from-primary/30 to-primary/10" : "bg-card/60",
-        )}>
-          <div className="font-display text-xl tracking-widest">
-            <span className={cn(allyWon && "text-primary")}>
-              {allyWon ? "VITÓRIA" : oppWon ? "DERROTA" : "—"}
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Nosso time</span>
-            <span className="font-display text-3xl text-primary tabular-nums">{allyTotal}</span>
-          </div>
-        </div>
-        <div className={cn(
-          "px-5 py-3 flex items-center justify-between",
-          oppWon ? "bg-gradient-to-l from-destructive/30 to-destructive/10" : "bg-card/60",
-        )}>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl text-destructive tabular-nums">{oppTotal}</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{opponentName || "Oponente"}</span>
-          </div>
-          <div className="font-display text-xl tracking-widest">
-            <span className={cn(oppWon && "text-destructive")}>
-              {oppWon ? "VITÓRIA" : allyWon ? "DERROTA" : "—"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Two columns of player rows */}
-      <div className="grid grid-cols-2 gap-px bg-border rounded-lg overflow-hidden border border-border">
-        {/* Ally column */}
-        <div className={cn(
-          "p-2 space-y-1.5",
-          allyWon ? "bg-primary/10" : "bg-card/40",
-        )}>
-          {tab === "details" && <DetailsHeader side="ally" />}
-          {tab === "battle" && <BattleHeader side="ally" />}
-          {allyGame.length === 0 && <EmptyState side="ally" />}
-          {allyGame.map((r) => {
-            const m = r.member_id ? memberMap.get(r.member_id) : null;
-            const display = m?.ign || m?.name || r.player_name || "Convidado";
-            const isMvp = r.is_mvp || r.id === allyMvpId;
-            return tab === "details" ? (
-              <DetailsRow
-                key={r.id}
-                side="ally"
-                name={display}
-                pokemon={r.pokemon}
-                score={r.score}
-                kills={r.kills}
-                assists={r.assists}
-                isMvp={isMvp}
-              />
-            ) : (
-              <BattleRow
-                key={r.id}
-                side="ally"
-                name={display}
-                pokemon={r.pokemon}
-                damageDealt={r.damage_dealt}
-                damageTaken={r.damage_taken}
-                healing={r.healing}
-                dealtTotal={allyDmgTotal}
-                takenTotal={allyTakenTotal}
-                healTotal={allyHealTotal}
-              />
-            );
-          })}
-        </div>
-
-        {/* Opp column */}
-        <div className={cn(
-          "p-2 space-y-1.5",
-          oppWon ? "bg-destructive/10" : "bg-card/40",
-        )}>
-          {tab === "details" && <DetailsHeader side="opp" />}
-          {tab === "battle" && <BattleHeader side="opp" />}
-          {oppGame.length === 0 && <EmptyState side="opp" />}
-          {oppGame.map((r) => {
-            const isMvp = r.id === oppMvpId;
-            return tab === "details" ? (
-              <DetailsRow
-                key={r.id}
-                side="opp"
-                name={r.player_name}
-                pokemon={r.pokemon}
-                score={r.score}
-                kills={r.kills}
-                assists={r.assists}
-                isMvp={isMvp}
-              />
-            ) : (
-              <BattleRow
-                key={r.id}
-                side="opp"
-                name={r.player_name}
-                pokemon={r.pokemon}
-                damageDealt={r.damage_dealt}
-                damageTaken={r.damage_taken}
-                healing={r.healing}
-                dealtTotal={oppDmgTotal}
-                takenTotal={oppTakenTotal}
-                healTotal={oppHealTotal}
-              />
-            );
-          })}
-        </div>
+      <div className="space-y-3">
+        <TeamBlock
+          label={team?.name || "Nosso time"}
+          score={allyTotal}
+          won={allyWon}
+          lost={oppWon}
+          rows={allyRows}
+          side="ally"
+        />
+        <TeamBlock
+          label={opponentName || "Oponente"}
+          score={oppTotal}
+          won={oppWon}
+          lost={allyWon}
+          rows={oppRows}
+          side="opp"
+        />
       </div>
     </div>
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "px-3 py-1 text-xs uppercase tracking-wider rounded transition-colors",
-        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function EmptyState({ side }: { side: "ally" | "opp" }) {
-  return (
-    <div className={cn(
-      "flex items-center justify-center gap-2 py-8 text-xs uppercase tracking-widest",
-      side === "ally" ? "text-primary/60" : "text-destructive/60",
-    )}>
-      <AlertCircle className="h-4 w-4" /> Sem dados
-    </div>
-  );
-}
-
-function DetailsHeader({ side }: { side: "ally" | "opp" }) {
-  const color = side === "ally" ? "text-primary" : "text-destructive";
-  return (
-    <div className={cn("flex items-center gap-3 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground", color)}>
-      <span className="flex-1 min-w-0" />
-      <span className="w-12 flex items-center justify-center"><Trophy className="h-3.5 w-3.5" /></span>
-      <span className="w-10 flex items-center justify-center"><Swords className="h-3.5 w-3.5" /></span>
-      <span className="w-10 flex items-center justify-center"><HandHeart className="h-3.5 w-3.5" /></span>
-      <span className="w-10 text-center">MVP</span>
-    </div>
-  );
-}
-
-function DetailsRow({
-  side, name, pokemon, score, kills, assists, isMvp,
+function TeamBlock({
+  label, score, won, lost, rows, side,
 }: {
-  side: "ally" | "opp";
-  name: string;
-  pokemon: string | null;
+  label: string;
   score: number;
-  kills: number;
-  assists: number;
-  isMvp: boolean;
-}) {
-  const accent = side === "ally" ? "text-primary" : "text-destructive";
-  return (
-    <div className={cn(
-      "flex items-center gap-3 px-2 py-2 rounded-md",
-      side === "ally" ? "bg-primary/5 hover:bg-primary/10" : "bg-destructive/5 hover:bg-destructive/10",
-    )}>
-      <div className="flex flex-1 items-center gap-2 min-w-0">
-        <div className="w-8 h-8 shrink-0"><PokemonImage name={pokemon} /></div>
-        <span className="font-display text-sm tracking-wide truncate">{name}</span>
-      </div>
-      <span className={cn("font-display text-base tabular-nums w-12 text-center", accent)}>{score}</span>
-      <span className="font-display text-base tabular-nums w-10 text-center text-foreground">{kills}</span>
-      <span className="font-display text-base tabular-nums w-10 text-center text-foreground">{assists}</span>
-      <span className="w-10 flex items-center justify-center">
-        {isMvp ? <Crown className="h-4 w-4 text-gold" /> : <span className="text-muted-foreground/40">—</span>}
-      </span>
-    </div>
-  );
-}
-
-function BattleHeader({ side }: { side: "ally" | "opp" }) {
-  const color = side === "ally" ? "text-primary" : "text-destructive";
-  return (
-    <div className={cn("grid grid-cols-[1fr_repeat(3,minmax(0,1fr))] items-center gap-3 px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground", color)}>
-      <span />
-      <span className="text-center">Dano causado</span>
-      <span className="text-center">Dano sofrido</span>
-      <span className="text-center">Recuperação</span>
-    </div>
-  );
-}
-
-function BattleRow({
-  side, name, pokemon, damageDealt, damageTaken, healing, dealtTotal, takenTotal, healTotal,
-}: {
+  won: boolean;
+  lost: boolean;
+  rows: NormalizedRow[];
   side: "ally" | "opp";
-  name: string;
-  pokemon: string | null;
-  damageDealt: number;
-  damageTaken: number;
-  healing: number;
-  dealtTotal: number;
-  takenTotal: number;
-  healTotal: number;
 }) {
+  const accent = side === "ally" ? "primary" : "destructive";
   return (
     <div className={cn(
-      "grid grid-cols-[1fr_repeat(3,minmax(0,1fr))] items-center gap-3 px-2 py-2 rounded-md",
-      side === "ally" ? "bg-primary/5 hover:bg-primary/10" : "bg-destructive/5 hover:bg-destructive/10",
+      "rounded-lg border overflow-hidden",
+      side === "ally" ? "border-primary/30" : "border-destructive/30",
     )}>
-      <div className="flex items-center gap-2 min-w-0">
-        <div className="w-8 h-8 shrink-0"><PokemonImage name={pokemon} /></div>
-        <span className="font-display text-sm tracking-wide truncate">{name}</span>
+      {/* Header */}
+      <div className={cn(
+        "flex items-center gap-3 px-4 py-3 flex-wrap",
+        side === "ally" ? "bg-primary/10" : "bg-destructive/10",
+      )}>
+        <span className={cn(
+          "font-display text-lg sm:text-xl tracking-widest truncate",
+          side === "ally" ? "text-primary" : "text-destructive",
+        )}>
+          {label}
+        </span>
+        <span className={cn(
+          "font-display text-2xl sm:text-3xl tabular-nums",
+          side === "ally" ? "text-primary" : "text-destructive",
+        )}>
+          {score}
+        </span>
+        <span className={cn(
+          "ml-auto px-2 py-0.5 rounded text-[10px] uppercase tracking-widest font-semibold",
+          won && "bg-primary/20 text-primary",
+          lost && "bg-destructive/20 text-destructive",
+          !won && !lost && "bg-muted text-muted-foreground",
+        )}>
+          {won ? "Vitória" : lost ? "Derrota" : "—"}
+        </span>
       </div>
-      <BattleStat value={damageDealt} total={dealtTotal} barClass="bg-rose-500/70" />
-      <BattleStat value={damageTaken} total={takenTotal} barClass="bg-sky-500/70" />
-      <BattleStat value={healing} total={healTotal} barClass="bg-emerald-500/70" />
-    </div>
-  );
-}
 
-function BattleStat({ value, total, barClass }: { value: number; total: number; barClass: string }) {
-  const pct = total > 0 ? (value / total) * 100 : 0;
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="font-display text-sm tabular-nums">{value.toLocaleString("pt-BR")}</span>
-      <div className="w-full h-1.5 rounded-full bg-muted/40 overflow-hidden">
-        <div className={cn("h-full rounded-full", barClass)} style={{ width: `${Math.min(100, pct)}%` }} />
-      </div>
-      <span className="text-[9px] tabular-nums text-muted-foreground">{pct.toFixed(1)}%</span>
+      {/* Body */}
+      {rows.length === 0 ? (
+        <div className={cn(
+          "flex items-center justify-center gap-2 py-8 text-xs uppercase tracking-widest",
+          side === "ally" ? "text-primary/60" : "text-destructive/60",
+        )}>
+          <AlertCircle className="h-4 w-4" /> Sem dados
+        </div>
+      ) : (
+        <div className="overflow-x-auto bg-card/40">
+          <table className="w-full text-sm min-w-[520px] sm:min-w-0">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border/40">
+                <th className="text-left font-medium px-3 py-2">Player</th>
+                <th className="text-center font-medium px-2 py-2">KOs</th>
+                <th className="text-center font-medium px-2 py-2">AST</th>
+                <th className="text-center font-medium px-2 py-2 hidden sm:table-cell">DMG</th>
+                <th className="text-center font-medium px-2 py-2 hidden sm:table-cell">TKN</th>
+                <th className="text-center font-medium px-2 py-2 hidden sm:table-cell">HEAL</th>
+                <th className="text-center font-medium px-2 py-2">PTS</th>
+                <th className="text-center font-medium px-2 py-2">MVP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr
+                  key={r.id}
+                  className={cn(
+                    "border-b border-border/20 last:border-0",
+                    r.isMvp && (side === "ally" ? "bg-primary/5" : "bg-destructive/5"),
+                  )}
+                >
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 shrink-0"><PokemonImage name={r.pokemon} /></div>
+                      <span className="font-display text-sm tracking-wide truncate">{r.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums">{r.kills}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums">{r.assists}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums hidden sm:table-cell text-rose-400">{fmtK(r.damage_dealt)}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums hidden sm:table-cell text-sky-400">{fmtK(r.damage_taken)}</td>
+                  <td className="px-2 py-2 text-center font-display tabular-nums hidden sm:table-cell text-emerald-400">{fmtK(r.healing)}</td>
+                  <td className={cn(
+                    "px-2 py-2 text-center font-display tabular-nums font-semibold",
+                    side === "ally" ? "text-primary" : "text-destructive",
+                  )}>
+                    {r.score}
+                  </td>
+                  <td className="px-2 py-2 text-center">
+                    {r.isMvp ? (
+                      <Crown className="h-4 w-4 text-gold mx-auto" />
+                    ) : (
+                      <span className="text-muted-foreground/40">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
