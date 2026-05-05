@@ -395,6 +395,17 @@ export function PlayerProfileView({
           </Card>
         </>
       )}
+      {openScrim && (
+        <PerformanceDialog
+          scrimId={openScrim.id}
+          bestOf={openScrim.best_of ?? 1}
+          opponentId={openScrim.opponent_id ?? null}
+          opponentName={openScrim.opponent ?? ""}
+          status={openScrim.status ?? "completed"}
+          open={!!openScrim}
+          onOpenChange={(v) => { if (!v) setOpenScrim(null); }}
+        />
+      )}
     </div>
   );
 }
