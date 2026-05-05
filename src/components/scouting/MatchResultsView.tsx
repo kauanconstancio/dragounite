@@ -248,7 +248,7 @@ function TeamBlock({
                   key={r.id}
                   className={cn(
                     "border-b border-border/20 last:border-0",
-                    r.isMvp && (side === "ally" ? "bg-primary/5" : "bg-destructive/5"),
+                    r.isMvp && (tone === "win" ? "bg-emerald-500/5" : tone === "loss" ? "bg-rose-500/5" : "bg-muted/20"),
                   )}
                 >
                   <td className="px-3 py-2">
@@ -262,10 +262,7 @@ function TeamBlock({
                   <td className="px-2 py-2 text-center font-display tabular-nums text-rose-400">{fmtK(r.damage_dealt)}</td>
                   <td className="px-2 py-2 text-center font-display tabular-nums text-sky-400">{fmtK(r.damage_taken)}</td>
                   <td className="px-2 py-2 text-center font-display tabular-nums text-emerald-400">{fmtK(r.healing)}</td>
-                  <td className={cn(
-                    "px-2 py-2 text-center font-display tabular-nums font-semibold",
-                    side === "ally" ? "text-primary" : "text-destructive",
-                  )}>
+                  <td className={cn("px-2 py-2 text-center font-display tabular-nums font-semibold", textClass)}>
                     {r.score}
                   </td>
                   <td className="px-2 py-2 text-center">
