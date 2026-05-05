@@ -307,9 +307,14 @@ export function PlayerProfileView({
                       ? "text-foreground"
                       : "text-foreground/80";
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={r.id}
-                      className={`relative flex items-center gap-4 sm:gap-5 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors px-3 sm:px-4 py-3 border-l-4 ${accent}`}
+                      onClick={() => {
+                        const s = scrimsById.get(r.scrim_id);
+                        if (s) setOpenScrim(s);
+                      }}
+                      className={`w-full text-left relative flex items-center gap-4 sm:gap-5 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors px-3 sm:px-4 py-3 border-l-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${accent}`}
                     >
                       <div className="shrink-0 min-w-[100px]">
                         <div className="text-[11px] font-medium text-foreground tabular-nums capitalize">{dateLabel}</div>
