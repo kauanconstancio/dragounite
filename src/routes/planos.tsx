@@ -235,8 +235,8 @@ function PlanosPage() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/30">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/30">
+            <table className="w-full text-sm min-w-[640px]">
               <thead className="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400">
                 <tr>
                   <th className="text-left font-medium px-5 py-3">Jogo</th>
