@@ -1,5 +1,5 @@
-import { Flame, Instagram, Twitter, Youtube, ArrowRight } from "lucide-react";
-import dragonHero from "@/assets/dragon-hero.jpg";
+import { Instagram, Twitter, Youtube, ArrowRight } from "lucide-react";
+import dragouniteLogo from "@/assets/dragounite-logo.png";
 
 export function HeroSection() {
   return (
