@@ -374,20 +374,20 @@ function OpponentDialog({ editing, onSave, saving }: { editing: Opponent | null;
             <p className="text-xs text-muted-foreground italic">Nenhum jogador cadastrado.</p>
           )}
           {form.players.map((p, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 items-end">
-              <div className="col-span-4">
+            <div key={i} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-end rounded-md border border-border/40 sm:border-0 p-2 sm:p-0">
+              <div className="sm:col-span-4">
                 <Label className="text-[10px] uppercase tracking-widest">Nome / IGN</Label>
                 <Input value={p.name} onChange={(e) => updatePlayer(i, { name: e.target.value })} placeholder="IGN" />
               </div>
-              <div className="col-span-3">
+              <div className="sm:col-span-3">
                 <Label className="text-[10px] uppercase tracking-widest">Lane / Função</Label>
                 <Input value={p.role} onChange={(e) => updatePlayer(i, { role: e.target.value })} placeholder="Ex: Jungle" />
               </div>
-              <div className="col-span-4">
+              <div className="sm:col-span-4">
                 <Label className="text-[10px] uppercase tracking-widest">Notas</Label>
                 <Input value={p.notes} onChange={(e) => updatePlayer(i, { notes: e.target.value })} placeholder="Mains, estilo..." />
               </div>
-              <div className="col-span-1 flex justify-end">
+              <div className="sm:col-span-1 flex justify-end">
                 <Button type="button" size="icon" variant="ghost" onClick={() => removePlayer(i)} className="hover:text-destructive">
                   <Trash2 className="h-4 w-4" />
                 </Button>
