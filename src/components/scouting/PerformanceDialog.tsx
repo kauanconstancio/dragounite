@@ -54,6 +54,10 @@ type OppForm = {
 
 type OpponentDetail = { id: string; name: string; known_players: any[] | null };
 
+const EMPTY_MEMBERS: Member[] = [];
+const EMPTY_PERFS: PerfRow[] = [];
+const EMPTY_OPPS: OppForm[] = [];
+
 function emptyAlly(game: number, memberId = "", pokemon = ""): AllyForm {
   return {
     member_id: memberId, game_number: game, pokemon,
