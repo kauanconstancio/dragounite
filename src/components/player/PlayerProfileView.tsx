@@ -277,68 +277,83 @@ export function PlayerProfileView({
               )}
             </div>
             <div className="overflow-x-auto -mx-5 px-5">
-              <table className="w-full text-sm min-w-[640px]">
-                <thead>
-                  <tr className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
-                    <th className="text-left font-normal py-2 pr-3">Data</th>
-                    <th className="text-left font-normal py-2 pr-3">Oponente</th>
-                    <th className="text-left font-normal py-2 pr-3">Pokémon</th>
-                    <th className="text-center font-normal py-2 pr-3">G</th>
-                    <th className="text-center font-normal py-2 pr-3">Resultado</th>
-                    <th className="text-center font-normal py-2 pr-3">K/D/A</th>
-                    <th className="text-center font-normal py-2 pr-3">KDA</th>
-                    <th className="text-right font-normal py-2 pr-3">Score</th>
-                    <th className="text-center font-normal py-2">MVP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedRecent.map((r) => {
-                    const isWin = r.gameResult === "win";
-                    const isLoss = r.gameResult === "loss";
-                    return (
-                      <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                        <td className="py-2 pr-3 text-xs text-muted-foreground tabular-nums">
-                          {new Date(r.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
-                        </td>
-                        <td className="py-2 pr-3 truncate max-w-[140px]">{r.opponent}</td>
-                        <td className="py-2 pr-3">
-                          {r.pokemon ? (
-                            <div className="flex items-center gap-2">
-                              <div className="h-6 w-6 shrink-0"><PokemonImage name={r.pokemon} withRoleBg /></div>
-                              <span className="text-xs truncate">{r.pokemon}</span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="py-2 pr-3 text-center text-xs text-muted-foreground">{r.gameNumber}</td>
-                        <td className="py-2 pr-3 text-center">
-                          <Badge
-                            variant="outline"
-                            className={
-                              isWin
-                                ? "border-emerald-500/40 text-emerald-400"
-                                : isLoss
-                                  ? "border-rose-500/40 text-rose-400"
-                                  : "border-border text-muted-foreground"
-                            }
-                          >
-                            {isWin ? "V" : isLoss ? "D" : r.gameResult === "draw" ? "E" : "—"}
-                          </Badge>
-                        </td>
-                        <td className="py-2 pr-3 text-center text-xs tabular-nums">
-                          {r.kills}/{r.deaths}/{r.assists}
-                        </td>
-                        <td className="py-2 pr-3 text-center text-xs font-medium tabular-nums">{r.kda}</td>
-                        <td className="py-2 pr-3 text-right text-xs tabular-nums">{r.score.toLocaleString()}</td>
-                        <td className="py-2 text-center">
-                          {r.isMvp ? <Star className="h-4 w-4 text-gold inline-block fill-gold" /> : <span className="text-muted-foreground">—</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="space-y-2 min-w-[680px]">
+                {pagedRecent.map((r) => {
+                  const isWin = r.gameResult === "win";
+                  const isLoss = r.gameResult === "loss";
+                  const accent = isWin
+                    ? "border-l-emerald-500"
+                    : isLoss
+                      ? "border-l-rose-500"
+                      : "border-l-muted-foreground/30";
+                  const dateObj = new Date(r.date);
+                  const dateLabel = dateObj.toLocaleDateString("pt-BR", { month: "short", day: "2-digit" });
+                  const timeLabel = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+                  const scoreColor = r.isMvp
+                    ? "text-purple-400"
+                    : isWin
+                      ? "text-foreground"
+                      : "text-foreground/80";
+                  return (
+                    <div
+                      key={r.id}
+                      className={`relative flex items-center gap-4 sm:gap-5 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors px-3 sm:px-4 py-3 border-l-4 ${accent}`}
+                    >
+                      <div className="shrink-0 min-w-[100px]">
+                        <div className="text-[11px] font-medium text-foreground tabular-nums capitalize">{dateLabel}</div>
+                        <div className="text-[11px] text-muted-foreground tabular-nums">{timeLabel}</div>
+                        <div className="text-[10px] text-muted-foreground truncate mt-0.5 max-w-[110px]">{r.opponent}</div>
+                        <div className="text-[9px] uppercase tracking-widest text-muted-foreground/70 mt-0.5">
+                          Game {r.gameNumber}
+                        </div>
+                      </div>
+
+                      <div className="shrink-0">
+                        {r.pokemon ? (
+                          <div className="relative h-12 w-12 rounded-md overflow-hidden ring-1 ring-border">
+                            <PokemonImage name={r.pokemon} withRoleBg />
+                            {r.isMvp && (
+                              <div className="absolute bottom-0 right-0 bg-gold text-black text-[8px] font-bold px-1 leading-tight rounded-tl">
+                                MVP
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="h-12 w-12 rounded-md bg-muted" />
+                        )}
+                      </div>
+
+                      <div className="shrink-0 min-w-[80px] text-center">
+                        <div className={`font-display text-xl sm:text-2xl tabular-nums leading-none ${scoreColor}`}>
+                          {r.score.toLocaleString()}
+                        </div>
+                        <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1">Score</div>
+                        <div
+                          className={`text-[10px] font-bold tabular-nums mt-1 ${
+                            isWin ? "text-emerald-400" : isLoss ? "text-rose-400" : "text-muted-foreground"
+                          }`}
+                        >
+                          {isWin ? "VITÓRIA" : isLoss ? "DERROTA" : r.gameResult === "draw" ? "EMPATE" : "—"}
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 flex items-center gap-2">
+                        <KdaCell label="KO" value={r.kills} />
+                        <span className="text-muted-foreground/40 text-sm">/</span>
+                        <KdaCell label="AST" value={r.assists} />
+                        <span className="text-muted-foreground/40 text-sm">/</span>
+                        <KdaCell label="DTH" value={r.deaths} />
+                      </div>
+
+                      <div className="shrink-0 ml-auto flex items-center gap-4 sm:gap-5">
+                        <StatCell label="DMG" value={r.damage} color="text-rose-400" />
+                        {r.damageTaken > 0 && <StatCell label="TKN" value={r.damageTaken} color="text-purple-400" />}
+                        {r.healing > 0 && <StatCell label="HEAL" value={r.healing} color="text-emerald-400" />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             {recent.length > PAGE_SIZE && (
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
@@ -405,6 +420,25 @@ function InfoItem({ icon: Icon, label, value, mono }: { icon: any; label: string
         {label}
       </div>
       <div className={`mt-1 text-sm text-foreground/90 truncate ${mono ? "font-mono" : ""}`}>{value}</div>
+    </div>
+  );
+}
+
+function KdaCell({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-center min-w-[28px]">
+      <div className="font-display text-base sm:text-lg leading-none tabular-nums">{value}</div>
+      <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+function StatCell({ label, value, color }: { label: string; value: number; color: string }) {
+  const formatted = value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k` : value.toString();
+  return (
+    <div className="text-center min-w-[40px]">
+      <div className={`font-display text-base sm:text-lg leading-none tabular-nums ${color}`}>{formatted}</div>
+      <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">{label}</div>
     </div>
   );
 }

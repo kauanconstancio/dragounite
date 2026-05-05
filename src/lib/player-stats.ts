@@ -177,6 +177,8 @@ export function recentScrimsBreakdown(
         kda: kdaRatio(p.kills, p.deaths, p.assists),
         score: p.score,
         damage: p.damage_dealt,
+        damageTaken: p.damage_taken,
+        healing: p.healing,
         isMvp: p.is_mvp,
       };
     })
