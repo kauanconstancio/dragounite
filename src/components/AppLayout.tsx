@@ -290,45 +290,8 @@ export function AppLayout() {
             </div>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1 flex-wrap justify-end">
-            {main.map((item) => {
-              const active = isActive(location.pathname, item.to);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium uppercase tracking-wider transition-all ${
-                    active
-                      ? "bg-primary text-primary-foreground shadow-glow"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {item.label}
-                </Link>
-              );
-            })}
-
-            <NavGroup label="Operação" items={operacao} pathname={location.pathname} />
-            <NavGroup label="Estratégia" items={estrategia} pathname={location.pathname} />
-
-            <button
-              type="button"
-              onClick={toggleNotif}
-              title={notifEnabled ? "Desativar notificações" : "Ativar notificações"}
-              className="ml-2 h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
-            >
-              {notifEnabled ? <Bell className="h-3.5 w-3.5 text-gold" /> : <BellOff className="h-3.5 w-3.5" />}
-            </button>
-
-            <TeamSwitcher />
-            <AuthButton />
-          </nav>
-
-          {/* Mobile controls */}
-          <div className="flex lg:hidden items-center gap-1 shrink-0">
+          {/* Unified controls (hamburger menu for all viewports) */}
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={toggleNotif}
@@ -337,7 +300,7 @@ export function AppLayout() {
             >
               {notifEnabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />}
             </button>
-            <AuthButton />
+            <TeamSwitcher />
             <MobileNav pathname={location.pathname} />
           </div>
         </div>
@@ -370,11 +333,22 @@ function MobileTeamTitle() {
 
 function MobileNav({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
+  const { user, roles, signOut, isSuperAdmin } = useAuth();
   const sections: { label: string; items: { to: string; label: string; icon: any }[] }[] = [
     { label: "Principal", items: main },
     { label: "Operação", items: operacao },
     { label: "Estratégia", items: estrategia },
   ];
+  const accountItems: { to: string; label: string; icon: any }[] = [
+    { to: "/perfil", label: "Meu perfil", icon: UserCircle },
+    { to: "/equipes", label: "Minhas equipes", icon: Shield },
+  ];
+  if (roles.includes("coach") || isSuperAdmin) {
+    accountItems.push({ to: "/admin", label: "Admin equipe", icon: Shield });
+  }
+  if (isSuperAdmin) {
+    accountItems.push({ to: "/staff", label: "Staff Console", icon: Shield });
+  }
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -424,6 +398,57 @@ function MobileNav({ pathname }: { pathname: string }) {
               </div>
             </div>
           ))}
+
+          {user && (
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2 px-1">
+                Conta
+              </div>
+              <div className="px-1 pb-2 text-[11px] text-muted-foreground truncate">{user.email}</div>
+              <div className="flex flex-col gap-1">
+                {accountItems.map((item) => {
+                  const active = isActive(pathname, item.to);
+                  const Icon = item.icon;
+                  return (
+                    <SheetClose asChild key={item.to}>
+                      <Link
+                        to={item.to}
+                        className={`flex items-center gap-3 rounded-md px-3 py-3 text-[13px] font-medium uppercase tracking-wider transition-all ${
+                          active
+                            ? "bg-primary text-primary-foreground shadow-glow"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground active:bg-accent"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    className="flex items-center gap-3 rounded-md px-3 py-3 text-[13px] font-medium uppercase tracking-wider text-muted-foreground hover:bg-accent hover:text-foreground transition-all text-left"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" />
+                    <span className="truncate">Sair</span>
+                  </button>
+                </SheetClose>
+              </div>
+            </div>
+          )}
+
+          {!user && (
+            <SheetClose asChild>
+              <Link
+                to="/auth"
+                className="flex items-center gap-3 rounded-md border border-border px-3 py-3 text-[13px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+              >
+                <LogIn className="h-4 w-4 shrink-0" /> Entrar
+              </Link>
+            </SheetClose>
+          )}
         </nav>
       </SheetContent>
     </Sheet>
