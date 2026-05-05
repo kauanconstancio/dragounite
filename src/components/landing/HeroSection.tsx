@@ -100,7 +100,6 @@ export function HeroSection() {
             <style>{`@keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }`}</style>
           </div>
         </div>
-        </div>
       </div>
 
       {/* Stat strip */}
