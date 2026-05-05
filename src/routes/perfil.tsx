@@ -69,9 +69,9 @@ function PerfilPage() {
     queryKey: ["scrims-for-perfil", memberId],
     queryFn: async () => {
       if (!memberId) return [];
-      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result, opponent");
+      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result, opponent, best_of, opponent_id, status");
       if (error) throw error;
-      return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending"; opponent: string }[];
+      return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending"; opponent: string; best_of: number; opponent_id: string | null; status: "scheduled" | "completed" | "cancelled" }[];
     },
     enabled: !!memberId,
   });
