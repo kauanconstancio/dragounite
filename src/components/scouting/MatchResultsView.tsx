@@ -193,34 +193,30 @@ function TeamBlock({
   rows: NormalizedRow[];
   side: "ally" | "opp";
 }) {
-  const accent = side === "ally" ? "primary" : "destructive";
+  // Color scheme based on win/loss, not side. Winner = emerald, loser = red, tie = muted.
+  const tone = won ? "win" : lost ? "loss" : "tie";
+  const borderClass = tone === "win" ? "border-emerald-500/40" : tone === "loss" ? "border-rose-500/30" : "border-border/40";
+  const headerBgClass = tone === "win" ? "bg-emerald-500/15" : tone === "loss" ? "bg-rose-500/10" : "bg-muted/40";
+  const textClass = tone === "win" ? "text-emerald-400" : tone === "loss" ? "text-rose-400" : "text-muted-foreground";
+  const badgeClass = tone === "win" ? "bg-emerald-500/25 text-emerald-300" : tone === "loss" ? "bg-rose-500/20 text-rose-300" : "bg-muted text-muted-foreground";
   return (
-    <div className={cn(
-      "rounded-lg border overflow-hidden",
-      side === "ally" ? "border-primary/30" : "border-destructive/30",
-    )}>
+    <div className={cn("rounded-lg border overflow-hidden", borderClass)}>
       {/* Header */}
-      <div className={cn(
-        "flex items-center gap-3 px-4 py-3 flex-wrap",
-        side === "ally" ? "bg-primary/10" : "bg-destructive/10",
-      )}>
-        <span className={cn(
-          "font-display text-lg sm:text-xl tracking-widest truncate",
-          side === "ally" ? "text-primary" : "text-destructive",
-        )}>
+      <div className={cn("flex items-center gap-3 px-4 py-3 flex-wrap", headerBgClass)}>
+        {side === "ally" && (
+          <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest font-semibold bg-primary/20 text-primary">
+            Nós
+          </span>
+        )}
+        <span className={cn("font-display text-lg sm:text-xl tracking-widest truncate", textClass)}>
           {label}
         </span>
-        <span className={cn(
-          "font-display text-2xl sm:text-3xl tabular-nums",
-          side === "ally" ? "text-primary" : "text-destructive",
-        )}>
+        <span className={cn("font-display text-2xl sm:text-3xl tabular-nums", textClass)}>
           {score}
         </span>
         <span className={cn(
           "ml-auto px-2 py-0.5 rounded text-[10px] uppercase tracking-widest font-semibold",
-          won && "bg-primary/20 text-primary",
-          lost && "bg-destructive/20 text-destructive",
-          !won && !lost && "bg-muted text-muted-foreground",
+          badgeClass,
         )}>
           {won ? "Vitória" : lost ? "Derrota" : "—"}
         </span>
@@ -228,10 +224,7 @@ function TeamBlock({
 
       {/* Body */}
       {rows.length === 0 ? (
-        <div className={cn(
-          "flex items-center justify-center gap-2 py-8 text-xs uppercase tracking-widest",
-          side === "ally" ? "text-primary/60" : "text-destructive/60",
-        )}>
+        <div className={cn("flex items-center justify-center gap-2 py-8 text-xs uppercase tracking-widest", textClass, "opacity-60")}>
           <AlertCircle className="h-4 w-4" /> Sem dados
         </div>
       ) : (
