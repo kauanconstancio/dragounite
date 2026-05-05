@@ -362,7 +362,7 @@ function MobileNav({ pathname }: { pathname: string }) {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[88vw] max-w-[340px] sm:max-w-sm overflow-y-auto p-0 flex flex-col"
+        className="w-[88vw] max-w-[340px] sm:max-w-sm h-screen max-h-screen inset-y-0 top-0 bottom-0 overflow-y-auto p-0 flex flex-col"
       >
         <SheetHeader className="px-5 pt-5 pb-3 border-b border-border/60 shrink-0">
           <SheetTitle className="font-display text-xl tracking-wider uppercase text-left">
