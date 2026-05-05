@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Flame } from "lucide-react";
+import dragouniteLogo from "@/assets/dragounite-logo.png";
 
 export function LandingFooter() {
   return (
@@ -7,8 +7,8 @@ export function LandingFooter() {
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.5)]">
-              <Flame className="h-4 w-4 text-white" strokeWidth={2.5} />
+            <div className="h-9 w-9 flex items-center justify-center">
+              <img src={dragouniteLogo} alt="Dragounite" className="h-full w-full object-contain drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
             </div>
             <span className="font-black text-white uppercase tracking-tight">
               Drago<span className="text-red-500">unite</span>

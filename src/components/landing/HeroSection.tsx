@@ -1,5 +1,5 @@
-import { Flame, Instagram, Twitter, Youtube, ArrowRight } from "lucide-react";
-import dragonHero from "@/assets/dragon-hero.jpg";
+import { Instagram, Twitter, Youtube, ArrowRight } from "lucide-react";
+import dragouniteLogo from "@/assets/dragounite-logo.png";
 
 export function HeroSection() {
   return (
@@ -82,38 +82,22 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Right: hero image */}
+        {/* Right: hero logo */}
         <div className="lg:col-span-5 relative">
-          <div className="relative aspect-square max-w-md mx-auto">
+          <div className="relative aspect-square max-w-md mx-auto flex items-center justify-center">
             {/* Glow rings */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-600/40 via-red-700/20 to-transparent blur-2xl" />
-            <div className="absolute -inset-4 rounded-[2rem] border border-red-500/20" />
-            <div className="absolute -inset-8 rounded-[2.5rem] border border-red-500/10" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-600/50 via-red-700/30 to-transparent blur-3xl" />
+            <div className="absolute inset-8 rounded-full border border-red-500/20" />
+            <div className="absolute inset-0 rounded-full border border-red-500/10" />
 
-            <div className="relative h-full w-full overflow-hidden rounded-3xl border border-red-500/30 shadow-[0_30px_80px_-20px_rgba(220,38,38,0.5)]">
-              <img
-                src={dragonHero}
-                alt="Dragounite — esports team key visual"
-                width={1024}
-                height={1024}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-red-950/40 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0f0d0e] via-[#0f0d0e]/70 to-transparent" />
-              <div className="absolute bottom-5 left-5 right-5 flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-lg">
-                  <Flame className="h-4 w-4 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-red-300 font-bold">
-                    Esports
-                  </div>
-                  <div className="text-sm font-black text-white uppercase tracking-tight">
-                    Time Dragounite
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img
+              src={dragouniteLogo}
+              alt="Dragounite — logo do time"
+              width={1024}
+              height={1024}
+              className="relative h-[78%] w-[78%] object-contain drop-shadow-[0_20px_60px_rgba(220,38,38,0.6)] animate-[float_6s_ease-in-out_infinite]"
+            />
+            <style>{`@keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }`}</style>
           </div>
         </div>
       </div>
