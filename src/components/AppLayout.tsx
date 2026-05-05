@@ -290,45 +290,8 @@ export function AppLayout() {
             </div>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1 flex-wrap justify-end">
-            {main.map((item) => {
-              const active = isActive(location.pathname, item.to);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium uppercase tracking-wider transition-all ${
-                    active
-                      ? "bg-primary text-primary-foreground shadow-glow"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {item.label}
-                </Link>
-              );
-            })}
-
-            <NavGroup label="Operação" items={operacao} pathname={location.pathname} />
-            <NavGroup label="Estratégia" items={estrategia} pathname={location.pathname} />
-
-            <button
-              type="button"
-              onClick={toggleNotif}
-              title={notifEnabled ? "Desativar notificações" : "Ativar notificações"}
-              className="ml-2 h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
-            >
-              {notifEnabled ? <Bell className="h-3.5 w-3.5 text-gold" /> : <BellOff className="h-3.5 w-3.5" />}
-            </button>
-
-            <TeamSwitcher />
-            <AuthButton />
-          </nav>
-
-          {/* Mobile controls */}
-          <div className="flex lg:hidden items-center gap-1 shrink-0">
+          {/* Unified controls (hamburger menu for all viewports) */}
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={toggleNotif}
@@ -337,7 +300,7 @@ export function AppLayout() {
             >
               {notifEnabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />}
             </button>
-            <AuthButton />
+            <TeamSwitcher />
             <MobileNav pathname={location.pathname} />
           </div>
         </div>
