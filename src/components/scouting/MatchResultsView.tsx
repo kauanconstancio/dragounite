@@ -236,7 +236,7 @@ function TeamBlock({
         </div>
       ) : (
         <div className="overflow-x-auto bg-card/40">
-          <table className="w-full text-sm min-w-[520px] sm:min-w-0">
+          <table className="w-full text-sm sm:min-w-0">
             <thead>
               <tr className="text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border/40">
                 <th className="text-left font-medium px-3 py-2">Player</th>
