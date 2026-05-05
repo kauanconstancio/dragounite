@@ -465,3 +465,15 @@ function MiniStat({
     </Card>
   );
 }
+
+function InfoItem({ icon: Icon, label, value, mono }: { icon: any; label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+      <div className={`mt-1 text-sm text-foreground/90 truncate ${mono ? "font-mono" : ""}`}>{value}</div>
+    </div>
+  );
+}
