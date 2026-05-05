@@ -88,7 +88,7 @@ function PatchesPage() {
     <div className="space-y-8">
       <header className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="font-display text-5xl tracking-wider">
+          <h1 className="font-display text-3xl sm:text-5xl tracking-wider">
             PATCH <span className="text-gold">NOTES</span>
           </h1>
           <p className="mt-2 text-muted-foreground uppercase tracking-widest text-xs">

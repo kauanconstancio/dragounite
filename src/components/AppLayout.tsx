@@ -306,7 +306,7 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className={`flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-6 sm:py-10 ${isPresentation ? "presentation-main" : ""}`}>
+      <main className={`flex-1 mx-auto w-full max-w-[1400px] min-w-0 px-3 sm:px-6 py-5 sm:py-10 overflow-x-hidden ${isPresentation ? "presentation-main" : ""}`}>
         <Outlet />
       </main>
 
