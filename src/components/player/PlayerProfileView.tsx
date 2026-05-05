@@ -106,6 +106,9 @@ export function PlayerProfileView({
 
   const hasGames = agg.games > 0;
 
+  const scrimsById = useMemo(() => new Map(scrims.map((s) => [s.id, s])), [scrims]);
+  const [openScrim, setOpenScrim] = useState<Scrim | null>(null);
+
   return (
     <div className="space-y-6">
       {/* HERO */}
