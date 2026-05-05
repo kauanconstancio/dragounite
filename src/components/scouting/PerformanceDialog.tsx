@@ -108,7 +108,7 @@ export function PerformanceDialog({
   const [opps, setOpps] = useState<OppForm[]>([]);
   const [game, setGame] = useState(1);
 
-  const { data: members = [] } = useQuery({
+  const membersQ = useQuery({
     queryKey: ["members-starters", teamId],
     queryFn: async () => {
       if (!teamId) return [] as Member[];
@@ -121,6 +121,7 @@ export function PerformanceDialog({
     },
     enabled: open && !!teamId,
   });
+  const members = membersQ.data ?? EMPTY_MEMBERS;
 
   const { data: opponent } = useQuery({
     queryKey: ["opponent-detail", opponentId],
@@ -135,7 +136,7 @@ export function PerformanceDialog({
     enabled: open && !!opponentId,
   });
 
-  const { data: allyExisting = [] } = useQuery({
+  const allyExistingQ = useQuery({
     queryKey: ["perfs-scrim", scrimId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -145,8 +146,9 @@ export function PerformanceDialog({
     },
     enabled: open,
   });
+  const allyExisting = allyExistingQ.data ?? EMPTY_PERFS;
 
-  const { data: oppExisting = [] } = useQuery({
+  const oppExistingQ = useQuery({
     queryKey: ["opp-perfs-scrim", scrimId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -156,6 +158,7 @@ export function PerformanceDialog({
     },
     enabled: open,
   });
+  const oppExisting = oppExistingQ.data ?? EMPTY_OPPS;
 
   const knownPlayers = useMemo(() => normalizeKnownPlayers(opponent?.known_players), [opponent]);
   const knownPlayerNames = useMemo(() => knownPlayers.map((p) => p.name), [knownPlayers]);
