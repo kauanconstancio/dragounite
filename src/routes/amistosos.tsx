@@ -223,7 +223,7 @@ function StatCard({ label, value, accent, icon: Icon }: any) {
       <div className="flex items-center justify-between">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground">{label}</div>
-          <div className={`font-display text-4xl mt-1 ${accent === "gold" ? "text-gold" : "text-primary"}`}>{value}</div>
+          <div className={`font-display text-2xl sm:text-4xl mt-1 ${accent === "gold" ? "text-gold" : "text-primary"}`}>{value}</div>
         </div>
         <Icon className={`h-8 w-8 ${accent === "gold" ? "text-gold" : "text-primary"} opacity-50`} />
       </div>
