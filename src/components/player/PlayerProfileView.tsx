@@ -55,7 +55,15 @@ export type PlayerProfileMember = {
   notes: string | null;
 };
 
-type Scrim = { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending"; opponent?: string };
+type Scrim = {
+  id: string;
+  scheduled_at: string;
+  result: "win" | "loss" | "draw" | "pending";
+  opponent?: string;
+  best_of?: number;
+  opponent_id?: string | null;
+  status?: "scheduled" | "completed" | "cancelled";
+};
 
 export function PlayerProfileView({
   member,
