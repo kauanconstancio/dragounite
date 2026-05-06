@@ -103,6 +103,24 @@ function DraftPage() {
     setStep((s) => s + 1);
   }
 
+  function undo() {
+    if (step === 0) return;
+    const prevStep = step - 1;
+    const slot = DRAFT_ORDER[prevStep];
+    setState((prev) => {
+      const next = { ...prev };
+      const key =
+        slot.side === "blue"
+          ? slot.phase === "ban" ? "blueBans" : "bluePicks"
+          : slot.phase === "ban" ? "orangeBans" : "orangePicks";
+      const arr = [...(next[key as keyof DraftState] as (string | null)[])];
+      arr[slot.index] = null;
+      (next as any)[key] = arr;
+      return next;
+    });
+    setStep(prevStep);
+  }
+
   function reset() {
     setState(INITIAL);
     setStep(0);
