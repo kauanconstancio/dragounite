@@ -52,6 +52,7 @@ import { TeamSwitcher } from "@/components/TeamSwitcher";
 const main = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/roster", label: "Roster", icon: Users },
+  { to: "/testes", label: "Testes", icon: UserCircle },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
 ];
 
