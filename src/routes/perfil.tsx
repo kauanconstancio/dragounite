@@ -119,7 +119,7 @@ function PerfilPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  if (profileQ.isLoading || memberQ.isLoading) {
+  if (memberQ.isLoading) {
     return <div className="text-center text-muted-foreground py-20 text-xs uppercase tracking-[0.3em]">Carregando perfil...</div>;
   }
 
