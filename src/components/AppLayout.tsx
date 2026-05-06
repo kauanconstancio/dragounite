@@ -161,25 +161,22 @@ export function AppLayout() {
   }, [loading, user, isStaffEmail, teamsLoading, activeTeam, isPublic, isProfileRoute, isTeamPickerRoute, isOnboardingRoute, navigate]);
 
   // First-login check: force profile completion (IGN, lane, main_pokemon required)
+  // Scoped to ACTIVE TEAM — each team has its own member entry.
   const { data: profileCheck } = useQuery({
-    queryKey: ["profile-complete-check", user?.id],
+    queryKey: ["profile-complete-check", user?.id, activeTeam?.id],
     queryFn: async () => {
-      if (!user) return null;
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("member_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!prof?.member_id) return { complete: true, hasMember: false };
+      if (!user || !activeTeam?.id) return null;
       const { data: m } = await supabase
         .from("members")
         .select("ign, lane, main_pokemon")
-        .eq("id", prof.member_id)
+        .eq("team_id", activeTeam.id)
+        .eq("user_id", user.id)
         .maybeSingle();
-      const complete = !!(m?.ign && m?.lane && m?.main_pokemon);
+      if (!m) return { complete: true, hasMember: false };
+      const complete = !!(m.ign && m.lane && m.main_pokemon);
       return { complete, hasMember: true };
     },
-    enabled: !!user && !isPublic,
+    enabled: !!user && !!activeTeam?.id && !isPublic,
     staleTime: 30_000,
   });
 
