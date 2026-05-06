@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,56 +25,55 @@ export const Route = createFileRoute("/perfil")({
 
 function PerfilPage() {
   const { user } = useAuth();
+  const { team } = useCurrentTeam();
   const qc = useQueryClient();
 
-  const profileQ = useQuery({
-    queryKey: ["my-profile", user?.id],
+  // Resolve member by ACTIVE TEAM (not by profiles.member_id which is global)
+  const memberQ = useQuery({
+    queryKey: ["my-member-in-team", user?.id, team?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user || !team?.id) return null;
       const { data, error } = await supabase
-        .from("profiles")
-        .select("member_id, display_name")
+        .from("members")
+        .select("*")
+        .eq("team_id", team.id)
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  const memberId = profileQ.data?.member_id ?? null;
-
-  const memberQ = useQuery({
-    queryKey: ["my-member", memberId],
-    queryFn: async () => {
-      if (!memberId) return null;
-      const { data, error } = await supabase.from("members").select("*").eq("id", memberId).maybeSingle();
-      if (error) throw error;
       return data as PlayerProfileMember | null;
     },
-    enabled: !!memberId,
+    enabled: !!user && !!team?.id,
   });
 
+  const memberId = memberQ.data?.id ?? null;
+
   const perfsQ = useQuery({
-    queryKey: ["my-perfs", memberId],
+    queryKey: ["my-perfs", memberId, team?.id],
     queryFn: async () => {
-      if (!memberId) return [] as PerfRow[];
-      const { data, error } = await supabase.from("match_performances").select("*").eq("member_id", memberId);
+      if (!memberId || !team?.id) return [] as PerfRow[];
+      const { data, error } = await supabase
+        .from("match_performances")
+        .select("*")
+        .eq("member_id", memberId)
+        .eq("team_id", team.id);
       if (error) throw error;
       return (data ?? []) as PerfRow[];
     },
-    enabled: !!memberId,
+    enabled: !!memberId && !!team?.id,
   });
 
   const scrimsQ = useQuery({
-    queryKey: ["scrims-for-perfil", memberId],
+    queryKey: ["scrims-for-perfil", team?.id],
     queryFn: async () => {
-      if (!memberId) return [];
-      const { data, error } = await supabase.from("scrims").select("id, scheduled_at, result, opponent, best_of, opponent_id, status");
+      if (!team?.id) return [];
+      const { data, error } = await supabase
+        .from("scrims")
+        .select("id, scheduled_at, result, opponent, best_of, opponent_id, status")
+        .eq("team_id", team.id);
       if (error) throw error;
       return data as { id: string; scheduled_at: string; result: "win" | "loss" | "draw" | "pending"; opponent: string; best_of: number; opponent_id: string | null; status: "scheduled" | "completed" | "cancelled" }[];
     },
-    enabled: !!memberId,
+    enabled: !!team?.id,
   });
 
   const [form, setForm] = useState<Partial<PlayerProfileMember>>({});
