@@ -109,8 +109,7 @@ function PerfilPage() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["my-member", memberId] });
-      qc.invalidateQueries({ queryKey: ["my-profile", user?.id] });
+      qc.invalidateQueries({ queryKey: ["my-member-in-team", user?.id, team?.id] });
       qc.invalidateQueries({ queryKey: ["members"] });
       qc.invalidateQueries({ queryKey: ["profile-complete-check"] });
       toast.success("Perfil atualizado");
