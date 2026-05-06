@@ -603,6 +603,51 @@ export type Database = {
           },
         ]
       }
+      player_tryouts: {
+        Row: {
+          created_at: string
+          discord: string | null
+          id: string
+          ign: string | null
+          lane: string | null
+          main_pokemon: string | null
+          name: string
+          notes: string | null
+          position: number
+          stage: Database["public"]["Enums"]["tryout_stage"]
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord?: string | null
+          id?: string
+          ign?: string | null
+          lane?: string | null
+          main_pokemon?: string | null
+          name: string
+          notes?: string | null
+          position?: number
+          stage?: Database["public"]["Enums"]["tryout_stage"]
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord?: string | null
+          id?: string
+          ign?: string | null
+          lane?: string | null
+          main_pokemon?: string | null
+          name?: string
+          notes?: string | null
+          position?: number
+          stage?: Database["public"]["Enums"]["tryout_stage"]
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1166,6 +1211,13 @@ export type Database = {
       staff_role: "owner" | "developer" | "finance" | "support" | "marketing"
       team_role: "coach" | "player" | "viewer"
       tier_rank: "S" | "A" | "B" | "C" | "D"
+      tryout_stage:
+        | "applied"
+        | "contacted"
+        | "tryout"
+        | "evaluation"
+        | "approved"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1313,6 +1365,14 @@ export const Constants = {
       staff_role: ["owner", "developer", "finance", "support", "marketing"],
       team_role: ["coach", "player", "viewer"],
       tier_rank: ["S", "A", "B", "C", "D"],
+      tryout_stage: [
+        "applied",
+        "contacted",
+        "tryout",
+        "evaluation",
+        "approved",
+        "rejected",
+      ],
     },
   },
 } as const
