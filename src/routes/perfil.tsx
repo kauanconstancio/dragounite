@@ -88,13 +88,18 @@ function PerfilPage() {
       if (!memberId) throw new Error("Sem vínculo com o roster.");
       const displayName = (form.name ?? "").trim();
       if (!displayName) throw new Error("Nome de exibição é obrigatório.");
+      const ign = form.ign?.trim() || null;
+      const main_pokemon = form.main_pokemon ?? null;
+      const lane = form.lane ?? "flex";
+      if (!ign) throw new Error("IGN é obrigatório.");
+      if (!main_pokemon) throw new Error("Pokémon main é obrigatório.");
       const payload = {
         name: displayName,
-        ign: form.ign?.trim() || null,
+        ign,
         game_id: form.game_id?.trim() || null,
         discord: form.discord?.trim() || null,
-        main_pokemon: form.main_pokemon ?? null,
-        lane: form.lane ?? null,
+        main_pokemon,
+        lane,
         notes: form.notes?.trim() || null,
         updated_at: new Date().toISOString(),
       };
