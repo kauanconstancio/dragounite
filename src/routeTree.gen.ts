@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
 import { Route as TierListRouteImport } from './routes/tier-list'
+import { Route as TestesRouteImport } from './routes/testes'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as RosterRouteImport } from './routes/roster'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -60,6 +61,11 @@ const TreinosRoute = TreinosRouteImport.update({
 const TierListRoute = TierListRouteImport.update({
   id: '/tier-list',
   path: '/tier-list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TestesRoute = TestesRouteImport.update({
+  id: '/testes',
+  path: '/testes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -290,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/roster': typeof RosterRoute
   '/staff': typeof StaffRouteWithChildren
+  '/testes': typeof TestesRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/builds/$pokemon': typeof BuildsPokemonRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/planos': typeof PlanosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/roster': typeof RosterRoute
+  '/testes': typeof TestesRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/builds/$pokemon': typeof BuildsPokemonRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/roster': typeof RosterRoute
   '/staff': typeof StaffRouteWithChildren
+  '/testes': typeof TestesRoute
   '/tier-list': typeof TierListRoute
   '/treinos': typeof TreinosRoute
   '/builds/$pokemon': typeof BuildsPokemonRoute
@@ -422,6 +431,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roster'
     | '/staff'
+    | '/testes'
     | '/tier-list'
     | '/treinos'
     | '/builds/$pokemon'
@@ -463,6 +473,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/reset-password'
     | '/roster'
+    | '/testes'
     | '/tier-list'
     | '/treinos'
     | '/builds/$pokemon'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roster'
     | '/staff'
+    | '/testes'
     | '/tier-list'
     | '/treinos'
     | '/builds/$pokemon'
@@ -552,6 +564,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   RosterRoute: typeof RosterRoute
   StaffRoute: typeof StaffRouteWithChildren
+  TestesRoute: typeof TestesRoute
   TierListRoute: typeof TierListRoute
   TreinosRoute: typeof TreinosRoute
   JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
@@ -571,6 +584,13 @@ declare module '@tanstack/react-router' {
       path: '/tier-list'
       fullPath: '/tier-list'
       preLoaderRoute: typeof TierListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/testes': {
+      id: '/testes'
+      path: '/testes'
+      fullPath: '/testes'
+      preLoaderRoute: typeof TestesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -934,6 +954,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   RosterRoute: RosterRoute,
   StaffRoute: StaffRouteWithChildren,
+  TestesRoute: TestesRoute,
   TierListRoute: TierListRoute,
   TreinosRoute: TreinosRoute,
   JogadoresMemberIdRoute: JogadoresMemberIdRoute,
@@ -941,12 +962,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
