@@ -389,6 +389,7 @@ export type Database = {
           role: Database["public"]["Enums"]["member_role"]
           team_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           archived?: boolean
@@ -405,6 +406,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["member_role"]
           team_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           archived?: boolean
@@ -421,6 +423,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["member_role"]
           team_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
