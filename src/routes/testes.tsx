@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DndContext,
@@ -101,7 +101,7 @@ function TryoutsPage() {
   const [createOpen, setCreateOpen] = useState(false);
 
   // Sync local state when query data changes
-  useMemo(() => {
+  useEffect(() => {
     if (tryoutsQ.data) setItems(tryoutsQ.data);
   }, [tryoutsQ.data]);
 
@@ -412,7 +412,7 @@ function TryoutDialog({
   });
   const [saving, setSaving] = useState(false);
 
-  useMemo(() => {
+  useEffect(() => {
     if (existing) {
       setForm({
         name: existing.name ?? "",
