@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, RotateCcw, Ban, Play, Trophy } from "lucide-react";
+import { Search, RotateCcw, Ban, Play, Trophy, Undo2 } from "lucide-react";
 import { POKEMON_DATA, UNITE_ROLE_LABEL, UNITE_ROLE_STYLES, type UniteRole } from "@/lib/pokemon";
 import { PokemonImage } from "@/components/PokemonImage";
 import { cn } from "@/lib/utils";
@@ -103,6 +103,24 @@ function DraftPage() {
     setStep((s) => s + 1);
   }
 
+  function undo() {
+    if (step === 0) return;
+    const prevStep = step - 1;
+    const slot = DRAFT_ORDER[prevStep];
+    setState((prev) => {
+      const next = { ...prev };
+      const key =
+        slot.side === "blue"
+          ? slot.phase === "ban" ? "blueBans" : "bluePicks"
+          : slot.phase === "ban" ? "orangeBans" : "orangePicks";
+      const arr = [...(next[key as keyof DraftState] as (string | null)[])];
+      arr[slot.index] = null;
+      (next as any)[key] = arr;
+      return next;
+    });
+    setStep(prevStep);
+  }
+
   function reset() {
     setState(INITIAL);
     setStep(0);
@@ -133,14 +151,25 @@ function DraftPage() {
               <Play className="mr-2 h-4 w-4" /> Iniciar Draft
             </Button>
           ) : (
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={reset}
-              className="uppercase tracking-wider"
-            >
-              <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
-            </Button>
+            <>
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={undo}
+                disabled={step === 0}
+                className="uppercase tracking-wider"
+              >
+                <Undo2 className="mr-2 h-4 w-4" /> Desfazer
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={reset}
+                className="uppercase tracking-wider"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
+              </Button>
+            </>
           )}
         </div>
       </div>
