@@ -151,14 +151,25 @@ function DraftPage() {
               <Play className="mr-2 h-4 w-4" /> Iniciar Draft
             </Button>
           ) : (
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={reset}
-              className="uppercase tracking-wider"
-            >
-              <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
-            </Button>
+            <>
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={undo}
+                disabled={step === 0}
+                className="uppercase tracking-wider"
+              >
+                <Undo2 className="mr-2 h-4 w-4" /> Desfazer
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={reset}
+                className="uppercase tracking-wider"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
+              </Button>
+            </>
           )}
         </div>
       </div>
