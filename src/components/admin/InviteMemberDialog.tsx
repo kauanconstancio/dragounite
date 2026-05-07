@@ -104,16 +104,12 @@ export function InviteMemberDialog() {
     mutationFn: async () => {
       if (!teamId || !user) throw new Error("Sem equipe ou usuário");
       const trimmedName = inviteeName.trim();
-      // Posições administrativas (coach/manager) exigem team_role=coach para conseguir
-      // gerenciar a equipe (RLS). Auto-eleva o acesso para evitar "acesso restrito".
-      const effectiveTeamRole: TeamRole =
-        memberRole === "coach" || memberRole === "manager" ? "coach" : teamRole;
       const { data, error } = await supabase
         .from("team_invites")
         .insert({
           team_id: teamId,
           email: null,
-          team_role: effectiveTeamRole,
+          team_role: teamRole,
           member_role: memberRole,
           invitee_name: trimmedName || null,
           member_id: memberId === "none" ? null : memberId,
