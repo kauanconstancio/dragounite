@@ -472,6 +472,7 @@ function CreateMemberDialog({
       role,
       main_pokemon: mainPokemon.trim() || null,
       discord: discord.trim() || null,
+      user_id: null,
     });
     setOpen(false);
     setName(""); setIgn(""); setLane("flex"); setRole("player");
