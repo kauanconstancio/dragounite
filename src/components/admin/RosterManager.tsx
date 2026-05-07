@@ -292,15 +292,16 @@ export function RosterManager() {
               <th className="text-left px-4 py-3">Pokémon Main</th>
               <th className="text-left px-4 py-3">Discord</th>
               <th className="text-left px-4 py-3">Vínculo</th>
+              <th className="text-left px-4 py-3">Acesso</th>
               <th className="text-right px-4 py-3">Ações</th>
             </tr>
           </thead>
           <tbody>
             {membersQ.isLoading && (
-              <tr><td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
+              <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td></tr>
             )}
             {!membersQ.isLoading && visible.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">Nenhum membro.</td></tr>
+              <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Nenhum membro.</td></tr>
             )}
             {visible.map((m) => {
               const editing = editingId === m.id;
