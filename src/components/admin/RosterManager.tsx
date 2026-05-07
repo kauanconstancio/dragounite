@@ -42,8 +42,16 @@ import { InviteMemberDialog } from "./InviteMemberDialog";
 
 const LANES = ["top", "jungle", "mid", "bot", "support", "flex"] as const;
 const MEMBER_ROLES = ["player", "substitute", "coach", "manager"] as const;
+const TEAM_ROLES = ["coach", "player", "viewer"] as const;
 type Lane = (typeof LANES)[number];
 type MemberRole = (typeof MEMBER_ROLES)[number];
+type TeamRole = (typeof TEAM_ROLES)[number];
+
+const TEAM_ROLE_LABEL: Record<TeamRole, string> = {
+  coach: "Admin (Coach)",
+  player: "Editor (Player)",
+  viewer: "Visualizador",
+};
 
 type MemberRow = {
   id: string;
@@ -55,9 +63,11 @@ type MemberRow = {
   main_pokemon: string | null;
   discord: string | null;
   archived: boolean;
+  user_id: string | null;
 };
 
 type ProfileLink = { user_id: string; member_id: string | null };
+type Membership = { user_id: string; team_role: TeamRole };
 
 export function RosterManager() {
   const qc = useQueryClient();
@@ -73,7 +83,7 @@ export function RosterManager() {
       if (!teamId) return [] as MemberRow[];
       const { data, error } = await supabase
         .from("members")
-        .select("id, name, ign, game_id, lane, role, main_pokemon, discord, archived")
+        .select("id, name, ign, game_id, lane, role, main_pokemon, discord, archived, user_id")
         .eq("team_id", teamId)
         .order("archived", { ascending: true })
         .order("name");
@@ -94,16 +104,85 @@ export function RosterManager() {
     },
   });
 
+  const membershipsQ = useQuery({
+    queryKey: ["team-memberships-roles", teamId],
+    queryFn: async () => {
+      if (!teamId) return [] as Membership[];
+      const { data, error } = await supabase
+        .from("team_memberships")
+        .select("user_id, team_role")
+        .eq("team_id", teamId);
+      if (error) throw error;
+      return (data ?? []) as Membership[];
+    },
+    enabled: !!teamId,
+  });
+
   const linkedSet = useMemo(
     () => new Set((linksQ.data ?? []).map((l) => l.member_id).filter(Boolean) as string[]),
     [linksQ.data],
   );
 
+  const userToMember = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const l of linksQ.data ?? []) {
+      if (l.member_id) m.set(l.user_id, l.member_id);
+    }
+    return m;
+  }, [linksQ.data]);
+
+  const memberTeamRole = useMemo(() => {
+    const map = new Map<string, TeamRole>();
+    const ms = membershipsQ.data ?? [];
+    for (const ms_row of ms) {
+      // Prefer the linked member via profile, fallback via members.user_id
+      const memberIdFromProfile = userToMember.get(ms_row.user_id);
+      if (memberIdFromProfile) map.set(memberIdFromProfile, ms_row.team_role);
+    }
+    // Also map via members.user_id directly
+    for (const mem of membersQ.data ?? []) {
+      if (mem.user_id) {
+        const ms_row = ms.find((r) => r.user_id === mem.user_id);
+        if (ms_row && !map.has(mem.id)) map.set(mem.id, ms_row.team_role);
+      }
+    }
+    return map;
+  }, [membershipsQ.data, userToMember, membersQ.data]);
+
+  const memberUserId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const mem of membersQ.data ?? []) {
+      if (mem.user_id) map.set(mem.id, mem.user_id);
+    }
+    for (const l of linksQ.data ?? []) {
+      if (l.member_id && !map.has(l.member_id)) map.set(l.member_id, l.user_id);
+    }
+    return map;
+  }, [membersQ.data, linksQ.data]);
+
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["roster-members"] });
     qc.invalidateQueries({ queryKey: ["members-all"] });
     qc.invalidateQueries({ queryKey: ["members"] });
+    qc.invalidateQueries({ queryKey: ["team-memberships-roles"] });
   };
+
+  const updateAccessMut = useMutation({
+    mutationFn: async (input: { userId: string; teamRole: TeamRole }) => {
+      if (!teamId) throw new Error("Sem equipe ativa");
+      const { error } = await supabase
+        .from("team_memberships")
+        .update({ team_role: input.teamRole })
+        .eq("team_id", teamId)
+        .eq("user_id", input.userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Acesso atualizado");
+      invalidate();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Erro ao atualizar acesso"),
+  });
 
   const updateMut = useMutation({
     mutationFn: async (input: { id: string; patch: Partial<MemberRow> }) => {
