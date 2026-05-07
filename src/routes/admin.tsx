@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentTeam } from "@/hooks/useCurrentTeam";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, LogOut } from "lucide-react";
@@ -16,7 +17,8 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { user, isCoach, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const { isTeamCoach, loading: teamLoading } = useCurrentTeam();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,9 +31,9 @@ function AdminPage() {
     navigate({ to: "/auth" });
   }
 
-  if (loading) return null;
+  if (loading || teamLoading) return null;
   if (!user) return null;
-  if (!isCoach) {
+  if (!isTeamCoach) {
     return (
       <div className="max-w-xl mx-auto mt-20">
         <Card className="p-8 text-center">
