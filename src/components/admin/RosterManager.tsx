@@ -368,6 +368,28 @@ export function RosterManager() {
                     )}
                   </td>
                   <td className="px-4 py-2">
+                    {(() => {
+                      const uid = memberUserId.get(m.id);
+                      const currentRole = memberTeamRole.get(m.id);
+                      if (!uid || !currentRole) {
+                        return <span className="text-[10px] uppercase tracking-wider text-muted-foreground">—</span>;
+                      }
+                      return (
+                        <Select
+                          value={currentRole}
+                          onValueChange={(v) => updateAccessMut.mutate({ userId: uid, teamRole: v as TeamRole })}
+                        >
+                          <SelectTrigger className="h-8 w-40"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {TEAM_ROLES.map((r) => (
+                              <SelectItem key={r} value={r}>{TEAM_ROLE_LABEL[r]}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-4 py-2">
                     <div className="flex items-center justify-end gap-1">
                       {editing ? (
                         <>
