@@ -18,12 +18,23 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const { user, loading, signOut } = useAuth();
-  const { isTeamCoach, loading: teamLoading } = useCurrentTeam();
+  const { isTeamCoach, loading: teamLoading, teams, team, setActiveTeam } = useCurrentTeam();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
   }, [loading, user, navigate]);
+
+  // If the user is a coach in some team but the *active* team isn't one of them,
+  // auto-switch to a team where they have coach access so /admin works seamlessly.
+  const coachTeams = teams.filter((t) => t.team_role === "coach");
+  useEffect(() => {
+    if (teamLoading) return;
+    if (isTeamCoach) return;
+    if (coachTeams.length > 0 && team?.id !== coachTeams[0].team.id) {
+      setActiveTeam(coachTeams[0].team.id);
+    }
+  }, [teamLoading, isTeamCoach, coachTeams, team, setActiveTeam]);
 
   async function handleLogout() {
     await signOut();
@@ -34,13 +45,26 @@ function AdminPage() {
   if (loading || teamLoading) return null;
   if (!user) return null;
   if (!isTeamCoach) {
+    if (coachTeams.length > 0) {
+      return (
+        <div className="max-w-xl mx-auto mt-20">
+          <Card className="p-8 text-center">
+            <ShieldCheck className="mx-auto h-10 w-10 text-primary" />
+            <h1 className="font-display text-2xl mt-4">Trocando de equipe...</h1>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Você tem acesso de admin em outra equipe. Ativando agora.
+            </p>
+          </Card>
+        </div>
+      );
+    }
     return (
       <div className="max-w-xl mx-auto mt-20">
         <Card className="p-8 text-center">
           <ShieldCheck className="mx-auto h-10 w-10 text-muted-foreground" />
           <h1 className="font-display text-2xl mt-4">Acesso restrito</h1>
           <p className="text-muted-foreground mt-2 text-sm">
-            Apenas coaches/gerentes podem acessar o painel administrativo.
+            Apenas coaches podem acessar o painel administrativo. Peça ao gerente da equipe para alterar seu acesso na coluna “Acesso” do roster.
           </p>
           <Button asChild className="mt-6"><Link to="/dashboard">Voltar ao Dashboard</Link></Button>
         </Card>
