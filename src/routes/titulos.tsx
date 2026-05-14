@@ -40,6 +40,18 @@ type Title = {
   link_url: string | null;
 };
 
+function formatLocalDate(iso: string): string {
+  // Parse YYYY-MM-DD as a local date to avoid UTC offset shifting the day
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString("pt-BR");
+}
+
+function getLocalYear(iso: string): number {
+  const [y] = iso.slice(0, 10).split("-").map(Number);
+  return y;
+}
+
 function TitlesPage() {
   const { team, isTeamCoach, loading } = useCurrentTeam();
   const qc = useQueryClient();
