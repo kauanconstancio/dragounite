@@ -22,6 +22,7 @@ import {
   LogOut,
   UserCircle,
   Menu,
+  Trophy,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,6 +62,7 @@ const operacao = [
   { to: "/amistosos", label: "Amistosos", icon: Swords },
   { to: "/oponentes", label: "Oponentes", icon: Target },
   { to: "/mural", label: "Mural", icon: Megaphone },
+  { to: "/titulos", label: "Títulos", icon: Trophy },
 ];
 
 const estrategia = [
