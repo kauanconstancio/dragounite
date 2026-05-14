@@ -153,7 +153,7 @@ function TitlesPage() {
                 </div>
                 {(t.year || t.achieved_at) && (
                   <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    {t.year ?? new Date(t.achieved_at!).getFullYear()}
+                    {t.year ?? getLocalYear(t.achieved_at!)}
                   </span>
                 )}
               </div>
