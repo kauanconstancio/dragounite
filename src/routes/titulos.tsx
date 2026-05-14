@@ -149,7 +149,7 @@ function TitlesPage() {
                 <div className="font-medium text-base leading-tight">{t.championship_name}</div>
                 {t.achieved_at && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(t.achieved_at).toLocaleDateString("pt-BR")}
+                    {formatLocalDate(t.achieved_at)}
                   </div>
                 )}
               </div>
