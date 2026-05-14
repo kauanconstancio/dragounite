@@ -961,6 +961,45 @@ export type Database = {
         }
         Relationships: []
       }
+      team_titles: {
+        Row: {
+          achieved_at: string | null
+          championship_name: string
+          created_at: string
+          description: string | null
+          id: string
+          link_url: string | null
+          placement: string
+          team_id: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          achieved_at?: string | null
+          championship_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          link_url?: string | null
+          placement: string
+          team_id: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          achieved_at?: string | null
+          championship_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          link_url?: string | null
+          placement?: string
+          team_id?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           accent_color: string
