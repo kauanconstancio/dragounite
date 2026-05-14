@@ -40,6 +40,18 @@ type Title = {
   link_url: string | null;
 };
 
+function formatLocalDate(iso: string): string {
+  // Parse YYYY-MM-DD as a local date to avoid UTC offset shifting the day
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString("pt-BR");
+}
+
+function getLocalYear(iso: string): number {
+  const [y] = iso.slice(0, 10).split("-").map(Number);
+  return y;
+}
+
 function TitlesPage() {
   const { team, isTeamCoach, loading } = useCurrentTeam();
   const qc = useQueryClient();
@@ -141,7 +153,7 @@ function TitlesPage() {
                 </div>
                 {(t.year || t.achieved_at) && (
                   <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    {t.year ?? new Date(t.achieved_at!).getFullYear()}
+                    {t.year ?? getLocalYear(t.achieved_at!)}
                   </span>
                 )}
               </div>
@@ -149,7 +161,7 @@ function TitlesPage() {
                 <div className="font-medium text-base leading-tight">{t.championship_name}</div>
                 {t.achieved_at && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    {new Date(t.achieved_at).toLocaleDateString("pt-BR")}
+                    {formatLocalDate(t.achieved_at)}
                   </div>
                 )}
               </div>
