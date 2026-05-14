@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreinosRouteImport } from './routes/treinos'
+import { Route as TitulosRouteImport } from './routes/titulos'
 import { Route as TierListRouteImport } from './routes/tier-list'
 import { Route as TestesRouteImport } from './routes/testes'
 import { Route as StaffRouteImport } from './routes/staff'
@@ -56,6 +57,11 @@ import { Route as StaffFinanceWaitlistRouteImport } from './routes/staff.finance
 const TreinosRoute = TreinosRouteImport.update({
   id: '/treinos',
   path: '/treinos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TitulosRoute = TitulosRouteImport.update({
+  id: '/titulos',
+  path: '/titulos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TierListRoute = TierListRouteImport.update({
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof StaffRouteWithChildren
   '/testes': typeof TestesRoute
   '/tier-list': typeof TierListRoute
+  '/titulos': typeof TitulosRoute
   '/treinos': typeof TreinosRoute
   '/builds/$pokemon': typeof BuildsPokemonRoute
   '/dev/feedback': typeof DevFeedbackRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/roster': typeof RosterRoute
   '/testes': typeof TestesRoute
   '/tier-list': typeof TierListRoute
+  '/titulos': typeof TitulosRoute
   '/treinos': typeof TreinosRoute
   '/builds/$pokemon': typeof BuildsPokemonRoute
   '/dev/feedback': typeof DevFeedbackRoute
@@ -386,6 +394,7 @@ export interface FileRoutesById {
   '/staff': typeof StaffRouteWithChildren
   '/testes': typeof TestesRoute
   '/tier-list': typeof TierListRoute
+  '/titulos': typeof TitulosRoute
   '/treinos': typeof TreinosRoute
   '/builds/$pokemon': typeof BuildsPokemonRoute
   '/dev/feedback': typeof DevFeedbackRoute
@@ -433,6 +442,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/testes'
     | '/tier-list'
+    | '/titulos'
     | '/treinos'
     | '/builds/$pokemon'
     | '/dev/feedback'
@@ -475,6 +485,7 @@ export interface FileRouteTypes {
     | '/roster'
     | '/testes'
     | '/tier-list'
+    | '/titulos'
     | '/treinos'
     | '/builds/$pokemon'
     | '/dev/feedback'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/testes'
     | '/tier-list'
+    | '/titulos'
     | '/treinos'
     | '/builds/$pokemon'
     | '/dev/feedback'
@@ -566,6 +578,7 @@ export interface RootRouteChildren {
   StaffRoute: typeof StaffRouteWithChildren
   TestesRoute: typeof TestesRoute
   TierListRoute: typeof TierListRoute
+  TitulosRoute: typeof TitulosRoute
   TreinosRoute: typeof TreinosRoute
   JogadoresMemberIdRoute: typeof JogadoresMemberIdRoute
 }
@@ -577,6 +590,13 @@ declare module '@tanstack/react-router' {
       path: '/treinos'
       fullPath: '/treinos'
       preLoaderRoute: typeof TreinosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/titulos': {
+      id: '/titulos'
+      path: '/titulos'
+      fullPath: '/titulos'
+      preLoaderRoute: typeof TitulosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tier-list': {
@@ -956,6 +976,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffRoute: StaffRouteWithChildren,
   TestesRoute: TestesRoute,
   TierListRoute: TierListRoute,
+  TitulosRoute: TitulosRoute,
   TreinosRoute: TreinosRoute,
   JogadoresMemberIdRoute: JogadoresMemberIdRoute,
 }

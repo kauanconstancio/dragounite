@@ -22,6 +22,7 @@ import {
   LogOut,
   UserCircle,
   Menu,
+  Trophy,
 } from "lucide-react";
 import {
   DropdownMenu,
