@@ -23,7 +23,6 @@ import {
   UserCircle,
   Menu,
   Trophy,
-  Palette,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -102,9 +101,7 @@ function isFullBleedRoute(pathname: string) {
     pathname.startsWith("/aceitar-convite") ||
     pathname.startsWith("/onboarding") ||
     pathname === "/staff" ||
-    pathname.startsWith("/staff/") ||
-    pathname === "/design" ||
-    pathname.startsWith("/design/")
+    pathname.startsWith("/staff/")
   );
 }
 
@@ -350,7 +347,6 @@ function MobileNav({ pathname }: { pathname: string }) {
     accountItems.push({ to: "/admin", label: "Admin equipe", icon: Shield });
   }
   if (isSuperAdmin) {
-    accountItems.push({ to: "/design", label: "Design Team", icon: Palette });
     accountItems.push({ to: "/staff", label: "Staff Console", icon: Shield });
   }
   return (

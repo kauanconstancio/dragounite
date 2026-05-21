@@ -29,7 +29,6 @@ import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as EquipesRouteImport } from './routes/equipes'
 import { Route as DraftRouteImport } from './routes/draft'
 import { Route as DevRouteImport } from './routes/dev'
-import { Route as DesignRouteImport } from './routes/design'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComposicoesRouteImport } from './routes/composicoes'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -153,11 +152,6 @@ const DraftRoute = DraftRouteImport.update({
 const DevRoute = DevRouteImport.update({
   id: '/dev',
   path: '/dev',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesignRoute = DesignRouteImport.update({
-  id: '/design',
-  path: '/design',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -292,7 +286,6 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
-  '/design': typeof DesignRoute
   '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
@@ -338,7 +331,6 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
-  '/design': typeof DesignRoute
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
   '/feedback': typeof FeedbackRoute
@@ -384,7 +376,6 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/composicoes': typeof ComposicoesRoute
   '/dashboard': typeof DashboardRoute
-  '/design': typeof DesignRoute
   '/dev': typeof DevRouteWithChildren
   '/draft': typeof DraftRoute
   '/equipes': typeof EquipesRoute
@@ -433,7 +424,6 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
-    | '/design'
     | '/dev'
     | '/draft'
     | '/equipes'
@@ -479,7 +469,6 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
-    | '/design'
     | '/draft'
     | '/equipes'
     | '/feedback'
@@ -524,7 +513,6 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/composicoes'
     | '/dashboard'
-    | '/design'
     | '/dev'
     | '/draft'
     | '/equipes'
@@ -572,7 +560,6 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   ComposicoesRoute: typeof ComposicoesRoute
   DashboardRoute: typeof DashboardRoute
-  DesignRoute: typeof DesignRoute
   DevRoute: typeof DevRouteWithChildren
   DraftRoute: typeof DraftRoute
   EquipesRoute: typeof EquipesRoute
@@ -736,13 +723,6 @@ declare module '@tanstack/react-router' {
       path: '/dev'
       fullPath: '/dev'
       preLoaderRoute: typeof DevRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/design': {
-      id: '/design'
-      path: '/design'
-      fullPath: '/design'
-      preLoaderRoute: typeof DesignRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -978,7 +958,6 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   ComposicoesRoute: ComposicoesRoute,
   DashboardRoute: DashboardRoute,
-  DesignRoute: DesignRoute,
   DevRoute: DevRouteWithChildren,
   DraftRoute: DraftRoute,
   EquipesRoute: EquipesRoute,
