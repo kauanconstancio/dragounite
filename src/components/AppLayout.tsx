@@ -23,6 +23,7 @@ import {
   UserCircle,
   Menu,
   Trophy,
+  Palette,
 } from "lucide-react";
 import {
   DropdownMenu,
