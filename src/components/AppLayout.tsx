@@ -102,7 +102,9 @@ function isFullBleedRoute(pathname: string) {
     pathname.startsWith("/aceitar-convite") ||
     pathname.startsWith("/onboarding") ||
     pathname === "/staff" ||
-    pathname.startsWith("/staff/")
+    pathname.startsWith("/staff/") ||
+    pathname === "/design" ||
+    pathname.startsWith("/design/")
   );
 }
 
