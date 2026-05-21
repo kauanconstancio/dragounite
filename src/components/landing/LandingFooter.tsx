@@ -24,6 +24,7 @@ export function LandingFooter() {
             <a href="#conquistas" className="hover:text-red-400 transition-colors">Trajetória</a>
             <a href="#contato" className="hover:text-red-400 transition-colors">Contato</a>
             <Link to="/auth" className="hover:text-red-400 transition-colors">Área do time</Link>
+            <Link to="/admin" className="hover:text-red-400 transition-colors">Staff</Link>
           </nav>
         </div>
 
