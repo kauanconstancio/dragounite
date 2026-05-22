@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      adm_players: {
+        Row: {
+          age: number | null
+          created_at: string
+          id: string
+          ign: string | null
+          name: string
+          notes: string | null
+          photo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          id?: string
+          ign?: string | null
+          name: string
+          notes?: string | null
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          id?: string
+          ign?: string | null
+          name?: string
+          notes?: string | null
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       announcement_likes: {
         Row: {
           announcement_id: string
@@ -248,6 +281,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      design_assets: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          file_url: string | null
+          id: string
+          link_url: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          link_url?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          link_url?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       feedback: {
         Row: {
