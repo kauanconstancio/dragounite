@@ -181,7 +181,10 @@ function AdmDashboard() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as AdmPlayer[];
+      return (data ?? []).map((r) => ({
+        ...r,
+        attachments: Array.isArray(r.attachments) ? (r.attachments as unknown as AdmAttachment[]) : [],
+      })) as AdmPlayer[];
     },
   });
 
