@@ -190,15 +190,20 @@ function AdmDashboard() {
 
   const deleteMutation = useMutation({
     mutationFn: async (p: AdmPlayer) => {
+      const marker = "/adm-players/";
+      const paths: string[] = [];
       if (p.photo_url) {
-        // Best-effort: remove storage object if hosted on our bucket
-        const marker = "/adm-players/";
         const idx = p.photo_url.indexOf(marker);
-        if (idx >= 0) {
-          const path = p.photo_url.slice(idx + marker.length);
-          await supabase.storage.from("adm-players").remove([path]);
+        if (idx >= 0) paths.push(p.photo_url.slice(idx + marker.length));
+      }
+      for (const att of p.attachments ?? []) {
+        if (att.path) paths.push(att.path);
+        else {
+          const idx = att.url.indexOf(marker);
+          if (idx >= 0) paths.push(att.url.slice(idx + marker.length));
         }
       }
+      if (paths.length) await supabase.storage.from("adm-players").remove(paths);
       const { error } = await supabase.from("adm_players").delete().eq("id", p.id);
       if (error) throw error;
     },
