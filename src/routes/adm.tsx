@@ -24,15 +24,28 @@ export const Route = createFileRoute("/adm")({
   component: AdmPage,
 });
 
+type AdmAttachment = { url: string; name: string; type: string; size: number; path?: string };
+
 type AdmPlayer = {
   id: string;
   name: string;
   age: number | null;
   ign: string | null;
+  game: string | null;
   photo_url: string | null;
   notes: string | null;
+  attachments: AdmAttachment[];
   created_at: string;
 };
+
+const GAME_OPTIONS = [
+  "Pokémon Unite",
+  "TCG",
+  "VGC",
+  "Rematch",
+  "One Piece Card",
+  "Pokémon Champions",
+];
 
 function AdmPage() {
   const [email, setEmail] = useState<string | null>(null);
