@@ -425,9 +425,13 @@ function PlayerDialog({
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [ign, setIgn] = useState("");
+  const [game, setGame] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [existingAttachments, setExistingAttachments] = useState<AdmAttachment[]>([]);
+  const [removedAttachments, setRemovedAttachments] = useState<AdmAttachment[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -435,11 +439,24 @@ function PlayerDialog({
       setName(player?.name ?? "");
       setAge(player?.age != null ? String(player.age) : "");
       setIgn(player?.ign ?? "");
+      setGame(player?.game ?? "");
       setNotes(player?.notes ?? "");
       setPhotoFile(null);
       setPhotoUrl(player?.photo_url ?? null);
+      setExistingAttachments(player?.attachments ?? []);
+      setRemovedAttachments([]);
+      setNewFiles([]);
     }
   }, [open, player]);
+
+  function removeExisting(att: AdmAttachment) {
+    setExistingAttachments((prev) => prev.filter((a) => a.url !== att.url));
+    setRemovedAttachments((prev) => [...prev, att]);
+  }
+
+  function removeNewFile(idx: number) {
+    setNewFiles((prev) => prev.filter((_, i) => i !== idx));
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -461,12 +478,47 @@ function PlayerDialog({
         finalPhotoUrl = pub.publicUrl;
       }
 
+      // Upload new attachments
+      const uploadedAttachments: AdmAttachment[] = [];
+      for (const file of newFiles) {
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `attachments/${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("adm-players")
+          .upload(path, file, { upsert: false, contentType: file.type || undefined });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from("adm-players").getPublicUrl(path);
+        uploadedAttachments.push({
+          url: pub.publicUrl,
+          name: file.name,
+          type: file.type || "application/octet-stream",
+          size: file.size,
+          path,
+        });
+      }
+
+      // Cleanup removed storage files
+      const marker = "/adm-players/";
+      const removePaths: string[] = [];
+      for (const att of removedAttachments) {
+        if (att.path) removePaths.push(att.path);
+        else {
+          const idx = att.url.indexOf(marker);
+          if (idx >= 0) removePaths.push(att.url.slice(idx + marker.length));
+        }
+      }
+      if (removePaths.length) await supabase.storage.from("adm-players").remove(removePaths);
+
+      const finalAttachments = [...existingAttachments, ...uploadedAttachments];
+
       const payload = {
         name: name.trim(),
         age: age.trim() ? Number(age) : null,
         ign: ign.trim() || null,
+        game: game.trim() || null,
         notes: notes.trim() || null,
         photo_url: finalPhotoUrl,
+        attachments: finalAttachments as unknown as never,
       };
 
       if (player) {
@@ -488,7 +540,7 @@ function PlayerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-950 border-zinc-800 text-white max-w-lg">
+      <DialogContent className="bg-zinc-950 border-zinc-800 text-white max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{player ? "Editar jogador" : "Novo jogador"}</DialogTitle>
         </DialogHeader>
@@ -510,6 +562,22 @@ function PlayerDialog({
             <Label>Nome *</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="adm-game">Jogo</Label>
+            <select
+              id="adm-game"
+              value={game}
+              onChange={(e) => setGame(e.target.value)}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Selecione um jogo...</option>
+              {GAME_OPTIONS.map((g) => (
+                <option key={g} value={g} className="bg-zinc-950 text-white">
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Idade</Label>
@@ -523,6 +591,51 @@ function PlayerDialog({
           <div className="space-y-1.5">
             <Label>Observações</Label>
             <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Arquivos adicionais</Label>
+            {existingAttachments.length > 0 && (
+              <ul className="space-y-1">
+                {existingAttachments.map((att, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900 px-2 py-1 text-xs">
+                    <span className="truncate text-zinc-200" title={att.name}>{att.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeExisting(att)}
+                      className="text-red-400 hover:text-red-300 shrink-0"
+                      title="Remover"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {newFiles.length > 0 && (
+              <ul className="space-y-1">
+                {newFiles.map((f, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900/60 px-2 py-1 text-xs">
+                    <span className="truncate text-zinc-300" title={f.name}>+ {f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeNewFile(i)}
+                      className="text-red-400 hover:text-red-300 shrink-0"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Input
+              type="file"
+              multiple
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                if (files.length) setNewFiles((prev) => [...prev, ...files]);
+                e.target.value = "";
+              }}
+            />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
