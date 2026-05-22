@@ -141,14 +141,15 @@ function AdmLogin({ currentEmail, isWrongAccount }: { currentEmail: string | nul
             </div>
           </div>
 
-          {currentEmail && currentEmail !== ALLOWED_EMAIL && (
+          {isWrongAccount && currentEmail && (
             <div className="mb-4 rounded-md border border-amber-600/30 bg-amber-600/10 p-3 text-xs text-amber-200">
-              Você está logado como <strong>{currentEmail}</strong>. Saia para entrar como ADM.
+              Você está logado como <strong>{currentEmail}</strong>, mas esta conta não tem permissão de ADM.
               <Button size="sm" variant="outline" className="mt-2 w-full" onClick={handleSignOutOther}>
                 <LogOut className="h-3 w-3" /> Sair da sessão atual
               </Button>
             </div>
           )}
+
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
