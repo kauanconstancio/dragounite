@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { Copy, Download, Pencil, Trash2, Plus, LogOut, Shield, ArrowLeft, Users, UserCog } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const OWNER_EMAIL = "kauanconstancio13@gmail.com";
+
 
 export const Route = createFileRoute("/adm")({
   head: () => ({ meta: [{ title: "Área dos ADM — Dragounite" }] }),
