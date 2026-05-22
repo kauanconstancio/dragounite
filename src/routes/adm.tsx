@@ -15,14 +15,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Copy, Download, Pencil, Trash2, Plus, LogOut, Shield, ArrowLeft } from "lucide-react";
+import { Copy, Download, Pencil, Trash2, Plus, LogOut, Shield, ArrowLeft, Users, UserCog } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const ALLOWED_EMAIL = "kauanconstancio13@gmail.com";
+
 
 export const Route = createFileRoute("/adm")({
   head: () => ({ meta: [{ title: "Área dos ADM — Dragounite" }] }),
   component: AdmPage,
 });
+
 
 type AdmAttachment = { url: string; name: string; type: string; size: number; path?: string };
 
@@ -62,7 +64,22 @@ function AdmPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  if (checking) {
+  const { data: adminCheck, isLoading: adminLoading } = useQuery({
+    queryKey: ["adm-admin-check", email],
+    queryFn: async () => {
+      if (!email) return null;
+      const { data, error } = await supabase
+        .from("adm_admins")
+        .select("email,is_owner")
+        .ilike("email", email)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!email,
+  });
+
+  if (checking || (email && adminLoading)) {
     return (
       <div className="min-h-screen bg-[#0f0d0e] text-white flex items-center justify-center">
         <p className="text-zinc-400">Carregando...</p>
@@ -70,14 +87,15 @@ function AdmPage() {
     );
   }
 
-  if (email !== ALLOWED_EMAIL) {
-    return <AdmLogin currentEmail={email} />;
+  if (!email || !adminCheck) {
+    return <AdmLogin currentEmail={email} isWrongAccount={!!email && !adminCheck} />;
   }
 
-  return <AdmDashboard />;
+  return <AdmDashboard isOwner={adminCheck.is_owner} currentEmail={email} />;
 }
 
-function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
+
+function AdmLogin({ currentEmail, isWrongAccount }: { currentEmail: string | null; isWrongAccount?: boolean }) {
   const [emailInput, setEmailInput] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -86,10 +104,6 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
     e.preventDefault();
     setLoading(true);
     try {
-      if (emailInput.trim().toLowerCase() !== ALLOWED_EMAIL) {
-        toast.error("Credenciais inválidas");
-        return;
-      }
       const { error } = await supabase.auth.signInWithPassword({
         email: emailInput.trim().toLowerCase(),
         password,
@@ -98,7 +112,7 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
         toast.error("Credenciais inválidas");
         return;
       }
-      toast.success("Bem-vindo, ADM");
+      toast.success("Bem-vindo");
     } finally {
       setLoading(false);
     }
@@ -106,8 +120,9 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
 
   async function handleSignOutOther() {
     await supabase.auth.signOut();
-    toast.info("Sessão anterior encerrada. Faça login como ADM.");
+    toast.info("Sessão anterior encerrada.");
   }
+
 
   return (
     <div className="min-h-screen bg-[#0f0d0e] text-white flex items-center justify-center px-6">
@@ -126,14 +141,15 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
             </div>
           </div>
 
-          {currentEmail && currentEmail !== ALLOWED_EMAIL && (
+          {isWrongAccount && currentEmail && (
             <div className="mb-4 rounded-md border border-amber-600/30 bg-amber-600/10 p-3 text-xs text-amber-200">
-              Você está logado como <strong>{currentEmail}</strong>. Saia para entrar como ADM.
+              Você está logado como <strong>{currentEmail}</strong>, mas esta conta não tem permissão de ADM.
               <Button size="sm" variant="outline" className="mt-2 w-full" onClick={handleSignOutOther}>
                 <LogOut className="h-3 w-3" /> Sair da sessão atual
               </Button>
             </div>
           )}
+
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
@@ -168,7 +184,7 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
   );
 }
 
-function AdmDashboard() {
+function AdmDashboard({ isOwner, currentEmail }: { isOwner: boolean; currentEmail: string }) {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AdmPlayer | null>(null);
@@ -278,96 +294,114 @@ function AdmDashboard() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display text-2xl tracking-wide">JOGADORES</h2>
-            <p className="text-sm text-zinc-400">{players.length} cadastrado(s)</p>
-          </div>
-          <Button onClick={openNew} className="bg-red-600 hover:bg-red-700 gap-2">
-            <Plus className="h-4 w-4" /> Adicionar jogador
-          </Button>
-        </div>
+        <Tabs defaultValue="players" className="space-y-6">
+          <TabsList className="bg-zinc-900 border border-zinc-800">
+            <TabsTrigger value="players" className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <Users className="h-4 w-4" /> Jogadores
+            </TabsTrigger>
+            <TabsTrigger value="admins" className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <UserCog className="h-4 w-4" /> Administradores
+            </TabsTrigger>
+          </TabsList>
 
-        {isLoading ? (
-          <p className="text-zinc-500 text-sm">Carregando...</p>
-        ) : players.length === 0 ? (
-          <Card className="bg-zinc-950 border-zinc-800 p-12 text-center">
-            <p className="text-zinc-400">Nenhum jogador cadastrado ainda.</p>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {players.map((p) => (
-              <Card key={p.id} className="bg-zinc-950 border-zinc-800 overflow-hidden flex flex-col">
-                {p.photo_url ? (
-                  <div className="aspect-square bg-zinc-900 relative group">
-                    <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => downloadPhoto(p.photo_url!, p.name)}
-                      className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-md p-2 opacity-0 group-hover:opacity-100 transition"
-                      title="Baixar foto"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 text-sm">
-                    Sem foto
-                  </div>
-                )}
-                <div className="p-4 space-y-2 flex-1 flex flex-col">
-                  <Field label="Nome" value={p.name} onCopy={() => copyText(p.name, "Nome")} />
-                  {p.game && <Field label="Jogo" value={p.game} onCopy={() => copyText(p.game!, "Jogo")} />}
-                  {p.ign && <Field label="IGN" value={p.ign} onCopy={() => copyText(p.ign!, "IGN")} />}
-                  {p.age != null && (
-                    <Field label="Idade" value={String(p.age)} onCopy={() => copyText(String(p.age), "Idade")} />
-                  )}
-                  {p.notes && (
-                    <Field label="Observações" value={p.notes} onCopy={() => copyText(p.notes!, "Observações")} multiline />
-                  )}
-                  {p.attachments && p.attachments.length > 0 && (
-                    <div className="text-sm">
-                      <span className="text-[10px] uppercase tracking-widest text-zinc-500">Arquivos ({p.attachments.length})</span>
-                      <ul className="mt-1 space-y-1">
-                        {p.attachments.map((att, i) => (
-                          <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900 px-2 py-1">
-                            <span className="truncate text-zinc-200 text-xs" title={att.name}>{att.name}</span>
-                            <a
-                              href={att.url}
-                              download={att.name}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-zinc-400 hover:text-white shrink-0"
-                              title="Baixar"
-                            >
-                              <Download className="h-3 w-3" />
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  <div className="pt-3 mt-auto flex gap-2">
-                    <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => openEdit(p)}>
-                      <Pencil className="h-3 w-3" /> Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-400 hover:text-red-300"
-                      onClick={() => {
-                        if (confirm(`Remover ${p.name}?`)) deleteMutation.mutate(p);
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
+          <TabsContent value="players" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-2xl tracking-wide">JOGADORES</h2>
+                <p className="text-sm text-zinc-400">{players.length} cadastrado(s)</p>
+              </div>
+              <Button onClick={openNew} className="bg-red-600 hover:bg-red-700 gap-2">
+                <Plus className="h-4 w-4" /> Adicionar jogador
+              </Button>
+            </div>
+
+            {isLoading ? (
+              <p className="text-zinc-500 text-sm">Carregando...</p>
+            ) : players.length === 0 ? (
+              <Card className="bg-zinc-950 border-zinc-800 p-12 text-center">
+                <p className="text-zinc-400">Nenhum jogador cadastrado ainda.</p>
               </Card>
-            ))}
-          </div>
-        )}
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {players.map((p) => (
+                  <Card key={p.id} className="bg-zinc-950 border-zinc-800 overflow-hidden flex flex-col">
+                    {p.photo_url ? (
+                      <div className="aspect-square bg-zinc-900 relative group">
+                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => downloadPhoto(p.photo_url!, p.name)}
+                          className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-md p-2 opacity-0 group-hover:opacity-100 transition"
+                          title="Baixar foto"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 text-sm">
+                        Sem foto
+                      </div>
+                    )}
+                    <div className="p-4 space-y-2 flex-1 flex flex-col">
+                      <Field label="Nome" value={p.name} onCopy={() => copyText(p.name, "Nome")} />
+                      {p.game && <Field label="Jogo" value={p.game} onCopy={() => copyText(p.game!, "Jogo")} />}
+                      {p.ign && <Field label="IGN" value={p.ign} onCopy={() => copyText(p.ign!, "IGN")} />}
+                      {p.age != null && (
+                        <Field label="Idade" value={String(p.age)} onCopy={() => copyText(String(p.age), "Idade")} />
+                      )}
+                      {p.notes && (
+                        <Field label="Observações" value={p.notes} onCopy={() => copyText(p.notes!, "Observações")} multiline />
+                      )}
+                      {p.attachments && p.attachments.length > 0 && (
+                        <div className="text-sm">
+                          <span className="text-[10px] uppercase tracking-widest text-zinc-500">Arquivos ({p.attachments.length})</span>
+                          <ul className="mt-1 space-y-1">
+                            {p.attachments.map((att, i) => (
+                              <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900 px-2 py-1">
+                                <span className="truncate text-zinc-200 text-xs" title={att.name}>{att.name}</span>
+                                <a
+                                  href={att.url}
+                                  download={att.name}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-zinc-400 hover:text-white shrink-0"
+                                  title="Baixar"
+                                >
+                                  <Download className="h-3 w-3" />
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="pt-3 mt-auto flex gap-2">
+                        <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => openEdit(p)}>
+                          <Pencil className="h-3 w-3" /> Editar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-400 hover:text-red-300"
+                          onClick={() => {
+                            if (confirm(`Remover ${p.name}?`)) deleteMutation.mutate(p);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="admins">
+            <AdminsManager isOwner={isOwner} currentEmail={currentEmail} />
+          </TabsContent>
+        </Tabs>
       </main>
+
 
       <PlayerDialog
         open={dialogOpen}
@@ -650,3 +684,137 @@ function PlayerDialog({
     </Dialog>
   );
 }
+
+type AdmAdmin = { id: string; email: string; is_owner: boolean; created_at: string };
+
+function AdminsManager({ isOwner, currentEmail }: { isOwner: boolean; currentEmail: string }) {
+  const qc = useQueryClient();
+  const [newEmail, setNewEmail] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  const { data: admins = [], isLoading } = useQuery({
+    queryKey: ["adm-admins"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("adm_admins")
+        .select("*")
+        .order("is_owner", { ascending: false })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as AdmAdmin[];
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("adm_admins").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adm-admins"] });
+      toast.success("Administrador removido");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function handleAdd(e: FormEvent) {
+    e.preventDefault();
+    const email = newEmail.trim().toLowerCase();
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("E-mail inválido");
+      return;
+    }
+    setAdding(true);
+    try {
+      const { error } = await supabase.from("adm_admins").insert({ email, is_owner: false });
+      if (error) throw error;
+      toast.success("Administrador adicionado");
+      setNewEmail("");
+      qc.invalidateQueries({ queryKey: ["adm-admins"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao adicionar");
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-display text-2xl tracking-wide">ADMINISTRADORES</h2>
+        <p className="text-sm text-zinc-400">
+          Quem pode acessar a Área dos ADM. {isOwner ? "Você é o dono e pode adicionar/remover." : "Apenas o dono pode gerenciar."}
+        </p>
+      </div>
+
+      {isOwner && (
+        <Card className="bg-zinc-950 border-zinc-800 p-4">
+          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-2 sm:items-end">
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="new-admin-email">E-mail do novo administrador</Label>
+              <Input
+                id="new-admin-email"
+                type="email"
+                placeholder="exemplo@dominio.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <Button type="submit" disabled={adding} className="bg-red-600 hover:bg-red-700 gap-2">
+              <Plus className="h-4 w-4" /> {adding ? "Adicionando..." : "Adicionar"}
+            </Button>
+          </form>
+          <p className="text-xs text-zinc-500 mt-3">
+            O usuário precisa ter (ou criar) uma conta com esse e-mail para acessar.
+          </p>
+        </Card>
+      )}
+
+      <Card className="bg-zinc-950 border-zinc-800 overflow-hidden">
+        {isLoading ? (
+          <p className="p-6 text-zinc-500 text-sm">Carregando...</p>
+        ) : (
+          <ul className="divide-y divide-zinc-900">
+            {admins.map((a) => {
+              const isYou = a.email.toLowerCase() === currentEmail.toLowerCase();
+              return (
+                <li key={a.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-zinc-100 text-sm truncate">{a.email}</span>
+                      {a.is_owner && (
+                        <span className="text-[10px] uppercase tracking-widest bg-red-600/20 text-red-400 px-1.5 py-0.5 rounded">Dono</span>
+                      )}
+                      {isYou && (
+                        <span className="text-[10px] uppercase tracking-widest bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded">Você</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-zinc-500">
+                      Adicionado em {new Date(a.created_at).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  {isOwner && !a.is_owner && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-400 hover:text-red-300 gap-1"
+                      onClick={() => {
+                        if (confirm(`Remover acesso de ${a.email}?`)) removeMutation.mutate(a.id);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" /> Remover
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+
+
+
