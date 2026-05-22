@@ -15,14 +15,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Copy, Download, Pencil, Trash2, Plus, LogOut, Shield, ArrowLeft } from "lucide-react";
+import { Copy, Download, Pencil, Trash2, Plus, LogOut, Shield, ArrowLeft, Users, UserCog } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const ALLOWED_EMAIL = "kauanconstancio13@gmail.com";
+const OWNER_EMAIL = "kauanconstancio13@gmail.com";
 
 export const Route = createFileRoute("/adm")({
   head: () => ({ meta: [{ title: "Área dos ADM — Dragounite" }] }),
   component: AdmPage,
 });
+
 
 type AdmAttachment = { url: string; name: string; type: string; size: number; path?: string };
 
