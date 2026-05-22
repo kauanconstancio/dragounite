@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      adm_admins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_owner: boolean
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_owner?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_owner?: boolean
+        }
+        Relationships: []
+      }
       adm_players: {
         Row: {
           age: number | null
@@ -1289,6 +1310,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_adm_admin: { Args: { _email: string }; Returns: boolean }
+      is_adm_owner: { Args: { _email: string }; Returns: boolean }
       is_staff: {
         Args: {
           _role?: Database["public"]["Enums"]["staff_role"]
