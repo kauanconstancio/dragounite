@@ -95,7 +95,7 @@ function AdmPage() {
 }
 
 
-function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
+function AdmLogin({ currentEmail, isWrongAccount }: { currentEmail: string | null; isWrongAccount?: boolean }) {
   const [emailInput, setEmailInput] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -104,10 +104,6 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
     e.preventDefault();
     setLoading(true);
     try {
-      if (emailInput.trim().toLowerCase() !== ALLOWED_EMAIL) {
-        toast.error("Credenciais inválidas");
-        return;
-      }
       const { error } = await supabase.auth.signInWithPassword({
         email: emailInput.trim().toLowerCase(),
         password,
@@ -116,7 +112,7 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
         toast.error("Credenciais inválidas");
         return;
       }
-      toast.success("Bem-vindo, ADM");
+      toast.success("Bem-vindo");
     } finally {
       setLoading(false);
     }
@@ -124,8 +120,9 @@ function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
 
   async function handleSignOutOther() {
     await supabase.auth.signOut();
-    toast.info("Sessão anterior encerrada. Faça login como ADM.");
+    toast.info("Sessão anterior encerrada.");
   }
+
 
   return (
     <div className="min-h-screen bg-[#0f0d0e] text-white flex items-center justify-center px-6">
