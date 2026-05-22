@@ -64,7 +64,22 @@ function AdmPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  if (checking) {
+  const { data: adminCheck, isLoading: adminLoading } = useQuery({
+    queryKey: ["adm-admin-check", email],
+    queryFn: async () => {
+      if (!email) return null;
+      const { data, error } = await supabase
+        .from("adm_admins")
+        .select("email,is_owner")
+        .ilike("email", email)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!email,
+  });
+
+  if (checking || (email && adminLoading)) {
     return (
       <div className="min-h-screen bg-[#0f0d0e] text-white flex items-center justify-center">
         <p className="text-zinc-400">Carregando...</p>
@@ -72,12 +87,13 @@ function AdmPage() {
     );
   }
 
-  if (email !== ALLOWED_EMAIL) {
-    return <AdmLogin currentEmail={email} />;
+  if (!email || !adminCheck) {
+    return <AdmLogin currentEmail={email} isWrongAccount={!!email && !adminCheck} />;
   }
 
-  return <AdmDashboard />;
+  return <AdmDashboard isOwner={adminCheck.is_owner} currentEmail={email} />;
 }
+
 
 function AdmLogin({ currentEmail }: { currentEmail: string | null }) {
   const [emailInput, setEmailInput] = useState("");
