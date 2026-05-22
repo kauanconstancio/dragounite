@@ -294,96 +294,114 @@ function AdmDashboard({ isOwner, currentEmail }: { isOwner: boolean; currentEmai
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display text-2xl tracking-wide">JOGADORES</h2>
-            <p className="text-sm text-zinc-400">{players.length} cadastrado(s)</p>
-          </div>
-          <Button onClick={openNew} className="bg-red-600 hover:bg-red-700 gap-2">
-            <Plus className="h-4 w-4" /> Adicionar jogador
-          </Button>
-        </div>
+        <Tabs defaultValue="players" className="space-y-6">
+          <TabsList className="bg-zinc-900 border border-zinc-800">
+            <TabsTrigger value="players" className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <Users className="h-4 w-4" /> Jogadores
+            </TabsTrigger>
+            <TabsTrigger value="admins" className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <UserCog className="h-4 w-4" /> Administradores
+            </TabsTrigger>
+          </TabsList>
 
-        {isLoading ? (
-          <p className="text-zinc-500 text-sm">Carregando...</p>
-        ) : players.length === 0 ? (
-          <Card className="bg-zinc-950 border-zinc-800 p-12 text-center">
-            <p className="text-zinc-400">Nenhum jogador cadastrado ainda.</p>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {players.map((p) => (
-              <Card key={p.id} className="bg-zinc-950 border-zinc-800 overflow-hidden flex flex-col">
-                {p.photo_url ? (
-                  <div className="aspect-square bg-zinc-900 relative group">
-                    <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => downloadPhoto(p.photo_url!, p.name)}
-                      className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-md p-2 opacity-0 group-hover:opacity-100 transition"
-                      title="Baixar foto"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 text-sm">
-                    Sem foto
-                  </div>
-                )}
-                <div className="p-4 space-y-2 flex-1 flex flex-col">
-                  <Field label="Nome" value={p.name} onCopy={() => copyText(p.name, "Nome")} />
-                  {p.game && <Field label="Jogo" value={p.game} onCopy={() => copyText(p.game!, "Jogo")} />}
-                  {p.ign && <Field label="IGN" value={p.ign} onCopy={() => copyText(p.ign!, "IGN")} />}
-                  {p.age != null && (
-                    <Field label="Idade" value={String(p.age)} onCopy={() => copyText(String(p.age), "Idade")} />
-                  )}
-                  {p.notes && (
-                    <Field label="Observações" value={p.notes} onCopy={() => copyText(p.notes!, "Observações")} multiline />
-                  )}
-                  {p.attachments && p.attachments.length > 0 && (
-                    <div className="text-sm">
-                      <span className="text-[10px] uppercase tracking-widest text-zinc-500">Arquivos ({p.attachments.length})</span>
-                      <ul className="mt-1 space-y-1">
-                        {p.attachments.map((att, i) => (
-                          <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900 px-2 py-1">
-                            <span className="truncate text-zinc-200 text-xs" title={att.name}>{att.name}</span>
-                            <a
-                              href={att.url}
-                              download={att.name}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-zinc-400 hover:text-white shrink-0"
-                              title="Baixar"
-                            >
-                              <Download className="h-3 w-3" />
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  <div className="pt-3 mt-auto flex gap-2">
-                    <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => openEdit(p)}>
-                      <Pencil className="h-3 w-3" /> Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-400 hover:text-red-300"
-                      onClick={() => {
-                        if (confirm(`Remover ${p.name}?`)) deleteMutation.mutate(p);
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
+          <TabsContent value="players" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-2xl tracking-wide">JOGADORES</h2>
+                <p className="text-sm text-zinc-400">{players.length} cadastrado(s)</p>
+              </div>
+              <Button onClick={openNew} className="bg-red-600 hover:bg-red-700 gap-2">
+                <Plus className="h-4 w-4" /> Adicionar jogador
+              </Button>
+            </div>
+
+            {isLoading ? (
+              <p className="text-zinc-500 text-sm">Carregando...</p>
+            ) : players.length === 0 ? (
+              <Card className="bg-zinc-950 border-zinc-800 p-12 text-center">
+                <p className="text-zinc-400">Nenhum jogador cadastrado ainda.</p>
               </Card>
-            ))}
-          </div>
-        )}
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {players.map((p) => (
+                  <Card key={p.id} className="bg-zinc-950 border-zinc-800 overflow-hidden flex flex-col">
+                    {p.photo_url ? (
+                      <div className="aspect-square bg-zinc-900 relative group">
+                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => downloadPhoto(p.photo_url!, p.name)}
+                          className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-md p-2 opacity-0 group-hover:opacity-100 transition"
+                          title="Baixar foto"
+                        >
+                          <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 text-sm">
+                        Sem foto
+                      </div>
+                    )}
+                    <div className="p-4 space-y-2 flex-1 flex flex-col">
+                      <Field label="Nome" value={p.name} onCopy={() => copyText(p.name, "Nome")} />
+                      {p.game && <Field label="Jogo" value={p.game} onCopy={() => copyText(p.game!, "Jogo")} />}
+                      {p.ign && <Field label="IGN" value={p.ign} onCopy={() => copyText(p.ign!, "IGN")} />}
+                      {p.age != null && (
+                        <Field label="Idade" value={String(p.age)} onCopy={() => copyText(String(p.age), "Idade")} />
+                      )}
+                      {p.notes && (
+                        <Field label="Observações" value={p.notes} onCopy={() => copyText(p.notes!, "Observações")} multiline />
+                      )}
+                      {p.attachments && p.attachments.length > 0 && (
+                        <div className="text-sm">
+                          <span className="text-[10px] uppercase tracking-widest text-zinc-500">Arquivos ({p.attachments.length})</span>
+                          <ul className="mt-1 space-y-1">
+                            {p.attachments.map((att, i) => (
+                              <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900 px-2 py-1">
+                                <span className="truncate text-zinc-200 text-xs" title={att.name}>{att.name}</span>
+                                <a
+                                  href={att.url}
+                                  download={att.name}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-zinc-400 hover:text-white shrink-0"
+                                  title="Baixar"
+                                >
+                                  <Download className="h-3 w-3" />
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="pt-3 mt-auto flex gap-2">
+                        <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => openEdit(p)}>
+                          <Pencil className="h-3 w-3" /> Editar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-400 hover:text-red-300"
+                          onClick={() => {
+                            if (confirm(`Remover ${p.name}?`)) deleteMutation.mutate(p);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="admins">
+            <AdminsManager isOwner={isOwner} currentEmail={currentEmail} />
+          </TabsContent>
+        </Tabs>
       </main>
+
 
       <PlayerDialog
         open={dialogOpen}
