@@ -17,7 +17,9 @@ export type Database = {
       adm_players: {
         Row: {
           age: number | null
+          attachments: Json
           created_at: string
+          game: string | null
           id: string
           ign: string | null
           name: string
@@ -27,7 +29,9 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          attachments?: Json
           created_at?: string
+          game?: string | null
           id?: string
           ign?: string | null
           name: string
@@ -37,7 +41,9 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          attachments?: Json
           created_at?: string
+          game?: string | null
           id?: string
           ign?: string | null
           name?: string
