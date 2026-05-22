@@ -184,7 +184,7 @@ function AdmLogin({ currentEmail, isWrongAccount }: { currentEmail: string | nul
   );
 }
 
-function AdmDashboard() {
+function AdmDashboard({ isOwner, currentEmail }: { isOwner: boolean; currentEmail: string }) {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AdmPlayer | null>(null);
