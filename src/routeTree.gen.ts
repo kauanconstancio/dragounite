@@ -37,6 +37,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AmistososRouteImport } from './routes/amistosos'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdmRouteImport } from './routes/adm'
 import { Route as AceitarConviteRouteImport } from './routes/aceitar-convite'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
@@ -194,6 +195,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdmRoute = AdmRouteImport.update({
+  id: '/adm',
+  path: '/adm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AceitarConviteRoute = AceitarConviteRouteImport.update({
   id: '/aceitar-convite',
   path: '/aceitar-convite',
@@ -278,6 +284,7 @@ const StaffFinanceWaitlistRoute = StaffFinanceWaitlistRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/aceitar-convite': typeof AceitarConviteRoute
+  '/adm': typeof AdmRoute
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/aceitar-convite': typeof AceitarConviteRoute
+  '/adm': typeof AdmRoute
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
@@ -368,6 +376,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/aceitar-convite': typeof AceitarConviteRoute
+  '/adm': typeof AdmRoute
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/amistosos': typeof AmistososRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/aceitar-convite'
+    | '/adm'
     | '/admin'
     | '/agenda'
     | '/amistosos'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/aceitar-convite'
+    | '/adm'
     | '/admin'
     | '/agenda'
     | '/amistosos'
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/aceitar-convite'
+    | '/adm'
     | '/admin'
     | '/agenda'
     | '/amistosos'
@@ -552,6 +564,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AceitarConviteRoute: typeof AceitarConviteRoute
+  AdmRoute: typeof AdmRoute
   AdminRoute: typeof AdminRoute
   AgendaRoute: typeof AgendaRoute
   AmistososRoute: typeof AmistososRoute
@@ -781,6 +794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/adm': {
+      id: '/adm'
+      path: '/adm'
+      fullPath: '/adm'
+      preLoaderRoute: typeof AdmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/aceitar-convite': {
       id: '/aceitar-convite'
       path: '/aceitar-convite'
@@ -950,6 +970,7 @@ const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AceitarConviteRoute: AceitarConviteRoute,
+  AdmRoute: AdmRoute,
   AdminRoute: AdminRoute,
   AgendaRoute: AgendaRoute,
   AmistososRoute: AmistososRoute,
