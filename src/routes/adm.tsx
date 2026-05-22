@@ -317,12 +317,35 @@ function AdmDashboard() {
                 )}
                 <div className="p-4 space-y-2 flex-1 flex flex-col">
                   <Field label="Nome" value={p.name} onCopy={() => copyText(p.name, "Nome")} />
+                  {p.game && <Field label="Jogo" value={p.game} onCopy={() => copyText(p.game!, "Jogo")} />}
                   {p.ign && <Field label="IGN" value={p.ign} onCopy={() => copyText(p.ign!, "IGN")} />}
                   {p.age != null && (
                     <Field label="Idade" value={String(p.age)} onCopy={() => copyText(String(p.age), "Idade")} />
                   )}
                   {p.notes && (
                     <Field label="Observações" value={p.notes} onCopy={() => copyText(p.notes!, "Observações")} multiline />
+                  )}
+                  {p.attachments && p.attachments.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-500">Arquivos ({p.attachments.length})</span>
+                      <ul className="mt-1 space-y-1">
+                        {p.attachments.map((att, i) => (
+                          <li key={i} className="flex items-center justify-between gap-2 rounded bg-zinc-900 px-2 py-1">
+                            <span className="truncate text-zinc-200 text-xs" title={att.name}>{att.name}</span>
+                            <a
+                              href={att.url}
+                              download={att.name}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-zinc-400 hover:text-white shrink-0"
+                              title="Baixar"
+                            >
+                              <Download className="h-3 w-3" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   <div className="pt-3 mt-auto flex gap-2">
                     <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => openEdit(p)}>
