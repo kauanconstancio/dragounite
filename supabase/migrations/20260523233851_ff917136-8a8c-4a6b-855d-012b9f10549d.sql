@@ -1,0 +1,10 @@
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.is_super_admin(uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.is_team_member(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.is_team_coach(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.can_edit_team(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.team_role_of(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.staff_role_of(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_staff(uuid, staff_role) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_adm_admin(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_adm_owner(text) TO authenticated;
