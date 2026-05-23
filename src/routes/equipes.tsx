@@ -33,14 +33,9 @@ function EquipesPage() {
     }
   }, [loading, user, teams, team, setActiveTeam, navigate]);
 
-  // Se o usuário acabou de criar conta (sem equipes) e não é super admin,
-  // levamos direto para o onboarding para configurar a primeira equipe.
-  useEffect(() => {
-    if (loading || authLoading || !user) return;
-    if (teams.length === 0 && !isSuperAdmin) {
-      navigate({ to: "/onboarding", replace: true });
-    }
-  }, [loading, authLoading, user, teams, isSuperAdmin, navigate]);
+  // Observação: não redirecionamos automaticamente para /onboarding quando
+  // o usuário não tem equipes. Mostramos o estado "Sem equipes" para que
+  // ele possa aguardar convite ou criar uma nova equipe manualmente.
 
   if (authLoading || loading) {
     return (
@@ -88,8 +83,15 @@ function EquipesPage() {
           <h2 className="font-display text-2xl mt-4 tracking-wider">Sem equipes</h2>
           <p className="text-sm text-muted-foreground mt-2">
             Você ainda não foi adicionado a nenhuma equipe. Peça ao seu coach ou
-            ao administrador da organização para incluir você.
+            ao administrador da organização para incluir você, ou crie a sua própria equipe.
           </p>
+          <div className="mt-5 flex justify-center">
+            <Button asChild className="bg-gradient-primary shadow-glow uppercase tracking-wider text-xs">
+              <Link to="/onboarding">
+                <Plus className="h-4 w-4 mr-2" /> Criar equipe
+              </Link>
+            </Button>
+          </div>
         </Card>
       ) : (
         <Card className="border-border bg-card/70 overflow-hidden">
